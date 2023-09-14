@@ -1,0 +1,25 @@
+{
+  "name": "curricular-analytics-graph",
+  "version": "0.1.0",
+  "description": "Visualize curricula and degree plans. Compatible with CurricularVisualization.jl.",
+  "main": "dist/index.js",
+  "scripts": {
+    "build:app": "esbuild --bundle src/app/app.ts --outdir=dist --minify --sourcemap",
+    "watch": "esbuild --bundle src/app/app.ts --outdir=dist  --servedir=dist",
+    "clean": "rm -f dist/*.js dist/*.css dist/*.map",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SheepTester-forks/curricular-analytics-graph.git"
+  },
+  "author": "Sean Yen <seyen@ucsd.edu>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/SheepTester-forks/curricular-analytics-graph/issues"
+  },
+  "homepage": "https://github.com/SheepTester-forks/curricular-analytics-graph#readme",
+  "devDependencies": {
+    "esbuild": "0.19.3"
+  }
+}
