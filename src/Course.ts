@@ -25,7 +25,7 @@ export class Course {
     this.raw = course
 
     this.ball.textContent = String(course.metrics.complexity ?? '')
-    this.name.textContent =
+    this.name.title = this.name.textContent =
       course.name +
       (course.nameSub ? `\n${course.nameSub}` : '') +
       (course.nameCanonical ? `\n(${course.nameCanonical})` : '')

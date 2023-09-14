@@ -194,6 +194,10 @@ export class Graph {
 
         courses[course.raw.id] ??= course
       }
+
+      term.footer.style.gridColumn = `${i + 1} / ${i + 2}`
+      term.footer.setAttribute('aria-describedby', `term-heading-${i}`)
+      this.wrapper.append(term.footer)
     }
 
     for (const term of this.#terms) {

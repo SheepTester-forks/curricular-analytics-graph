@@ -10,6 +10,9 @@ export class Term {
     className: styles.termHeading,
     role: 'columnheader'
   })
+  footer: HTMLElement = Object.assign(document.createElement('div'), {
+    className: styles.termFooter
+  })
 
   constructor (term: VisualizationTerm, index: number) {
     this.index = index
@@ -18,5 +21,9 @@ export class Term {
     )
 
     this.heading.textContent = term.name
+    this.footer.textContent = `Complexity: ${term.curriculum_items.reduce(
+      (acc, curr) => acc + (curr.metrics.complexity ?? 0),
+      0
+    )}`
   }
 }
