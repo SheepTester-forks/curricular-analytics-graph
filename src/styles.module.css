@@ -1,0 +1,59 @@
+.graphWrapper {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: 40px;
+  position: relative;
+  z-index: 0;
+}
+.links {
+  position: absolute;
+  stroke: currentColor;
+  fill: none;
+  z-index: -1;
+}
+.arrow {
+  stroke: none;
+  fill: currentColor;
+}
+.prereqs,
+.coreqs,
+.strictCoreqs {
+  marker-mid: url(#arrow);
+}
+.coreqs,
+.strictCoreqs {
+  stroke-dashoffset: 10px;
+}
+
+.termHeading {
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+}
+
+.courseWrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+}
+.courseBall {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 1px solid black;
+  background-color: white;
+}
+.courseName {
+  white-space: pre;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+}

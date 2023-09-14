@@ -1,14 +1,22 @@
 import { Course } from './Course'
+import styles from './styles.module.css'
 import { VisualizationTerm } from './types'
 
 export class Term {
-  heading: HTMLElement = Object.assign(document.createElement('div'), {
-    className: 'cag/term'
-  })
+  index: number
   courses: Course[]
 
-  constructor (term: VisualizationTerm) {
+  heading: HTMLElement = Object.assign(document.createElement('div'), {
+    className: styles.termHeading,
+    role: 'columnheader'
+  })
+
+  constructor (term: VisualizationTerm, index: number) {
+    this.index = index
+    this.courses = term.curriculum_items.map(
+      (item, i) => new Course(item, this, i)
+    )
+
     this.heading.textContent = term.name
-    this.courses = term.curriculum_items.map(item => new Course(item))
   }
 }

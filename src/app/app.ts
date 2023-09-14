@@ -1,5 +1,5 @@
 import './app.css'
-import { Graph } from '../Graph'
+import { Graph } from '../index'
 
 const graph = new Graph({
   name: '',
@@ -1098,4 +1098,5 @@ const graph = new Graph({
     }
   ]
 })
+graph.wrapper.classList.add('graph')
 document.body.append(graph.wrapper)

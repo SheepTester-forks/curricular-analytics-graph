@@ -1,22 +1,43 @@
+import { Term } from './Term'
+import styles from './styles.module.css'
 import { VisualizationCourse } from './types'
 
 export class Course {
+  term: Term
+  index: number
+  raw: VisualizationCourse
+
   wrapper: HTMLElement = Object.assign(document.createElement('div'), {
-    className: 'cag/course-wrapper'
+    className: styles.courseWrapper
   })
   ball: HTMLElement = Object.assign(document.createElement('div'), {
-    className: 'cag/course-ball'
+    className: styles.courseBall
   })
   name: HTMLElement = Object.assign(document.createElement('div'), {
-    className: 'cag/course-name'
+    className: styles.courseName
   })
 
-  constructor (course: VisualizationCourse) {
+  position = { x: 0, y: 0, radius: 0 }
+
+  constructor (course: VisualizationCourse, term: Term, index: number) {
+    this.term = term
+    this.index = index
+    this.raw = course
+
     this.ball.textContent = String(course.metrics.complexity ?? '')
     this.name.textContent =
       course.name +
       (course.nameSub ? `\n${course.nameSub}` : '') +
       (course.nameCanonical ? `\n(${course.nameCanonical})` : '')
     this.wrapper.append(this.ball, this.name)
+  }
+
+  measurePosition (): void {
+    const { top, left, width, height } = this.ball.getBoundingClientRect()
+    this.position = {
+      x: left + width / 2,
+      y: top + height / 2,
+      radius: width / 2
+    }
   }
 }

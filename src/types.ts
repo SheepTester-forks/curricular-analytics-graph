@@ -54,20 +54,32 @@ export type VisualizationRequisite = {
   source_id: number
   /** Course ID of the target course. */
   target_id: number
-  type: RequisiteType
+  type: VisualizationRequisiteType
 }
-
-export type RequisiteType =
-  | 'prereq'
-  | 'coreq'
-  | 'strict-coreq'
-  | 'CurriculumPrerequisite'
-  | 'CurriculumCorequisite'
-  | 'CurriculumStrictCorequisite'
 
 export type VisualizationMetrics = {
   complexity: number
   centrality: number
   'delay factor': number
   'blocking factor': number
+}
+
+export type RequisiteType = 'prereq' | 'coreq' | 'strict-coreq'
+export type VisualizationRequisiteType =
+  | RequisiteType
+  | 'CurriculumPrerequisite'
+  | 'CurriculumCorequisite'
+  | 'CurriculumStrictCorequisite'
+export function toRequisiteType (
+  type: VisualizationRequisiteType
+): RequisiteType {
+  if (type === 'CurriculumPrerequisite') {
+    return 'prereq'
+  } else if (type === 'CurriculumCorequisite') {
+    return 'coreq'
+  } else if (type === 'CurriculumStrictCorequisite') {
+    return 'strict-coreq'
+  } else {
+    return type
+  }
 }
