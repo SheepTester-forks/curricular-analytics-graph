@@ -10,10 +10,10 @@ export type VisualizationOptions = {
 
 export type VisualizationCurriculum = {
   /** Name of the degree plan. */
-  dp_name: string
+  dp_name?: string
   /** Name of the curriculum. */
   name: string
-  institution: string
+  institution?: string
   curriculum_terms: VisualizationTerm[]
 }
 
@@ -33,7 +33,7 @@ export type VisualizationCourse = {
    */
   id: number
   /** Course title. */
-  nameSub: string
+  nameSub?: string
   /** Course code: `${prefix} ${num}`. */
   name: string
   credits: number
@@ -43,7 +43,7 @@ export type VisualizationCourse = {
    */
   metrics: Partial<VisualizationMetrics>
   /** Canonical course name. */
-  nameCanonical: string
+  nameCanonical?: string
 }
 
 export type VisualizationRequisite = {
@@ -54,11 +54,16 @@ export type VisualizationRequisite = {
   source_id: number
   /** Course ID of the target course. */
   target_id: number
-  type:
-    | 'CurriculumPrerequisite'
-    | 'CurriculumCorequisite'
-    | 'CurriculumStrictCorequisite'
+  type: RequisiteType
 }
+
+export type RequisiteType =
+  | 'prereq'
+  | 'coreq'
+  | 'strict-coreq'
+  | 'CurriculumPrerequisite'
+  | 'CurriculumCorequisite'
+  | 'CurriculumStrictCorequisite'
 
 export type VisualizationMetrics = {
   complexity: number
