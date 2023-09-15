@@ -8,7 +8,7 @@ export class Course {
   raw: VisualizationCourse
 
   wrapper: HTMLElement = Object.assign(document.createElement('div'), {
-    className: styles.courseWrapper
+    className: styles.course
   })
   ball: HTMLElement = Object.assign(document.createElement('div'), {
     className: styles.courseBall

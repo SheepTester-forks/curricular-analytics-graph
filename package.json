@@ -4,7 +4,7 @@
   "description": "Visualize curricula and degree plans. Compatible with CurricularVisualization.jl.",
   "main": "dist/index.js",
   "scripts": {
-    "build:app": "esbuild --bundle src/app/app.ts --outdir=dist --minify --sourcemap",
+    "build:app": "esbuild --bundle src/app/app.ts --outdir=dist --supported:nesting=false --minify --sourcemap",
     "watch": "esbuild --bundle src/app/app.ts --outdir=dist  --servedir=dist",
     "clean": "rm -f dist/*.js dist/*.css dist/*.map",
     "test": "echo \"Error: no test specified\" && exit 1"

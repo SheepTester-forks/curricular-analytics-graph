@@ -42,9 +42,11 @@ type Link = {
 export class Graph {
   #terms: Term[] = []
   #links: Link[] = []
+  #courseNodes: WeakMap<Element, Course> = new WeakMap()
+  #previouslyHovered: Course[] = []
 
   wrapper: HTMLElement = Object.assign(document.createElement('div'), {
-    className: styles.graphWrapper
+    className: styles.graph
   })
   #linksWrapper: SVGSVGElement = document.createElementNS(
     'http://www.w3.org/2000/svg',
@@ -76,6 +78,9 @@ export class Graph {
     )
     this.wrapper.append(this.#linksWrapper)
 
+    this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
+    this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
+
     if (curriculum) {
       this.setCurriculum(curriculum)
     }
@@ -84,6 +89,45 @@ export class Graph {
       const [{ blockSize, inlineSize }] = contentBoxSize
       this.#handleResize(inlineSize, blockSize)
     }).observe(this.wrapper)
+  }
+
+  #handleHoverCourse (course: Course | null) {
+    for (const course of this.#previouslyHovered) {
+      course.wrapper.classList.remove(styles.hoveredCourse)
+    }
+    if (!course) {
+      this.wrapper.classList.remove(styles.hoveringCourse)
+      this.#previouslyHovered = []
+      return
+    }
+    this.wrapper.classList.add(styles.hoveringCourse)
+    course.wrapper.classList.add(styles.hoveredCourse)
+    this.#previouslyHovered = [course]
+  }
+
+  #handlePointerOver = (e: PointerEvent): void => {
+    if (!(e.target instanceof HTMLElement)) {
+      return
+    }
+    const courseNode = e.target.closest(`.${styles.courseBall}`)
+    if (!courseNode) {
+      return
+    }
+    const course = this.#courseNodes.get(courseNode)
+    if (!course) {
+      return
+    }
+    this.#handleHoverCourse(course)
+  }
+
+  #handlePointerOut = (e: PointerEvent): void => {
+    if (!(e.target instanceof HTMLElement)) {
+      return
+    }
+    const courseNode = e.target.closest(`.${styles.courseBall}`)
+    if (courseNode) {
+      this.#handleHoverCourse(null)
+    }
   }
 
   #linkPaths (filter: RequisiteType): string {
@@ -177,6 +221,14 @@ export class Graph {
     }
     this.wrapper.append(this.#linksWrapper)
 
+    // https://stackoverflow.com/a/61240964
+    this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
+    const maxTermLength = curriculum.curriculum_terms.reduce(
+      (acc, curr) => Math.max(acc, curr.curriculum_items.length),
+      0
+    )
+    this.wrapper.style.gridTemplateRows = `40px repeat(${maxTermLength}, minmax(0, 1fr)) 60px`
+
     const courses: Record<number, Course> = {}
     this.#terms = []
     this.#links = []
@@ -191,11 +243,13 @@ export class Graph {
         course.wrapper.style.gridColumn = `${i + 1} / ${i + 2}`
         course.wrapper.setAttribute('aria-describedby', `term-heading-${i}`)
         this.wrapper.append(course.wrapper)
+        this.#courseNodes.set(course.ball, course)
 
         courses[course.raw.id] ??= course
       }
 
       term.footer.style.gridColumn = `${i + 1} / ${i + 2}`
+      term.footer.style.gridRow = `${maxTermLength + 2}`
       term.footer.setAttribute('aria-describedby', `term-heading-${i}`)
       this.wrapper.append(term.footer)
     }
@@ -211,10 +265,5 @@ export class Graph {
         }
       }
     }
-
-    // https://stackoverflow.com/a/61240964
-    this.wrapper.style.gridTemplateColumns = `repeat(${
-      this.#terms.length
-    }, minmax(0, 1fr))`
   }
 }

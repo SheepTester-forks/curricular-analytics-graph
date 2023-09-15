@@ -32,18 +32,18 @@ export type VisualizationCourse = {
    * it is good practice to supply unique IDs.
    */
   id: number
-  /** Course title. */
-  nameSub?: string
   /** Course code: `${prefix} ${num}`. */
   name: string
+  /** Course title. */
+  nameSub?: string | null
+  /** Canonical course name. */
+  nameCanonical?: string | null
   credits: number
   curriculum_requisites: VisualizationRequisite[]
   /**
    * Omit metrics to not show them.
    */
   metrics: Partial<VisualizationMetrics>
-  /** Canonical course name. */
-  nameCanonical?: string
 }
 
 export type VisualizationRequisite = {

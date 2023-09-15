@@ -1,7 +1,6 @@
-.graphWrapper {
+.graph {
   display: grid;
   grid-auto-flow: column;
-  grid-template-rows: 40px;
   position: relative;
   z-index: 0;
 }
@@ -10,6 +9,7 @@
   stroke: currentColor;
   fill: none;
   z-index: -1;
+  transition: opacity 0.2s;
 }
 .arrow {
   stroke: none;
@@ -22,18 +22,21 @@
 }
 .coreqs,
 .strictCoreqs {
-  stroke-dashoffset: 10px;
+  stroke-dasharray: 10 10;
 }
 
-.termHeading {
+.termHeading,
+.termFooter {
   text-align: center;
   display: flex;
   justify-content: center;
   align-items: center;
+}
+.termHeading {
   font-weight: bold;
 }
 
-.courseWrapper {
+.course {
   display: flex;
   justify-content: center;
   align-items: center;
@@ -48,12 +51,28 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid black;
+  border: 1px solid currentColor;
   background-color: white;
+  transition: color 0.2s;
 }
 .courseName {
   white-space: pre;
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
+  transition: opacity 0.2s;
+}
+
+.hoveringCourse {
+  .links {
+    opacity: 0.2;
+  }
+  .course:not(.hoveredCourse) {
+    .courseName {
+      opacity: 0.2;
+    }
+    .courseBall {
+      color: rgba(0, 0, 0, 0.2);
+    }
+  }
 }
