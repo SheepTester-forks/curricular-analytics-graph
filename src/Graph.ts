@@ -39,124 +39,33 @@ type Link = {
   type: RequisiteType
 }
 
-export class Graph {
-  #terms: Term[] = []
-  #links: Link[] = []
-  #courseNodes: WeakMap<Element, Course> = new WeakMap()
-  #previouslyHovered: Course[] = []
+class LinkRenderer {
+  static #classes: {
+    class: string
+    type: RequisiteType
+  }[] = [
+    { class: styles.prereqs, type: 'prereq' },
+    { class: styles.coreqs, type: 'coreq' },
+    { class: styles.strictCoreqs, type: 'strict-coreq' }
+  ]
 
-  wrapper: HTMLElement = Object.assign(document.createElement('div'), {
-    className: styles.graph
+  element = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
+  #paths = LinkRenderer.#classes.map(({ class: className }) => {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
+    path.setAttributeNS(null, 'class', className)
+    this.element.append(path)
+    return path
   })
-  #linksWrapper: SVGSVGElement = document.createElementNS(
-    'http://www.w3.org/2000/svg',
-    'svg'
-  )
-  #prereqs: SVGPathElement = document.createElementNS(
-    'http://www.w3.org/2000/svg',
-    'path'
-  )
-  #coreqs: SVGPathElement = document.createElementNS(
-    'http://www.w3.org/2000/svg',
-    'path'
-  )
-  #strictCoreqs: SVGPathElement = document.createElementNS(
-    'http://www.w3.org/2000/svg',
-    'path'
-  )
+  links: Link[] = []
 
-  constructor (curriculum?: VisualizationCurriculum) {
-    this.#linksWrapper.setAttributeNS(null, 'class', styles.links)
-    this.#prereqs.setAttributeNS(null, 'class', styles.prereqs)
-    this.#coreqs.setAttributeNS(null, 'class', styles.coreqs)
-    this.#strictCoreqs.setAttributeNS(null, 'class', styles.strictCoreqs)
-    this.#linksWrapper.append(
-      defineArrow(),
-      this.#prereqs,
-      this.#coreqs,
-      this.#strictCoreqs
-    )
-    this.wrapper.append(this.#linksWrapper)
-
-    this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
-    this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
-
-    if (curriculum) {
-      this.setCurriculum(curriculum)
-    }
-
-    new ResizeObserver(([{ contentBoxSize }]) => {
-      const [{ blockSize, inlineSize }] = contentBoxSize
-      this.#handleResize(inlineSize, blockSize)
-    }).observe(this.wrapper)
-  }
-
-  #handleHoverCourse (course: Course | null) {
-    for (const course of this.#previouslyHovered) {
-      course.wrapper.classList.remove(
-        styles.highlighted,
-        styles.hovered,
-        styles.directPrereq,
-        styles.directCoreq,
-        styles.directStrictCoreq,
-        styles.directBlocking
-      )
-    }
-    if (!course) {
-      this.wrapper.classList.remove(styles.hoveringCourse)
-      this.#previouslyHovered = []
-      return
-    }
-    this.wrapper.classList.add(styles.hoveringCourse)
-    course.wrapper.classList.add(styles.highlighted, styles.hovered)
-    for (const { course: prereq, type } of course.backward) {
-      prereq.wrapper.classList.add(
-        styles.highlighted,
-        type === 'prereq'
-          ? styles.directPrereq
-          : type === 'coreq'
-          ? styles.directCoreq
-          : styles.directStrictCoreq
-      )
-    }
-    for (const { course: blocking } of course.forward) {
-      blocking.wrapper.classList.add(styles.highlighted, styles.directBlocking)
-    }
-    this.#previouslyHovered = [
-      course,
-      ...course.backward.map(({ course }) => course),
-      ...course.forward.map(({ course }) => course)
-    ]
-  }
-
-  #handlePointerOver = (e: PointerEvent): void => {
-    if (!(e.target instanceof HTMLElement)) {
-      return
-    }
-    const courseNode = e.target.closest(`.${styles.courseBall}`)
-    if (!courseNode) {
-      return
-    }
-    const course = this.#courseNodes.get(courseNode)
-    if (!course) {
-      return
-    }
-    this.#handleHoverCourse(course)
-  }
-
-  #handlePointerOut = (e: PointerEvent): void => {
-    if (!(e.target instanceof HTMLElement)) {
-      return
-    }
-    const courseNode = e.target.closest(`.${styles.courseBall}`)
-    if (courseNode) {
-      this.#handleHoverCourse(null)
-    }
+  constructor () {
+    this.element.setAttributeNS(null, 'class', styles.links)
+    this.element.append(defineArrow())
   }
 
   #linkPaths (filter: RequisiteType): string {
     const path: (string | number)[] = []
-    for (const link of this.#links) {
+    for (const link of this.links) {
       if (link.type !== filter) {
         continue
       }
@@ -199,6 +108,7 @@ export class Graph {
           maxX - link.target.position.radius,
           link.target.position.y
         )
+        continue
       }
 
       path.push(
@@ -218,7 +128,114 @@ export class Graph {
     return path.join(' ')
   }
 
-  #handleResize (width: number, height: number) {
+  render () {
+    for (const [i, { type }] of LinkRenderer.#classes.entries()) {
+      this.#paths[i].setAttributeNS(null, 'd', this.#linkPaths(type))
+    }
+  }
+
+  setSize (width: number, height: number) {
+    this.element.setAttributeNS(null, 'width', String(width))
+    this.element.setAttributeNS(null, 'height', String(height))
+  }
+}
+
+export class Graph {
+  #terms: Term[] = []
+  #courseNodes: WeakMap<Element, Course> = new WeakMap()
+  #highlighted: Course[] = []
+
+  wrapper: HTMLElement = Object.assign(document.createElement('div'), {
+    className: styles.graph
+  })
+  #links = new LinkRenderer()
+  #linksHighlighted = new LinkRenderer()
+
+  constructor (curriculum?: VisualizationCurriculum) {
+    this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
+    this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
+    this.#links.element.classList.add(styles.allLinks)
+    this.#linksHighlighted.element.classList.add(styles.highlightedLinks)
+
+    if (curriculum) {
+      this.setCurriculum(curriculum)
+    }
+
+    new ResizeObserver(([{ contentBoxSize }]) => {
+      const [{ blockSize, inlineSize }] = contentBoxSize
+      this.#handleResize(inlineSize, blockSize)
+    }).observe(this.wrapper)
+  }
+
+  #handleHoverCourse (course: Course | null) {
+    for (const course of this.#highlighted) {
+      course.wrapper.classList.remove(
+        styles.highlighted,
+        styles.selected,
+        styles.directPrereq,
+        styles.directCoreq,
+        styles.directStrictCoreq,
+        styles.directBlocking
+      )
+    }
+    if (!course) {
+      this.wrapper.classList.remove(styles.courseSelected)
+      this.#highlighted = []
+      return
+    }
+    this.wrapper.classList.add(styles.courseSelected)
+    course.wrapper.classList.add(styles.highlighted, styles.selected)
+    for (const { course: prereq, type } of course.backward) {
+      prereq.wrapper.classList.add(
+        styles.highlighted,
+        type === 'prereq'
+          ? styles.directPrereq
+          : type === 'coreq'
+          ? styles.directCoreq
+          : styles.directStrictCoreq
+      )
+    }
+    for (const { course: blocking } of course.forward) {
+      blocking.wrapper.classList.add(styles.highlighted, styles.directBlocking)
+    }
+    this.#highlighted = [
+      course,
+      ...course.backward.map(({ course }) => course),
+      ...course.forward.map(({ course }) => course)
+    ]
+    this.#linksHighlighted.links = this.#links.links.filter(
+      ({ source, target }) =>
+        this.#highlighted.includes(source) && this.#highlighted.includes(target)
+    )
+    this.#linksHighlighted.render()
+  }
+
+  #handlePointerOver = (e: PointerEvent): void => {
+    if (!(e.target instanceof HTMLElement)) {
+      return
+    }
+    const courseNode = e.target.closest(`.${styles.courseBall}`)
+    if (!courseNode) {
+      return
+    }
+    const course = this.#courseNodes.get(courseNode)
+    if (!course) {
+      return
+    }
+    this.#handleHoverCourse(course)
+  }
+
+  #handlePointerOut = (e: PointerEvent): void => {
+    if (!(e.target instanceof HTMLElement)) {
+      return
+    }
+    const courseNode = e.target.closest(`.${styles.courseBall}`)
+    if (courseNode) {
+      this.#handleHoverCourse(null)
+    }
+  }
+
+  #render () {
     // Before editing the DOM, measure all the node positions
     for (const term of this.#terms) {
       for (const course of term.courses) {
@@ -226,16 +243,14 @@ export class Graph {
       }
     }
 
-    this.#linksWrapper.setAttributeNS(null, 'width', String(width))
-    this.#linksWrapper.setAttributeNS(null, 'height', String(height))
+    this.#links.render()
+  }
 
-    this.#prereqs.setAttributeNS(null, 'd', this.#linkPaths('prereq'))
-    this.#coreqs.setAttributeNS(null, 'd', this.#linkPaths('coreq'))
-    this.#strictCoreqs.setAttributeNS(
-      null,
-      'd',
-      this.#linkPaths('strict-coreq')
-    )
+  #handleResize (width: number, height: number) {
+    this.#render()
+    this.#linksHighlighted.render()
+    this.#links.setSize(width, height)
+    this.#linksHighlighted.setSize(width, height)
   }
 
   setCurriculum (curriculum: VisualizationCurriculum): void {
@@ -243,7 +258,9 @@ export class Graph {
     while (this.wrapper.firstChild) {
       this.wrapper.removeChild(this.wrapper.firstChild)
     }
-    this.wrapper.append(this.#linksWrapper)
+    this.wrapper.append(this.#links.element)
+    this.wrapper.append(this.#linksHighlighted.element)
+    this.#linksHighlighted.element.classList.add(styles.selectedLinks)
 
     // https://stackoverflow.com/a/61240964
     this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
@@ -255,7 +272,7 @@ export class Graph {
 
     const courses: Record<number, Course> = {}
     this.#terms = []
-    this.#links = []
+    this.#links.links = []
     for (const [i, termDatum] of curriculum.curriculum_terms.entries()) {
       const term = new Term(termDatum, i)
       this.#terms.push(term)
@@ -283,7 +300,7 @@ export class Graph {
         for (const requisite of target.raw.curriculum_requisites) {
           const source = courses[requisite.source_id]
           const type = toRequisiteType(requisite.type)
-          this.#links.push({
+          this.#links.links.push({
             source,
             target,
             type

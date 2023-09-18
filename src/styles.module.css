@@ -42,6 +42,7 @@
   align-items: center;
   flex-direction: column;
   text-align: center;
+  z-index: 3;
 }
 .courseBall {
   display: flex;
@@ -63,11 +64,15 @@
   transition: opacity 0.2s;
 }
 
-.hoveringCourse {
-  .links {
+.courseSelected {
+  .allLinks {
     opacity: 0.2;
   }
+  .highlightedLinks {
+    opacity: 1;
+  }
   .course:not(.highlighted) {
+    z-index: 1;
     .courseName {
       opacity: 0.2;
     }
@@ -76,9 +81,23 @@
     }
   }
 }
+.highlightedLinks {
+  z-index: 2;
+  pointer-events: none;
+  opacity: 0;
+}
+.highlighted {
+  position: relative;
+}
 .directPrereq .courseBall {
-  background-color: rgba(255, 0, 0, 0.5);
+  background-color: red;
+}
+.directCoreq .courseBall {
+  background-color: orange;
+}
+.directStrictCoreq .courseBall {
+  background-color: yellow;
 }
 .directBlocking .courseBall {
-  background-color: rgba(0, 255, 0, 0.5);
+  background-color: blue;
 }
