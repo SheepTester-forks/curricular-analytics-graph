@@ -1,7 +1,7 @@
 import './app.css'
 import { Graph } from '../index'
 
-// https://curricularanalytics.org/degree_plans/14563
+// https://curricularanalytics.org/degree_plans/11085
 const graph = new Graph({
   name: '',
   // metrics: {

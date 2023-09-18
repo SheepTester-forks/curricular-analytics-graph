@@ -1,11 +1,19 @@
 import { Term } from './Term'
 import styles from './styles.module.css'
-import { VisualizationCourse } from './types'
+import { RequisiteType, VisualizationCourse } from './types'
+
+export type Link = {
+  course: Course
+  type: RequisiteType
+}
 
 export class Course {
   term: Term
   index: number
   raw: VisualizationCourse
+
+  forward: Link[] = []
+  backward: Link[] = []
 
   wrapper: HTMLElement = Object.assign(document.createElement('div'), {
     className: styles.course

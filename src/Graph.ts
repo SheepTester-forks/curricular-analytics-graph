@@ -93,7 +93,14 @@ export class Graph {
 
   #handleHoverCourse (course: Course | null) {
     for (const course of this.#previouslyHovered) {
-      course.wrapper.classList.remove(styles.hoveredCourse)
+      course.wrapper.classList.remove(
+        styles.highlighted,
+        styles.hovered,
+        styles.directPrereq,
+        styles.directCoreq,
+        styles.directStrictCoreq,
+        styles.directBlocking
+      )
     }
     if (!course) {
       this.wrapper.classList.remove(styles.hoveringCourse)
@@ -101,8 +108,25 @@ export class Graph {
       return
     }
     this.wrapper.classList.add(styles.hoveringCourse)
-    course.wrapper.classList.add(styles.hoveredCourse)
-    this.#previouslyHovered = [course]
+    course.wrapper.classList.add(styles.highlighted, styles.hovered)
+    for (const { course: prereq, type } of course.backward) {
+      prereq.wrapper.classList.add(
+        styles.highlighted,
+        type === 'prereq'
+          ? styles.directPrereq
+          : type === 'coreq'
+          ? styles.directCoreq
+          : styles.directStrictCoreq
+      )
+    }
+    for (const { course: blocking } of course.forward) {
+      blocking.wrapper.classList.add(styles.highlighted, styles.directBlocking)
+    }
+    this.#previouslyHovered = [
+      course,
+      ...course.backward.map(({ course }) => course),
+      ...course.forward.map(({ course }) => course)
+    ]
   }
 
   #handlePointerOver = (e: PointerEvent): void => {
@@ -255,13 +279,17 @@ export class Graph {
     }
 
     for (const term of this.#terms) {
-      for (const course of term.courses) {
-        for (const requisite of course.raw.curriculum_requisites) {
+      for (const target of term.courses) {
+        for (const requisite of target.raw.curriculum_requisites) {
+          const source = courses[requisite.source_id]
+          const type = toRequisiteType(requisite.type)
           this.#links.push({
-            source: courses[requisite.source_id],
-            target: course,
-            type: toRequisiteType(requisite.type)
+            source,
+            target,
+            type
           })
+          source.forward.push({ course: target, type })
+          target.backward.push({ course: source, type })
         }
       }
     }

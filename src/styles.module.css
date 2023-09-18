@@ -67,7 +67,7 @@
   .links {
     opacity: 0.2;
   }
-  .course:not(.hoveredCourse) {
+  .course:not(.highlighted) {
     .courseName {
       opacity: 0.2;
     }
@@ -75,4 +75,10 @@
       color: rgba(0, 0, 0, 0.2);
     }
   }
+}
+.directPrereq .courseBall {
+  background-color: rgba(255, 0, 0, 0.5);
+}
+.directBlocking .courseBall {
+  background-color: rgba(0, 255, 0, 0.5);
 }
