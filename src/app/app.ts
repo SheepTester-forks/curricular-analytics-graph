@@ -5,8 +5,8 @@ import { Graph } from '../index'
 const graph = new Graph({
   name: '',
   // metrics: {
-  //   complexity: 514,
-  //   centrality: 1410
+  //   complexity: 543,
+  //   centrality: 1651
   // },
   curriculum_terms: [
     {
@@ -41,8 +41,8 @@ const graph = new Graph({
           name: 'MATH 20A',
           metrics: {
             centrality: 0,
-            complexity: 44,
-            'blocking factor': 34,
+            complexity: 45,
+            'blocking factor': 35,
             'delay factor': 10
           },
           id: 1,
@@ -99,9 +99,9 @@ const graph = new Graph({
           ],
           name: 'PHYS 2A',
           metrics: {
-            centrality: 95,
-            complexity: 31,
-            'blocking factor': 22,
+            centrality: 102,
+            complexity: 32,
+            'blocking factor': 23,
             'delay factor': 9
           },
           id: 5,
@@ -141,9 +141,9 @@ const graph = new Graph({
           ],
           name: 'MATH 20B',
           metrics: {
-            centrality: 164,
-            complexity: 37,
-            'blocking factor': 27,
+            centrality: 188,
+            complexity: 38,
+            'blocking factor': 28,
             'delay factor': 10
           },
           id: 3,
@@ -165,9 +165,9 @@ const graph = new Graph({
           ],
           name: 'MATH 20C',
           metrics: {
-            centrality: 131,
-            complexity: 32,
-            'blocking factor': 22,
+            centrality: 155,
+            complexity: 33,
+            'blocking factor': 23,
             'delay factor': 10
           },
           id: 7,
@@ -260,9 +260,9 @@ const graph = new Graph({
           ],
           name: 'MATH 20D',
           metrics: {
-            centrality: 41,
-            complexity: 22,
-            'blocking factor': 12,
+            centrality: 49,
+            complexity: 23,
+            'blocking factor': 13,
             'delay factor': 10
           },
           id: 11,
@@ -324,9 +324,9 @@ const graph = new Graph({
           ],
           name: 'PHYS 2C',
           metrics: {
-            centrality: 100,
-            complexity: 26,
-            'blocking factor': 16,
+            centrality: 115,
+            complexity: 27,
+            'blocking factor': 17,
             'delay factor': 10
           },
           id: 14,
@@ -366,9 +366,9 @@ const graph = new Graph({
           ],
           name: 'MATH 18',
           metrics: {
-            centrality: 61,
-            complexity: 24,
-            'blocking factor': 15,
+            centrality: 74,
+            complexity: 25,
+            'blocking factor': 16,
             'delay factor': 9
           },
           id: 15,
@@ -525,9 +525,9 @@ const graph = new Graph({
           ],
           name: 'MATH 20E',
           metrics: {
-            centrality: 58,
-            complexity: 20,
-            'blocking factor': 10,
+            centrality: 73,
+            complexity: 21,
+            'blocking factor': 11,
             'delay factor': 10
           },
           id: 20,
@@ -656,9 +656,9 @@ const graph = new Graph({
           ],
           name: 'BENG 110',
           metrics: {
-            centrality: 170,
-            complexity: 19,
-            'blocking factor': 9,
+            centrality: 214,
+            complexity: 20,
+            'blocking factor': 10,
             'delay factor': 10
           },
           id: 24,
@@ -692,9 +692,9 @@ const graph = new Graph({
           name: 'LANGUAGE',
           metrics: {
             centrality: 0,
-            complexity: 1,
-            'blocking factor': 0,
-            'delay factor': 1
+            complexity: 3,
+            'blocking factor': 1,
+            'delay factor': 2
           },
           id: 51,
           credits: 5
@@ -763,9 +763,9 @@ const graph = new Graph({
           ],
           name: 'BENG 112A',
           metrics: {
-            centrality: 138,
-            complexity: 17,
-            'blocking factor': 7,
+            centrality: 182,
+            complexity: 18,
+            'blocking factor': 8,
             'delay factor': 10
           },
           id: 27,
@@ -794,9 +794,9 @@ const graph = new Graph({
           name: 'LANGUAGE',
           metrics: {
             centrality: 0,
-            complexity: 1,
-            'blocking factor': 0,
-            'delay factor': 1
+            complexity: 3,
+            'blocking factor': 1,
+            'delay factor': 2
           },
           id: 52,
           credits: 5
@@ -871,9 +871,9 @@ const graph = new Graph({
           ],
           name: 'BENG 187A',
           metrics: {
-            centrality: 56,
-            complexity: 13,
-            'blocking factor': 3,
+            centrality: 100,
+            complexity: 14,
+            'blocking factor': 4,
             'delay factor': 10
           },
           id: 32,
@@ -884,9 +884,9 @@ const graph = new Graph({
           name: 'LANGUAGE',
           metrics: {
             centrality: 0,
-            complexity: 1,
-            'blocking factor': 0,
-            'delay factor': 1
+            complexity: 3,
+            'blocking factor': 1,
+            'delay factor': 2
           },
           id: 53,
           credits: 5
@@ -960,8 +960,8 @@ const graph = new Graph({
           name: 'BENG 122A',
           metrics: {
             centrality: 0,
-            complexity: 3,
-            'blocking factor': 1,
+            complexity: 4,
+            'blocking factor': 2,
             'delay factor': 2
           },
           id: 36,
@@ -1030,17 +1030,42 @@ const graph = new Graph({
         {
           curriculum_requisites: [
             {
+              source_id: 51,
+              target_id: 55,
+              type: 'prereq'
+            },
+            {
+              source_id: 32,
+              target_id: 55,
+              type: 'prereq'
+            },
+            {
               source_id: 54,
               target_id: 55,
               type: 'coreq'
+            },
+            {
+              source_id: 36,
+              target_id: 55,
+              type: 'prereq'
+            },
+            {
+              source_id: 52,
+              target_id: 55,
+              type: 'prereq'
+            },
+            {
+              source_id: 53,
+              target_id: 55,
+              type: 'prereq'
             }
           ],
           name: 'SOCIAL SCIENCE GE',
           metrics: {
             centrality: 0,
-            complexity: 2,
+            complexity: 8,
             'blocking factor': 0,
-            'delay factor': 2
+            'delay factor': 8
           },
           id: 55,
           credits: 4
@@ -1090,6 +1115,11 @@ const graph = new Graph({
         {
           curriculum_requisites: [
             {
+              source_id: 56,
+              target_id: 42,
+              type: 'strict-coreq'
+            },
+            {
               source_id: 36,
               target_id: 42,
               type: 'prereq'
@@ -1098,9 +1128,9 @@ const graph = new Graph({
           name: 'BENG 125',
           metrics: {
             centrality: 0,
-            complexity: 2,
+            complexity: 3,
             'blocking factor': 0,
-            'delay factor': 2
+            'delay factor': 3
           },
           id: 42,
           credits: 4
@@ -1110,9 +1140,9 @@ const graph = new Graph({
           name: 'TE',
           metrics: {
             centrality: 0,
-            complexity: 3,
-            'blocking factor': 1,
-            'delay factor': 2
+            complexity: 5,
+            'blocking factor': 2,
+            'delay factor': 3
           },
           id: 43,
           credits: 4
@@ -1127,10 +1157,10 @@ const graph = new Graph({
           ],
           name: 'AHI',
           metrics: {
-            centrality: 0,
-            complexity: 2,
-            'blocking factor': 0,
-            'delay factor': 2
+            centrality: 3,
+            complexity: 4,
+            'blocking factor': 1,
+            'delay factor': 3
           },
           id: 56,
           credits: 4

@@ -63,69 +63,89 @@ class LinkRenderer {
     this.element.append(defineArrow())
   }
 
-  #linkPaths (filter: RequisiteType): string {
-    const path: (string | number)[] = []
-    for (const link of this.links) {
-      if (link.type !== filter) {
-        continue
-      }
-      if (link.source === link.target) {
-        continue
-      }
-      // Same term (e.g. coreqs)
-      if (link.source.term === link.target.term) {
-        const minY = Math.min(link.source.position.y, link.target.position.y)
-        const maxY = Math.max(link.source.position.y, link.target.position.y)
-        path.push(
+  #linkPath (link: Link): string {
+    if (link.source === link.target) {
+      return ''
+    }
+    // Same term (e.g. coreqs)
+    if (link.source.term === link.target.term) {
+      const minY = Math.min(link.source.position.y, link.target.position.y)
+      const maxY = Math.max(link.source.position.y, link.target.position.y)
+      const midpoint = (link.source.position.y + link.target.position.y) / 2
+
+      // More than one course apart
+      const diff = Math.abs(link.source.index - link.target.index)
+      if (diff > 1) {
+        return [
           'M',
           // Source should be behind target
           link.source.position.x,
           minY + link.source.position.radius,
-          'L',
+          'Q',
+          link.source.position.x +
+            (diff * 10 + 30) *
+              (link.source.position.y < link.target.position.y ? -1 : 1),
+          midpoint,
           link.target.position.x,
           maxY - link.target.position.radius
-        )
-        continue
+        ].join(' ')
       }
 
-      const minX = Math.min(link.source.position.x, link.target.position.x)
-      const maxX = Math.max(link.source.position.x, link.target.position.x)
-      const midpoint = (link.source.position.x + link.target.position.x) / 2
+      return [
+        'M',
+        // Source should be behind target
+        link.source.position.x,
+        minY + link.source.position.radius,
+        'L',
+        link.target.position.x,
+        maxY - link.target.position.radius
+      ].join(' ')
+    }
 
-      // Same y-level, more than one term apart
-      if (
-        link.source.index === link.target.index &&
-        Math.abs(link.source.term.index - link.target.term.index) > 1
-      ) {
-        path.push(
-          'M',
-          // Source should be behind target
-          minX + link.source.position.radius,
-          link.source.position.y,
-          'Q',
-          midpoint,
-          link.source.position.y + 40,
-          maxX - link.target.position.radius,
-          link.target.position.y
-        )
-        continue
-      }
+    const minX = Math.min(link.source.position.x, link.target.position.x)
+    const maxX = Math.max(link.source.position.x, link.target.position.x)
+    const midpoint = (link.source.position.x + link.target.position.x) / 2
 
-      path.push(
+    // Same y-level, more than one term apart
+    const diff = Math.abs(link.source.term.index - link.target.term.index)
+    if (link.source.index === link.target.index && diff > 1) {
+      return [
         'M',
         // Source should be behind target
         minX + link.source.position.radius,
         link.source.position.y,
-        'C',
+        'Q',
         midpoint,
-        link.source.position.y,
-        midpoint,
-        link.target.position.y,
+        link.source.position.y + diff * 10 + 30,
         maxX - link.target.position.radius,
         link.target.position.y
-      )
+      ].join(' ')
     }
-    return path.join(' ')
+
+    return [
+      'M',
+      // Source should be behind target
+      minX + link.source.position.radius,
+      link.source.position.y,
+      'C',
+      midpoint,
+      link.source.position.y,
+      midpoint,
+      link.target.position.y,
+      maxX - link.target.position.radius,
+      link.target.position.y
+    ].join(' ')
+  }
+
+  #linkPaths (filter: RequisiteType): string {
+    let path = ''
+    for (const link of this.links) {
+      if (link.type !== filter) {
+        continue
+      }
+      path += this.#linkPath(link)
+    }
+    return path
   }
 
   render () {
@@ -167,6 +187,17 @@ export class Graph {
     }).observe(this.wrapper)
   }
 
+  #dfs (course: Course, direction: 'backward' | 'forward'): void {
+    this.#highlighted.push(course)
+    course.wrapper.classList.add(
+      styles.highlighted,
+      direction === 'backward' ? styles.prereq : styles.blocking
+    )
+    for (const { course: neighbor } of course[direction]) {
+      this.#dfs(neighbor, direction)
+    }
+  }
+
   #handleHoverCourse (course: Course | null) {
     for (const course of this.#highlighted) {
       course.wrapper.classList.remove(
@@ -175,7 +206,9 @@ export class Graph {
         styles.directPrereq,
         styles.directCoreq,
         styles.directStrictCoreq,
-        styles.directBlocking
+        styles.directBlocking,
+        styles.prereq,
+        styles.blocking
       )
     }
     if (!course) {
@@ -185,6 +218,7 @@ export class Graph {
     }
     this.wrapper.classList.add(styles.courseSelected)
     course.wrapper.classList.add(styles.highlighted, styles.selected)
+    this.#highlighted = [course]
     for (const { course: prereq, type } of course.backward) {
       prereq.wrapper.classList.add(
         styles.highlighted,
@@ -194,15 +228,12 @@ export class Graph {
           ? styles.directCoreq
           : styles.directStrictCoreq
       )
+      this.#dfs(prereq, 'backward')
     }
     for (const { course: blocking } of course.forward) {
       blocking.wrapper.classList.add(styles.highlighted, styles.directBlocking)
+      this.#dfs(blocking, 'forward')
     }
-    this.#highlighted = [
-      course,
-      ...course.backward.map(({ course }) => course),
-      ...course.forward.map(({ course }) => course)
-    ]
     this.#linksHighlighted.links = this.#links.links.filter(
       ({ source, target }) =>
         this.#highlighted.includes(source) && this.#highlighted.includes(target)

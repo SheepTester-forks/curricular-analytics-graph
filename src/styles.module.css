@@ -54,7 +54,7 @@
   border-radius: 50%;
   border: 1px solid currentColor;
   background-color: white;
-  transition: color 0.2s;
+  transition: color 0.2s, background-color 0.2s;
 }
 .courseName {
   white-space: pre;
@@ -88,6 +88,12 @@
 }
 .highlighted {
   position: relative;
+}
+.prereq .courseBall {
+  background-color: pink;
+}
+.blocking .courseBall {
+  background-color: lightblue;
 }
 .directPrereq .courseBall {
   background-color: red;
