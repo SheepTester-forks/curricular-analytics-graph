@@ -1,6 +1,6 @@
 import { Course } from './Course'
-import styles from './styles.module.css'
-import { VisualizationTerm } from './types'
+import styles from '../styles.module.css'
+import { VisualizationTerm } from '../types'
 
 export class Term {
   index: number

@@ -1,6 +1,6 @@
 import { Term } from './Term'
-import styles from './styles.module.css'
-import { RequisiteType, VisualizationCourse } from './types'
+import styles from '../styles.module.css'
+import { RequisiteType, VisualizationCourse } from '../types'
 
 export type Link = {
   course: Course

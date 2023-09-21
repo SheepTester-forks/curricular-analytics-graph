@@ -1,2 +1,2 @@
-export { Graph } from './Graph'
+export { Graph } from './components/Graph'
 export * from './types'
