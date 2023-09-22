@@ -90,18 +90,22 @@ export class Graph {
       ({ source, target }) =>
         this.#highlighted.includes(source) && this.#highlighted.includes(target)
     )
-    const longestPath = [
-      ...longestPathFrom(course, 'backward').reverse(),
-      ...longestPathFrom(course, 'forward').slice(1)
-    ]
-    this.#longestPath.setAttributeNS(
-      null,
-      'd',
-      longestPath
-        .slice(0, -1)
-        .map((course, i) => LinkRenderer.linkPath(course, longestPath[i + 1]))
-        .join('')
-    )
+    try {
+      const longestPath = [
+        ...longestPathFrom(course, 'backward').reverse(),
+        ...longestPathFrom(course, 'forward').slice(1)
+      ]
+      this.#longestPath.setAttributeNS(
+        null,
+        'd',
+        longestPath
+          .slice(0, -1)
+          .map((course, i) => LinkRenderer.linkPath(course, longestPath[i + 1]))
+          .join('')
+      )
+    } catch {
+      this.#longestPath.setAttributeNS(null, 'd', '')
+    }
     this.#linksHighlighted.render()
   }
 
