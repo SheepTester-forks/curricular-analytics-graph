@@ -22,7 +22,7 @@
 }
 .coreqs,
 .strictCoreqs {
-  stroke-dasharray: 10 10;
+  stroke-dasharray: 5 5;
 }
 
 .termHeading,
@@ -106,4 +106,10 @@
 }
 .directBlocking .courseBall {
   background-color: blue;
+}
+.longestPath {
+  stroke: blue;
+  stroke-width: 3;
+  stroke-dasharray: 10 10;
+  stroke-linecap: round;
 }

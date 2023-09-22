@@ -58,77 +58,76 @@ export class LinkRenderer {
     this.element.append(defineArrow())
   }
 
-  #linkPath (link: Link): string {
-    if (link.source === link.target) {
+  static linkPath (source: Course, target: Course): string {
+    if (source === target) {
       return ''
     }
     // Same term (e.g. coreqs)
-    if (link.source.term === link.target.term) {
-      const minY = Math.min(link.source.position.y, link.target.position.y)
-      const maxY = Math.max(link.source.position.y, link.target.position.y)
-      const midpoint = (link.source.position.y + link.target.position.y) / 2
+    if (source.term === target.term) {
+      const minY = Math.min(source.position.y, target.position.y)
+      const maxY = Math.max(source.position.y, target.position.y)
+      const midpoint = (source.position.y + target.position.y) / 2
 
       // More than one course apart
-      const diff = Math.abs(link.source.index - link.target.index)
+      const diff = Math.abs(source.index - target.index)
       if (diff > 1) {
         return [
           'M',
           // Source should be behind target
-          link.source.position.x,
-          minY + link.source.position.radius,
+          source.position.x,
+          minY + source.position.radius,
           'Q',
-          link.source.position.x +
-            (diff * 10 + 30) *
-              (link.source.position.y < link.target.position.y ? -1 : 1),
+          source.position.x +
+            (diff * 10 + 30) * (source.position.y < target.position.y ? -1 : 1),
           midpoint,
-          link.target.position.x,
-          maxY - link.target.position.radius
+          target.position.x,
+          maxY - target.position.radius
         ].join(' ')
       }
 
       return [
         'M',
         // Source should be behind target
-        link.source.position.x,
-        minY + link.source.position.radius,
+        source.position.x,
+        minY + source.position.radius,
         'L',
-        link.target.position.x,
-        maxY - link.target.position.radius
+        target.position.x,
+        maxY - target.position.radius
       ].join(' ')
     }
 
-    const minX = Math.min(link.source.position.x, link.target.position.x)
-    const maxX = Math.max(link.source.position.x, link.target.position.x)
-    const midpoint = (link.source.position.x + link.target.position.x) / 2
+    const minX = Math.min(source.position.x, target.position.x)
+    const maxX = Math.max(source.position.x, target.position.x)
+    const midpoint = (source.position.x + target.position.x) / 2
 
     // Same y-level, more than one term apart
-    const diff = Math.abs(link.source.term.index - link.target.term.index)
-    if (link.source.index === link.target.index && diff > 1) {
+    const diff = Math.abs(source.term.index - target.term.index)
+    if (source.index === target.index && diff > 1) {
       return [
         'M',
         // Source should be behind target
-        minX + link.source.position.radius,
-        link.source.position.y,
+        minX + source.position.radius,
+        source.position.y,
         'Q',
         midpoint,
-        link.source.position.y + diff * 10 + 30,
-        maxX - link.target.position.radius,
-        link.target.position.y
+        source.position.y + diff * 10 + 30,
+        maxX - target.position.radius,
+        target.position.y
       ].join(' ')
     }
 
     return [
       'M',
       // Source should be behind target
-      minX + link.source.position.radius,
-      link.source.position.y,
+      minX + source.position.radius,
+      source.position.y,
       'C',
       midpoint,
-      link.source.position.y,
+      source.position.y,
       midpoint,
-      link.target.position.y,
-      maxX - link.target.position.radius,
-      link.target.position.y
+      target.position.y,
+      maxX - target.position.radius,
+      target.position.y
     ].join(' ')
   }
 
@@ -138,7 +137,7 @@ export class LinkRenderer {
       if (link.type !== filter) {
         continue
       }
-      path += this.#linkPath(link)
+      path += LinkRenderer.linkPath(link.source, link.target)
     }
     return path
   }

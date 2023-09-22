@@ -1,4 +1,4 @@
-import { Course } from './Course'
+import { Course, longestPathFrom } from './Course'
 import { Term } from './Term'
 import styles from '../styles.module.css'
 import { VisualizationCurriculum, toRequisiteType } from '../types'
@@ -14,12 +14,20 @@ export class Graph {
   })
   #links = new LinkRenderer()
   #linksHighlighted = new LinkRenderer()
+  #longestPath: SVGPathElement
 
   constructor (curriculum?: VisualizationCurriculum) {
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
     this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
     this.#links.element.classList.add(styles.allLinks)
     this.#linksHighlighted.element.classList.add(styles.highlightedLinks)
+
+    this.#longestPath = document.createElementNS(
+      'http://www.w3.org/2000/svg',
+      'path'
+    )
+    this.#longestPath.setAttributeNS(null, 'class', styles.longestPath)
+    this.#linksHighlighted.element.append(this.#longestPath)
 
     if (curriculum) {
       this.setCurriculum(curriculum)
@@ -81,6 +89,18 @@ export class Graph {
     this.#linksHighlighted.links = this.#links.links.filter(
       ({ source, target }) =>
         this.#highlighted.includes(source) && this.#highlighted.includes(target)
+    )
+    const longestPath = [
+      ...longestPathFrom(course, 'backward').reverse(),
+      ...longestPathFrom(course, 'forward').slice(1)
+    ]
+    this.#longestPath.setAttributeNS(
+      null,
+      'd',
+      longestPath
+        .slice(0, -1)
+        .map((course, i) => LinkRenderer.linkPath(course, longestPath[i + 1]))
+        .join('')
     )
     this.#linksHighlighted.render()
   }

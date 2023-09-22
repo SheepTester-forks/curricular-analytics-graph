@@ -49,3 +49,29 @@ export class Course {
     }
   }
 }
+
+export function longestPathFrom (
+  start: Course,
+  direction: 'backward' | 'forward'
+): Course[] {
+  const cache = new Map<Course, Course[] | null>()
+  function iterate (course: Course): Course[] {
+    const cached = cache.get(course)
+    if (cached !== undefined) {
+      if (cached === null) {
+        throw new TypeError('Cycle.')
+      }
+      return cached
+    }
+    cache.set(course, null)
+    const path = [
+      course,
+      ...course[direction]
+        .map(link => iterate(link.course))
+        .reduce((acc, curr) => (acc.length > curr.length ? acc : curr), [])
+    ]
+    cache.set(course, path)
+    return path
+  }
+  return iterate(start)
+}
