@@ -1,7 +1,7 @@
 import { RequisiteType } from '../types'
 import { Course } from './Course'
 import styles from '../styles.module.css'
-import { Join } from '../util/join'
+import { Join } from '../util/Join'
 
 function defineArrow (): SVGDefsElement {
   const arrowPath = document.createElementNS(
@@ -35,14 +35,12 @@ export type Link = {
   type: RequisiteType
 }
 
-export class LinkRenderer extends Join<Link, SVGPathElement> {
+export class LinkRenderer extends Join<Link, SVGPathElement, SVGSVGElement> {
   static #classes: Record<RequisiteType, string> = {
     prereq: styles.prereqs,
     coreq: styles.coreqs,
     'strict-coreq': styles.strictCoreqs
   }
-
-  links: Link[] = []
 
   constructor () {
     super({
@@ -103,7 +101,7 @@ export class LinkRenderer extends Join<Link, SVGPathElement> {
     const midpoint = (source.position.x + target.position.x) / 2
 
     // Same y-level, more than one term apart
-    const diff = Math.abs(source.term.index - target.term.index)
+    const diff = Math.abs(source.term - target.term)
     if (source.index === target.index && diff > 1) {
       return [
         'M',

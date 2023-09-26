@@ -1,6 +1,6 @@
 export type Key = string | number | symbol
 
-export type JoinOptions<T, E> = {
+export type JoinOptions<W, T, E> = {
   /**
    * Ignores all existing elements not created by `enter`.
    */
@@ -19,6 +19,10 @@ export type JoinOptions<T, E> = {
   update?: (newDatum: T, element: E, oldDatum: T | null) => void
   /** Called before `element` is removed. */
   exit?: (datum: T, element: E) => void
+  /**
+   * Optional. This allows measurement of the element (such as its bounding client rect) to store the results in `datum`.
+   */
+  measure?: (datum: T, element: E) => void
 }
 
 type Entry<T, E> = {
@@ -27,26 +31,29 @@ type Entry<T, E> = {
   element: E
 }
 
-export class Join<T, E extends Element> {
-  wrapper: Element
+export class Join<T, E extends Element, W extends Element = HTMLElement> {
+  wrapper: W
   #entries: Entry<T, E>[] = []
   #key: (datum: T) => Key
   #enter: (datum: T) => E
   #update: (newDatum: T, element: E, oldDatum: T | null) => void
   #exit: (datum: T, element: E) => void
+  #measure: (datum: T, element: E) => void
 
   constructor ({
     wrapper,
     key,
     enter,
     update = () => {},
-    exit = () => {}
-  }: JoinOptions<T, E>) {
+    exit = () => {},
+    measure = () => {}
+  }: JoinOptions<W, T, E>) {
     this.wrapper = wrapper
     this.#key = key
     this.#enter = enter
     this.#update = update
     this.#exit = exit
+    this.#measure = measure
   }
 
   join (data: T[]): void {
@@ -76,5 +83,19 @@ export class Join<T, E extends Element> {
       element.after(newEntries[i + 1].element)
     }
     this.#entries = newEntries
+  }
+
+  /** Calls `update` on every existing datum. */
+  forceUpdate (): void {
+    for (const { datum, element } of this.#entries) {
+      this.#update(datum, element, datum)
+    }
+  }
+
+  /** Calls `measure` on every datum. */
+  measure (): void {
+    for (const { datum, element } of this.#entries) {
+      this.#measure(datum, element)
+    }
   }
 }

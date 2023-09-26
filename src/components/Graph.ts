@@ -1,33 +1,100 @@
 import { Course, longestPathFrom } from './Course'
-import { Term } from './Term'
 import styles from '../styles.module.css'
 import { VisualizationCurriculum, toRequisiteType } from '../types'
-import { LinkRenderer } from './LinkRenderer'
+import { Link, LinkRenderer } from './LinkRenderer'
+import { Join } from '../util/Join'
 
-export class Graph {
-  #terms: Term[] = []
+type GridItem =
+  | { type: 'course'; course: Course }
+  | { type: 'term-header'; index: number; name: string }
+  | { type: 'term-footer'; index: number; complexity: number }
+
+export class Graph extends Join<GridItem, HTMLElement> {
   #courseNodes: WeakMap<Element, Course> = new WeakMap()
   #highlighted: Course[] = []
 
-  wrapper: HTMLElement = Object.assign(document.createElement('div'), {
-    className: styles.graph
-  })
-  #links = new LinkRenderer()
+  #links: Link[] = []
+  #allLinks = new LinkRenderer()
   #linksHighlighted = new LinkRenderer()
   #longestPath: SVGPathElement
 
+  #longestTerm: number = 0
+
   constructor (curriculum?: VisualizationCurriculum) {
+    super({
+      wrapper: Object.assign(document.createElement('div'), {
+        className: styles.graph
+      }),
+      key: item =>
+        item.type === 'course'
+          ? `course\0${item.course.name}`
+          : `${item.type}\0${item.index}`,
+      enter: item => {
+        if (item.type === 'course') {
+          return item.course.wrapper
+        } else if (item.type === 'term-header') {
+          const header = Object.assign(document.createElement('div'), {
+            className: styles.termHeading,
+            role: 'columnheader',
+            id: `term-heading-${item.index}`
+          })
+          header.style.gridColumn = `${item.index + 1} / ${item.index + 2}`
+          return header
+        } else if (item.type === 'term-footer') {
+          const footer = Object.assign(document.createElement('div'), {
+            className: styles.termFooter
+          })
+          footer.style.gridColumn = `${item.index + 1} / ${item.index + 2}`
+          footer.setAttribute('aria-describedby', `term-heading-${item.index}`)
+          return footer
+        } else {
+          throw new TypeError(`${item['type']}??`)
+        }
+      },
+      update: (item, element) => {
+        if (item.type === 'course') {
+          const course = item.course
+          const { metrics, nameSub, nameCanonical } = course.raw
+          course.ball.textContent = String(metrics.complexity ?? '')
+          course.name.title = course.name.textContent =
+            course.name +
+            (nameSub ? `\n${nameSub}` : '') +
+            (nameCanonical ? `\n(${nameCanonical})` : '')
+          element.style.gridColumn = `${course.index + 1} / ${course.index + 2}`
+          element.setAttribute(
+            'aria-describedby',
+            `term-heading-${course.index}`
+          )
+        } else if (item.type === 'term-header') {
+          element.textContent = item.name
+        } else if (item.type === 'term-footer') {
+          element.textContent = `Complexity: ${item.complexity}`
+          element.style.gridRow = `${maxTermLength + 2}`
+        }
+      },
+      measure: item => {
+        if (item.type === 'course') {
+          item.course.measurePosition()
+        }
+      }
+    })
+
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
     this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
-    this.#links.element.classList.add(styles.allLinks)
-    this.#linksHighlighted.element.classList.add(styles.highlightedLinks)
+    this.#allLinks.wrapper.classList.add(styles.allLinks)
+    this.#linksHighlighted.wrapper.classList.add(styles.highlightedLinks)
 
     this.#longestPath = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path'
     )
     this.#longestPath.setAttributeNS(null, 'class', styles.longestPath)
-    this.#linksHighlighted.element.append(this.#longestPath)
+    this.#linksHighlighted.wrapper.append(this.#longestPath)
+    this.wrapper.append(
+      this.#allLinks.wrapper,
+      this.#linksHighlighted.wrapper,
+      this.#longestPath
+    )
 
     if (curriculum) {
       this.setCurriculum(curriculum)
@@ -86,9 +153,12 @@ export class Graph {
       blocking.wrapper.classList.add(styles.highlighted, styles.directBlocking)
       this.#dfs(blocking, 'forward')
     }
-    this.#linksHighlighted.links = this.#links.links.filter(
-      ({ source, target }) =>
-        this.#highlighted.includes(source) && this.#highlighted.includes(target)
+    this.#linksHighlighted.join(
+      this.#links.filter(
+        ({ source, target }) =>
+          this.#highlighted.includes(source) &&
+          this.#highlighted.includes(target)
+      )
     )
     try {
       const longestPath = [
@@ -106,7 +176,6 @@ export class Graph {
     } catch {
       this.#longestPath.setAttributeNS(null, 'd', '')
     }
-    this.#linksHighlighted.render()
   }
 
   #handlePointerOver = (e: PointerEvent): void => {
@@ -134,56 +203,50 @@ export class Graph {
     }
   }
 
-  #render () {
-    // Before editing the DOM, measure all the node positions
-    for (const term of this.#terms) {
-      for (const course of term.courses) {
-        course.measurePosition()
-      }
-    }
-
-    this.#links.render()
-  }
-
   #handleResize (width: number, height: number) {
-    this.#render()
-    this.#linksHighlighted.render()
-    this.#links.setSize(width, height)
+    // Before editing the DOM, measure all the node positions
+    this.measure()
+
+    this.#allLinks.forceUpdate()
+    this.#allLinks.setSize(width, height)
+    this.#linksHighlighted.forceUpdate()
     this.#linksHighlighted.setSize(width, height)
   }
 
   setCurriculum (curriculum: VisualizationCurriculum): void {
     // https://stackoverflow.com/a/61240964
-    this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
-    const maxTermLength = curriculum.curriculum_terms.reduce(
+    this.#longestTerm = curriculum.curriculum_terms.reduce(
       (acc, curr) => Math.max(acc, curr.curriculum_items.length),
       0
     )
-    this.wrapper.style.gridTemplateRows = `40px repeat(${maxTermLength}, minmax(0, 1fr)) 60px`
+
+    this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
+    this.wrapper.style.gridTemplateRows = `40px repeat(${
+      this.#longestTerm
+    }, minmax(0, 1fr)) 60px`
 
     const courses: Record<number, Course> = {}
-    this.#terms = []
-    this.#links.links = []
-    for (const [i, termDatum] of curriculum.curriculum_terms.entries()) {
-      const term = new Term(termDatum, i)
-      this.#terms.push(term)
-      term.heading.id = `term-heading-${i}`
-      term.heading.style.gridColumn = `${i + 1} / ${i + 2}`
-      this.wrapper.append(term.heading)
+    this.#links = []
+    const items: GridItem[] = []
+    for (const [i, term] of curriculum.curriculum_terms.entries()) {
+      items.push({ type: 'term-header', index: i, name: term.name })
 
-      for (const course of term.courses) {
-        course.wrapper.style.gridColumn = `${i + 1} / ${i + 2}`
-        course.wrapper.setAttribute('aria-describedby', `term-heading-${i}`)
-        this.wrapper.append(course.wrapper)
+      for (const [j, item] of term.curriculum_items.entries()) {
+        const course = new Course(item, i, j)
+        items.push({ type: 'course', course })
         this.#courseNodes.set(course.ball, course)
 
         courses[course.raw.id] ??= course
       }
 
-      term.footer.style.gridColumn = `${i + 1} / ${i + 2}`
-      term.footer.style.gridRow = `${maxTermLength + 2}`
-      term.footer.setAttribute('aria-describedby', `term-heading-${i}`)
-      this.wrapper.append(term.footer)
+      items.push({
+        type: 'term-footer',
+        index: i,
+        complexity: term.curriculum_items.reduce(
+          (acc, curr) => acc + (curr.metrics.complexity ?? 0),
+          0
+        )
+      })
     }
 
     for (const term of this.#terms) {
@@ -191,7 +254,7 @@ export class Graph {
         for (const requisite of target.raw.curriculum_requisites) {
           const source = courses[requisite.source_id]
           const type = toRequisiteType(requisite.type)
-          this.#links.links.push({
+          this.#links.push({
             source,
             target,
             type
