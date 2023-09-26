@@ -153,14 +153,6 @@ export class Graph {
   }
 
   setCurriculum (curriculum: VisualizationCurriculum): void {
-    // Remove all elements
-    while (this.wrapper.firstChild) {
-      this.wrapper.removeChild(this.wrapper.firstChild)
-    }
-    this.wrapper.append(this.#links.element)
-    this.wrapper.append(this.#linksHighlighted.element)
-    this.#linksHighlighted.element.classList.add(styles.selectedLinks)
-
     // https://stackoverflow.com/a/61240964
     this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
     const maxTermLength = curriculum.curriculum_terms.reduce(

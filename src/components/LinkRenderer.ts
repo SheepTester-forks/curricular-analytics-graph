@@ -1,6 +1,7 @@
 import { RequisiteType } from '../types'
 import { Course } from './Course'
 import styles from '../styles.module.css'
+import { Join } from '../util/join'
 
 function defineArrow (): SVGDefsElement {
   const arrowPath = document.createElementNS(
@@ -34,30 +35,31 @@ export type Link = {
   type: RequisiteType
 }
 
-export class LinkRenderer {
-  static #classes: {
-    class: string
-    type: RequisiteType
-  }[] = [
-    { class: styles.prereqs, type: 'prereq' },
-    { class: styles.coreqs, type: 'coreq' },
-    { class: styles.strictCoreqs, type: 'strict-coreq' }
-  ]
+export class LinkRenderer extends Join<Link, SVGPathElement> {
+  static #classes: Record<RequisiteType, string> = {
+    prereq: styles.prereqs,
+    coreq: styles.coreqs,
+    'strict-coreq': styles.strictCoreqs
+  }
 
-  element = document.createElementNS('http://www.w3.org/2000/svg', 'svg')
-  #paths = LinkRenderer.#classes.map(({ class: className }) => {
-    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path')
-    path.setAttributeNS(null, 'class', className)
-    this.element.append(path)
-    return path
-  })
   links: Link[] = []
 
   constructor () {
-    this.element.setAttributeNS(null, 'class', styles.links)
-    this.element.append(defineArrow())
+    super({
+      wrapper: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
+      key: link => `${link.source.name}\0${link.target.name}`,
+      enter: () =>
+        document.createElementNS('http://www.w3.org/2000/svg', 'path'),
+      update: ({ source, target, type }, element, _old) => {
+        element.setAttributeNS(null, 'd', LinkRenderer.linkPath(source, target))
+        element.setAttributeNS(null, 'class', LinkRenderer.#classes[type])
+      }
+    })
+    this.wrapper.setAttributeNS(null, 'class', styles.links)
+    this.wrapper.append(defineArrow())
   }
 
+  /** Returns the path for a link between two courses. */
   static linkPath (source: Course, target: Course): string {
     if (source === target) {
       return ''
@@ -131,25 +133,8 @@ export class LinkRenderer {
     ].join(' ')
   }
 
-  #linkPaths (filter: RequisiteType): string {
-    let path = ''
-    for (const link of this.links) {
-      if (link.type !== filter) {
-        continue
-      }
-      path += LinkRenderer.linkPath(link.source, link.target)
-    }
-    return path
-  }
-
-  render () {
-    for (const [i, { type }] of LinkRenderer.#classes.entries()) {
-      this.#paths[i].setAttributeNS(null, 'd', this.#linkPaths(type))
-    }
-  }
-
   setSize (width: number, height: number) {
-    this.element.setAttributeNS(null, 'width', String(width))
-    this.element.setAttributeNS(null, 'height', String(height))
+    this.wrapper.setAttributeNS(null, 'width', String(width))
+    this.wrapper.setAttributeNS(null, 'height', String(height))
   }
 }
