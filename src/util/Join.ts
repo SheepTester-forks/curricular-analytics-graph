@@ -4,7 +4,7 @@ export type JoinOptions<W, T, E> = {
   /**
    * Ignores all existing elements not created by `enter`.
    */
-  wrapper: Element
+  wrapper: W
   /**
    * Ideally should be unique per datum, but this is not required. If there are
    * duplicate keys, then `update` calls might mix up different data with the
@@ -78,9 +78,11 @@ export class Join<T, E extends Element, W extends Element = HTMLElement> {
       element.remove()
     }
     // Update order of elements
-    this.wrapper.append(newEntries[0].element)
-    for (const [i, { element }] of newEntries.slice(0, -1).entries()) {
-      element.after(newEntries[i + 1].element)
+    if (newEntries.length > 0) {
+      this.wrapper.append(newEntries[0].element)
+      for (const [i, { element }] of newEntries.slice(0, -1).entries()) {
+        element.after(newEntries[i + 1].element)
+      }
     }
     this.#entries = newEntries
   }

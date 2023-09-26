@@ -18,7 +18,7 @@ export class Graph extends Join<GridItem, HTMLElement> {
   #linksHighlighted = new LinkRenderer()
   #longestPath: SVGPathElement
 
-  #longestTerm: number = 0
+  #maxTermLength: number = 0
 
   constructor (curriculum?: VisualizationCurriculum) {
     super({
@@ -54,13 +54,13 @@ export class Graph extends Join<GridItem, HTMLElement> {
       update: (item, element) => {
         if (item.type === 'course') {
           const course = item.course
-          const { metrics, nameSub, nameCanonical } = course.raw
+          const { metrics, name, nameSub, nameCanonical } = course.raw
           course.ball.textContent = String(metrics.complexity ?? '')
           course.name.title = course.name.textContent =
-            course.name +
+            name +
             (nameSub ? `\n${nameSub}` : '') +
             (nameCanonical ? `\n(${nameCanonical})` : '')
-          element.style.gridColumn = `${course.index + 1} / ${course.index + 2}`
+          element.style.gridColumn = `${course.term + 1} / ${course.term + 2}`
           element.setAttribute(
             'aria-describedby',
             `term-heading-${course.index}`
@@ -69,7 +69,7 @@ export class Graph extends Join<GridItem, HTMLElement> {
           element.textContent = item.name
         } else if (item.type === 'term-footer') {
           element.textContent = `Complexity: ${item.complexity}`
-          element.style.gridRow = `${maxTermLength + 2}`
+          element.style.gridRow = `${this.#maxTermLength + 2}`
         }
       },
       measure: item => {
@@ -133,6 +133,7 @@ export class Graph extends Join<GridItem, HTMLElement> {
     if (!course) {
       this.wrapper.classList.remove(styles.courseSelected)
       this.#highlighted = []
+      this.#linksHighlighted.join([])
       return
     }
     this.wrapper.classList.add(styles.courseSelected)
@@ -215,18 +216,18 @@ export class Graph extends Join<GridItem, HTMLElement> {
 
   setCurriculum (curriculum: VisualizationCurriculum): void {
     // https://stackoverflow.com/a/61240964
-    this.#longestTerm = curriculum.curriculum_terms.reduce(
+    this.#maxTermLength = curriculum.curriculum_terms.reduce(
       (acc, curr) => Math.max(acc, curr.curriculum_items.length),
       0
     )
 
     this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
     this.wrapper.style.gridTemplateRows = `40px repeat(${
-      this.#longestTerm
+      this.#maxTermLength
     }, minmax(0, 1fr)) 60px`
 
-    const courses: Record<number, Course> = {}
-    this.#links = []
+    const courses: Course[] = []
+    const coursesById: Record<number, Course> = {}
     const items: GridItem[] = []
     for (const [i, term] of curriculum.curriculum_terms.entries()) {
       items.push({ type: 'term-header', index: i, name: term.name })
@@ -235,8 +236,9 @@ export class Graph extends Join<GridItem, HTMLElement> {
         const course = new Course(item, i, j)
         items.push({ type: 'course', course })
         this.#courseNodes.set(course.ball, course)
+        courses.push(course)
 
-        courses[course.raw.id] ??= course
+        coursesById[course.raw.id] ??= course
       }
 
       items.push({
@@ -249,20 +251,22 @@ export class Graph extends Join<GridItem, HTMLElement> {
       })
     }
 
-    for (const term of this.#terms) {
-      for (const target of term.courses) {
-        for (const requisite of target.raw.curriculum_requisites) {
-          const source = courses[requisite.source_id]
-          const type = toRequisiteType(requisite.type)
-          this.#links.push({
-            source,
-            target,
-            type
-          })
-          source.forward.push({ course: target, type })
-          target.backward.push({ course: source, type })
-        }
+    this.#links = []
+    for (const target of courses) {
+      for (const requisite of target.raw.curriculum_requisites) {
+        const source = coursesById[requisite.source_id]
+        const type = toRequisiteType(requisite.type)
+        this.#links.push({
+          source,
+          target,
+          type
+        })
+        source.forward.push({ course: target, type })
+        target.backward.push({ course: source, type })
       }
     }
+
+    this.join(items)
+    this.#allLinks.join(this.#links)
   }
 }
