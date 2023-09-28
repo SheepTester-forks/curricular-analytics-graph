@@ -38,7 +38,7 @@ export type GraphOptions<R, C, T> = {
   /** Handle styling for a link. */
   styleLink: (element: SVGPathElement, link: R) => void
   /**  */
-  styleFieldNode: (element: HTMLElement, link: R, course: C) => void
+  styleLinkedNode: (element: HTMLElement, link: R, course: C) => void
 }
 
 export class Graph<
@@ -63,7 +63,7 @@ export class Graph<
     courseName = () => '',
     courseValue = () => '',
     styleLink = () => {},
-    styleFieldNode = () => {}
+    styleLinkedNode = () => {}
   }: Partial<GraphOptions<R, C, T>> = {}) {
     super({
       wrapper: Object.assign(document.createElement('div'), {
@@ -125,7 +125,7 @@ export class Graph<
       termSummary,
       courseName,
       courseValue,
-      styleFieldNode
+      styleLinkedNode
     }
 
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
@@ -189,12 +189,12 @@ export class Graph<
     this.#highlighted = [course]
     for (const link of course.backward) {
       link.course.wrapper.classList.add(styles.highlighted)
-      this.#options.styleFieldNode(link.course.wrapper, link.raw, course.raw)
+      this.#options.styleLinkedNode(link.course.wrapper, link.raw, course.raw)
       this.#dfs(link.course, 'backward')
     }
     for (const link of course.forward) {
       link.course.wrapper.classList.add(styles.highlighted)
-      this.#options.styleFieldNode(link.course.wrapper, link.raw, course.raw)
+      this.#options.styleLinkedNode(link.course.wrapper, link.raw, course.raw)
       this.#dfs(link.course, 'forward')
     }
     this.#linksHighlighted.join(

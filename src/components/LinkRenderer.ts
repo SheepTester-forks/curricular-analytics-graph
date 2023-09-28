@@ -7,7 +7,7 @@ function defineArrow (): SVGDefsElement {
     'http://www.w3.org/2000/svg',
     'path'
   )
-  arrowPath.setAttributeNS(null, 'class', styles.arrow)
+  arrowPath.classList.add(styles.arrow)
   arrowPath.setAttributeNS(null, 'd', 'M 0 0 L 10 5 L 0 10 z')
 
   const marker = document.createElementNS(
@@ -50,7 +50,7 @@ export class LinkRenderer<C, R> extends Join<
         handleLink(element, raw)
       }
     })
-    this.wrapper.setAttributeNS(null, 'class', styles.links)
+    this.wrapper.classList.add(styles.links)
     this.wrapper.append(defineArrow())
   }
 

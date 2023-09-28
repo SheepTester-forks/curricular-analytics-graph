@@ -70,16 +70,17 @@ export type VisualizationRequisiteType =
   | 'CurriculumPrerequisite'
   | 'CurriculumCorequisite'
   | 'CurriculumStrictCorequisite'
-export function toRequisiteType (
-  type: VisualizationRequisiteType
-): RequisiteType {
-  if (type === 'CurriculumPrerequisite') {
+export function toRequisiteType (type: string): RequisiteType {
+  if (type === 'prereq' || type === 'CurriculumPrerequisite') {
     return 'prereq'
-  } else if (type === 'CurriculumCorequisite') {
+  } else if (type === 'coreq' || type === 'CurriculumCorequisite') {
     return 'coreq'
-  } else if (type === 'CurriculumStrictCorequisite') {
+  } else if (
+    type === 'strict-coreq' ||
+    type === 'CurriculumStrictCorequisite'
+  ) {
     return 'strict-coreq'
   } else {
-    return type
+    throw new TypeError(`'${type}' is not a valid requisite type.`)
   }
 }
