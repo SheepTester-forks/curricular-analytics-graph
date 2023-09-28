@@ -1,4 +1,3 @@
-import { RequisiteType } from '../types'
 import { Course } from './Course'
 import styles from '../styles.module.css'
 import { Join } from '../util/Join'
@@ -29,28 +28,26 @@ function defineArrow (): SVGDefsElement {
   return defs
 }
 
-export type Link = {
-  source: Course
-  target: Course
-  type: RequisiteType
+export type Link<C, R> = {
+  source: Course<C, R>
+  target: Course<C, R>
+  raw: R
 }
 
-export class LinkRenderer extends Join<Link, SVGPathElement, SVGSVGElement> {
-  static #classes: Record<RequisiteType, string> = {
-    prereq: styles.prereqs,
-    coreq: styles.coreqs,
-    'strict-coreq': styles.strictCoreqs
-  }
-
-  constructor () {
+export class LinkRenderer<C, R> extends Join<
+  Link<C, R>,
+  SVGPathElement,
+  SVGSVGElement
+> {
+  constructor (handleLink: (element: SVGPathElement, link: R) => void) {
     super({
       wrapper: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
       key: link => `${link.source.name}\0${link.target.name}`,
       enter: () =>
         document.createElementNS('http://www.w3.org/2000/svg', 'path'),
-      update: ({ source, target, type }, element, _old) => {
+      update: ({ source, target, raw }, element, _old) => {
         element.setAttributeNS(null, 'd', LinkRenderer.linkPath(source, target))
-        element.setAttributeNS(null, 'class', LinkRenderer.#classes[type])
+        handleLink(element, raw)
       }
     })
     this.wrapper.setAttributeNS(null, 'class', styles.links)
@@ -58,7 +55,7 @@ export class LinkRenderer extends Join<Link, SVGPathElement, SVGSVGElement> {
   }
 
   /** Returns the path for a link between two courses. */
-  static linkPath (source: Course, target: Course): string {
+  static linkPath<C, R> (source: Course<C, R>, target: Course<C, R>): string {
     if (source === target) {
       return ''
     }

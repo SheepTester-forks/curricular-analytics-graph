@@ -1,26 +1,70 @@
 import { Course, longestPathFrom } from './Course'
 import styles from '../styles.module.css'
-import { VisualizationCurriculum, toRequisiteType } from '../types'
 import { Link, LinkRenderer } from './LinkRenderer'
 import { Join } from '../util/Join'
 
-type GridItem =
-  | { type: 'course'; course: Course }
-  | { type: 'term-header'; index: number; name: string }
-  | { type: 'term-footer'; index: number; complexity: number }
+export interface ICurriculum<T> {
+  curriculum_terms: T[]
+}
 
-export class Graph extends Join<GridItem, HTMLElement> {
-  #courseNodes: WeakMap<Element, Course> = new WeakMap()
-  #highlighted: Course[] = []
+export interface ITerm<C> {
+  curriculum_items: C[]
+}
 
-  #links: Link[] = []
-  #allLinks = new LinkRenderer()
-  #linksHighlighted = new LinkRenderer()
+export interface ICourse<R> {
+  id: number
+  curriculum_requisites: R[]
+}
+
+export type IRequisite = {
+  source_id: number
+  target_id: number
+}
+
+type GridItem<C, R> =
+  | { type: 'course'; course: Course<C, R> }
+  | { type: 'term-header'; index: number; content: string }
+  | { type: 'term-footer'; index: number; content: string }
+
+export type GraphOptions<R, C, T> = {
+  /** Shown at the top of each term column. */
+  termName: (term: T, index: number) => string
+  /** Shown at the bottom of each term column. */
+  termSummary: (term: T, index: number) => string
+  /** Shown under each course node. */
+  courseName: (course: C) => string
+  /** Shown in each course node. */
+  courseValue: (course: C) => string
+  /** Handle styling for a link. */
+  styleLink: (element: SVGPathElement, link: R) => void
+  /**  */
+  styleFieldNode: (element: HTMLElement, link: R, course: C) => void
+}
+
+export class Graph<
+  R extends IRequisite,
+  C extends ICourse<R>,
+  T extends ITerm<C>
+> extends Join<GridItem<C, R>, HTMLElement> {
+  #courseNodes = new WeakMap<Element, Course<C, R>>()
+  #highlighted: Course<C, R>[] = []
+
+  #links: Link<C, R>[] = []
+  #allLinks: LinkRenderer<C, R>
+  #linksHighlighted: LinkRenderer<C, R>
   #longestPath: SVGPathElement
 
   #maxTermLength: number = 0
+  #options: Omit<GraphOptions<R, C, T>, 'styleLink'>
 
-  constructor (curriculum?: VisualizationCurriculum) {
+  constructor ({
+    termName = (_, i) => `Term ${i + 1}`,
+    termSummary = () => '',
+    courseName = () => '',
+    courseValue = () => '',
+    styleLink = () => {},
+    styleFieldNode = () => {}
+  }: Partial<GraphOptions<R, C, T>> = {}) {
     super({
       wrapper: Object.assign(document.createElement('div'), {
         className: styles.graph
@@ -54,21 +98,18 @@ export class Graph extends Join<GridItem, HTMLElement> {
       update: (item, element) => {
         if (item.type === 'course') {
           const course = item.course
-          const { metrics, name, nameSub, nameCanonical } = course.raw
-          course.ball.textContent = String(metrics.complexity ?? '')
           course.name.title = course.name.textContent =
-            name +
-            (nameSub ? `\n${nameSub}` : '') +
-            (nameCanonical ? `\n(${nameCanonical})` : '')
+            this.#options.courseName(item.course.raw)
+          course.ball.textContent = this.#options.courseValue(item.course.raw)
           element.style.gridColumn = `${course.term + 1} / ${course.term + 2}`
           element.setAttribute(
             'aria-describedby',
             `term-heading-${course.index}`
           )
         } else if (item.type === 'term-header') {
-          element.textContent = item.name
+          element.textContent = item.content
         } else if (item.type === 'term-footer') {
-          element.textContent = `Complexity: ${item.complexity}`
+          element.textContent = item.content
           element.style.gridRow = `${this.#maxTermLength + 2}`
         }
       },
@@ -79,9 +120,20 @@ export class Graph extends Join<GridItem, HTMLElement> {
       }
     })
 
+    this.#options = {
+      termName,
+      termSummary,
+      courseName,
+      courseValue,
+      styleFieldNode
+    }
+
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
     this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
+
+    this.#allLinks = new LinkRenderer(styleLink)
     this.#allLinks.wrapper.classList.add(styles.allLinks)
+    this.#linksHighlighted = new LinkRenderer(styleLink)
     this.#linksHighlighted.wrapper.classList.add(styles.highlightedLinks)
 
     this.#longestPath = document.createElementNS(
@@ -96,17 +148,13 @@ export class Graph extends Join<GridItem, HTMLElement> {
       this.#longestPath
     )
 
-    if (curriculum) {
-      this.setCurriculum(curriculum)
-    }
-
     new ResizeObserver(([{ contentBoxSize }]) => {
       const [{ blockSize, inlineSize }] = contentBoxSize
       this.#handleResize(inlineSize, blockSize)
     }).observe(this.wrapper)
   }
 
-  #dfs (course: Course, direction: 'backward' | 'forward'): void {
+  #dfs (course: Course<C, R>, direction: 'backward' | 'forward'): void {
     this.#highlighted.push(course)
     course.wrapper.classList.add(
       styles.highlighted,
@@ -117,7 +165,7 @@ export class Graph extends Join<GridItem, HTMLElement> {
     }
   }
 
-  #handleHoverCourse (course: Course | null) {
+  #handleHoverCourse (course: Course<C, R> | null) {
     for (const course of this.#highlighted) {
       course.wrapper.classList.remove(
         styles.highlighted,
@@ -139,20 +187,15 @@ export class Graph extends Join<GridItem, HTMLElement> {
     this.wrapper.classList.add(styles.courseSelected)
     course.wrapper.classList.add(styles.highlighted, styles.selected)
     this.#highlighted = [course]
-    for (const { course: prereq, type } of course.backward) {
-      prereq.wrapper.classList.add(
-        styles.highlighted,
-        type === 'prereq'
-          ? styles.directPrereq
-          : type === 'coreq'
-          ? styles.directCoreq
-          : styles.directStrictCoreq
-      )
-      this.#dfs(prereq, 'backward')
+    for (const link of course.backward) {
+      link.course.wrapper.classList.add(styles.highlighted)
+      this.#options.styleFieldNode(link.course.wrapper, link.raw, course.raw)
+      this.#dfs(link.course, 'backward')
     }
-    for (const { course: blocking } of course.forward) {
-      blocking.wrapper.classList.add(styles.highlighted, styles.directBlocking)
-      this.#dfs(blocking, 'forward')
+    for (const link of course.forward) {
+      link.course.wrapper.classList.add(styles.highlighted)
+      this.#options.styleFieldNode(link.course.wrapper, link.raw, course.raw)
+      this.#dfs(link.course, 'forward')
     }
     this.#linksHighlighted.join(
       this.#links.filter(
@@ -214,7 +257,7 @@ export class Graph extends Join<GridItem, HTMLElement> {
     this.#linksHighlighted.setSize(width, height)
   }
 
-  setCurriculum (curriculum: VisualizationCurriculum): void {
+  setCurriculum (curriculum: ICurriculum<T>): void {
     // https://stackoverflow.com/a/61240964
     this.#maxTermLength = curriculum.curriculum_terms.reduce(
       (acc, curr) => Math.max(acc, curr.curriculum_items.length),
@@ -226,14 +269,18 @@ export class Graph extends Join<GridItem, HTMLElement> {
       this.#maxTermLength
     }, minmax(0, 1fr)) 60px`
 
-    const courses: Course[] = []
-    const coursesById: Record<number, Course> = {}
-    const items: GridItem[] = []
+    const courses: Course<C, R>[] = []
+    const coursesById: Record<number, Course<C, R>> = {}
+    const items: GridItem<C, R>[] = []
     for (const [i, term] of curriculum.curriculum_terms.entries()) {
-      items.push({ type: 'term-header', index: i, name: term.name })
+      items.push({
+        type: 'term-header',
+        index: i,
+        content: this.#options.termName(term, i)
+      })
 
       for (const [j, item] of term.curriculum_items.entries()) {
-        const course = new Course(item, i, j)
+        const course = new Course<C, R>(item, i, j)
         items.push({ type: 'course', course })
         this.#courseNodes.set(course.ball, course)
         courses.push(course)
@@ -244,10 +291,7 @@ export class Graph extends Join<GridItem, HTMLElement> {
       items.push({
         type: 'term-footer',
         index: i,
-        complexity: term.curriculum_items.reduce(
-          (acc, curr) => acc + (curr.metrics.complexity ?? 0),
-          0
-        )
+        content: this.#options.termSummary(term, i)
       })
     }
 
@@ -255,14 +299,13 @@ export class Graph extends Join<GridItem, HTMLElement> {
     for (const target of courses) {
       for (const requisite of target.raw.curriculum_requisites) {
         const source = coursesById[requisite.source_id]
-        const type = toRequisiteType(requisite.type)
         this.#links.push({
           source,
           target,
-          type
+          raw: requisite
         })
-        source.forward.push({ course: target, type })
-        target.backward.push({ course: source, type })
+        source.forward.push({ course: target, raw: requisite })
+        target.backward.push({ course: source, raw: requisite })
       }
     }
 

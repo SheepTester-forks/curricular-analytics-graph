@@ -4,6 +4,8 @@
     "module": "esnext",
     "target": "esnext",
     "strict": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true
   }
 }

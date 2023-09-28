@@ -54,7 +54,7 @@ export type VisualizationRequisite = {
   source_id: number
   /** Course ID of the target course. */
   target_id: number
-  type: VisualizationRequisiteType
+  type: string
 }
 
 export type VisualizationMetrics = {

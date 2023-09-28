@@ -1,18 +1,17 @@
 import styles from '../styles.module.css'
-import { RequisiteType, VisualizationCourse } from '../types'
 
-export type CourseLink = {
-  course: Course
-  type: RequisiteType
+export type CourseLink<C, R> = {
+  course: Course<C, R>
+  raw: R
 }
 
-export class Course {
+export class Course<C, R> {
   term: number
   index: number
-  raw: VisualizationCourse
+  raw: C
 
-  forward: CourseLink[] = []
-  backward: CourseLink[] = []
+  forward: CourseLink<C, R>[] = []
+  backward: CourseLink<C, R>[] = []
 
   wrapper: HTMLElement = Object.assign(document.createElement('div'), {
     className: styles.course
@@ -26,7 +25,7 @@ export class Course {
 
   position = { x: 0, y: 0, radius: 0 }
 
-  constructor (course: VisualizationCourse, term: number, index: number) {
+  constructor (course: C, term: number, index: number) {
     this.term = term
     this.index = index
     this.raw = course
@@ -44,12 +43,12 @@ export class Course {
   }
 }
 
-export function longestPathFrom (
-  start: Course,
+export function longestPathFrom<C, R> (
+  start: Course<C, R>,
   direction: 'backward' | 'forward'
-): Course[] {
-  const cache = new Map<Course, Course[] | null>()
-  function iterate (course: Course): Course[] {
+): Course<C, R>[] {
+  const cache = new Map<Course<C, R>, Course<C, R>[] | null>()
+  function iterate (course: Course<C, R>): Course<C, R>[] {
     const cached = cache.get(course)
     if (cached !== undefined) {
       if (cached === null) {
