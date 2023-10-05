@@ -34,12 +34,17 @@ export type Link<C, R> = {
   raw: R
 }
 
+export type LinkHandler<C, R> = (
+  element: SVGPathElement,
+  link: R & { source: C; target: C }
+) => void
+
 export class LinkRenderer<C, R> extends Join<
   Link<C, R>,
   SVGPathElement,
   SVGSVGElement
 > {
-  constructor (handleLink: (element: SVGPathElement, link: R) => void) {
+  constructor (handleLink: LinkHandler<C, R>) {
     super({
       wrapper: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
       key: link => `${link.source.name}\0${link.target.name}`,
@@ -47,7 +52,7 @@ export class LinkRenderer<C, R> extends Join<
         document.createElementNS('http://www.w3.org/2000/svg', 'path'),
       update: ({ source, target, raw }, element, _old) => {
         element.setAttributeNS(null, 'd', LinkRenderer.linkPath(source, target))
-        handleLink(element, raw)
+        handleLink(element, { ...raw, source: source.raw, target: target.raw })
       }
     })
     this.wrapper.classList.add(styles.links)

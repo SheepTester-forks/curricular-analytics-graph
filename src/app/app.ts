@@ -10,6 +10,9 @@ import {
 } from './types'
 import styles from '../styles.module.css'
 
+// TEMP: Contains sensitive info
+import dfwRates from '../../../ExploratoryCurricularAnalytics/files/summarize_dfw.json'
+
 const classes: Record<RequisiteType, string> = {
   prereq: styles.prereqs,
   coreq: styles.coreqs,
@@ -33,7 +36,11 @@ const graph = new Graph<
     (nameSub ? `\n${nameSub}` : '') +
     (nameCanonical ? `\n(${nameCanonical})` : ''),
   courseValue: course => String(course.metrics.complexity ?? ''),
-  styleLink: (path, { type }) => {
+  styleLink: (path, { type, source }) => {
+    const dfw = (dfwRates as Record<string, number>)[
+      source.name.replaceAll(' ', '')
+    ]
+    path.setAttributeNS(null, 'stroke', dfw > 0.1 ? 'red' : '')
     path.classList.add(classes[toRequisiteType(type)])
   },
   styleLinkedNode: (node, { type }) => {

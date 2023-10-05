@@ -1,6 +1,6 @@
 import { Course, longestPathFrom } from './Course'
 import styles from '../styles.module.css'
-import { Link, LinkRenderer } from './LinkRenderer'
+import { Link, LinkHandler, LinkRenderer } from './LinkRenderer'
 import { Join } from '../util/Join'
 
 export interface ICurriculum<T> {
@@ -36,7 +36,7 @@ export type GraphOptions<R, C, T> = {
   /** Shown in each course node. */
   courseValue: (course: C) => string
   /** Handle styling for a link. */
-  styleLink: (element: SVGPathElement, link: R) => void
+  styleLink: LinkHandler<C, R>
   /**  */
   styleLinkedNode: (element: HTMLElement, link: R, course: C) => void
 }
