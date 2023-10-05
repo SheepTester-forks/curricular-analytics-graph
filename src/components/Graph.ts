@@ -33,12 +33,28 @@ export type GraphOptions<R, C, T> = {
   termSummary: (term: T, index: number) => string
   /** Shown under each course node. */
   courseName: (course: C) => string
-  /** Shown in each course node. */
-  courseValue: (course: C) => string
-  /** Handle styling for a link. */
+  /** Apply styles to a node. */
+  styleNode: (element: HTMLElement, course: C) => void
+  /** Apply styles to a link. */
   styleLink: LinkHandler<C, R>
-  /**  */
-  styleLinkedNode: (element: HTMLElement, link: R, course: C) => void
+  /**
+   * Apply styles to a node that is highlighted when a course is selected.
+   *
+   * @param link - If `link === null`, then the course was highlighted and needs
+   * its styles to be removed. Otherwise, if `link.relation` is:
+   * - `selected`: `course` is the selected course.
+   * - `backward`/`forward`: `course` is in the prerequisite (`backward`) or
+   *   blocking `forward` field of the selected course. `direct` means whether
+   *   `course` is directly linked to the selected course.
+   */
+  styleLinkedNode: (
+    element: HTMLElement,
+    course: C,
+    link:
+      | (R & { relation: 'backward' | 'forward'; direct: boolean })
+      | { relation: 'selected' }
+      | null
+  ) => void
 }
 
 export class Graph<
@@ -61,7 +77,7 @@ export class Graph<
     termName = (_, i) => `Term ${i + 1}`,
     termSummary = () => '',
     courseName = () => '',
-    courseValue = () => '',
+    styleNode = () => '',
     styleLink = () => {},
     styleLinkedNode = () => {}
   }: Partial<GraphOptions<R, C, T>> = {}) {
@@ -100,7 +116,7 @@ export class Graph<
           const course = item.course
           course.name.title = course.name.textContent =
             this.#options.courseName(item.course.raw)
-          course.ball.textContent = this.#options.courseValue(item.course.raw)
+          this.#options.styleNode(course.ball, item.course.raw)
           element.style.gridColumn = `${course.term + 1} / ${course.term + 2}`
           element.setAttribute(
             'aria-describedby',
@@ -124,7 +140,7 @@ export class Graph<
       termName,
       termSummary,
       courseName,
-      courseValue,
+      styleNode,
       styleLinkedNode
     }
 
@@ -152,27 +168,21 @@ export class Graph<
 
   #dfs (course: Course<C, R>, direction: 'backward' | 'forward'): void {
     this.#highlighted.push(course)
-    course.wrapper.classList.add(
-      styles.highlighted,
-      direction === 'backward' ? styles.prereq : styles.blocking
-    )
-    for (const { course: neighbor } of course[direction]) {
+    course.wrapper.classList.add(styles.highlighted)
+    for (const { course: neighbor, raw } of course[direction]) {
+      this.#options.styleLinkedNode(neighbor.wrapper, neighbor.raw, {
+        ...raw,
+        relation: direction,
+        direct: false
+      })
       this.#dfs(neighbor, direction)
     }
   }
 
   #handleHoverCourse (course: Course<C, R> | null) {
     for (const course of this.#highlighted) {
-      course.wrapper.classList.remove(
-        styles.highlighted,
-        styles.selected,
-        styles.directPrereq,
-        styles.directCoreq,
-        styles.directStrictCoreq,
-        styles.directBlocking,
-        styles.prereq,
-        styles.blocking
-      )
+      course.wrapper.classList.remove(styles.highlighted)
+      this.#options.styleLinkedNode(course.wrapper, course.raw, null)
     }
     if (!course) {
       this.wrapper.classList.remove(styles.courseSelected)
@@ -181,16 +191,27 @@ export class Graph<
       return
     }
     this.wrapper.classList.add(styles.courseSelected)
-    course.wrapper.classList.add(styles.highlighted, styles.selected)
+    course.wrapper.classList.add(styles.highlighted)
     this.#highlighted = [course]
+    this.#options.styleLinkedNode(course.wrapper, course.raw, {
+      relation: 'selected'
+    })
     for (const link of course.backward) {
       link.course.wrapper.classList.add(styles.highlighted)
-      this.#options.styleLinkedNode(link.course.wrapper, link.raw, course.raw)
+      this.#options.styleLinkedNode(link.course.wrapper, course.raw, {
+        ...link.raw,
+        relation: 'backward',
+        direct: true
+      })
       this.#dfs(link.course, 'backward')
     }
     for (const link of course.forward) {
       link.course.wrapper.classList.add(styles.highlighted)
-      this.#options.styleLinkedNode(link.course.wrapper, link.raw, course.raw)
+      this.#options.styleLinkedNode(link.course.wrapper, course.raw, {
+        ...link.raw,
+        relation: 'forward',
+        direct: true
+      })
       this.#dfs(link.course, 'forward')
     }
     this.#linksHighlighted.join(

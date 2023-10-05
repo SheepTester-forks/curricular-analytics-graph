@@ -30,26 +30,57 @@ const graph = new Graph<
     `Complexity: ${term.curriculum_items.reduce(
       (acc, curr) => acc + (curr.metrics.complexity ?? 0),
       0
+    )}\nUnits: ${term.curriculum_items.reduce(
+      (acc, curr) => acc + (curr.credits ?? 0),
+      0
     )}`,
   courseName: ({ name, nameSub, nameCanonical }) =>
     name +
     (nameSub ? `\n${nameSub}` : '') +
     (nameCanonical ? `\n(${nameCanonical})` : ''),
-  courseValue: course => String(course.metrics.complexity ?? ''),
+  styleNode: (node, course) => {
+    node.textContent = String(course.metrics.complexity ?? '')
+    const dfw = (dfwRates as Record<string, number>)[
+      course.name.replaceAll(' ', '')
+    ]
+    if (dfw && dfw > 0.1) {
+      node.style.borderColor = 'red'
+    }
+  },
   styleLink: (path, { type, source }) => {
     const dfw = (dfwRates as Record<string, number>)[
       source.name.replaceAll(' ', '')
     ]
     if (dfw) {
-      path.setAttributeNS(null, 'stroke', dfw > 0.1 ? 'red' : '')
+      // path.setAttributeNS(null, 'stroke', dfw > 0.1 ? 'red' : '')
     }
     path.classList.add(classes[toRequisiteType(type)])
   },
-  styleLinkedNode: (node, { type }) => {
+  styleLinkedNode: (node, _, link) => {
+    if (link === null) {
+      node.classList.remove(
+        styles.selected,
+        styles.directPrereq,
+        styles.directCoreq,
+        styles.directStrictCoreq,
+        styles.directBlocking,
+        styles.prereq,
+        styles.blocking
+      )
+      return
+    }
     node.classList.add(
-      type === 'prereq'
+      link.relation === 'selected'
+        ? styles.selected
+        : link.relation === 'forward'
+        ? link.direct
+          ? styles.directBlocking
+          : styles.blocking
+        : !link.direct
+        ? styles.prereq
+        : link.type === 'prereq'
         ? styles.directPrereq
-        : type === 'coreq'
+        : link.type === 'coreq'
         ? styles.directCoreq
         : styles.directStrictCoreq
     )
