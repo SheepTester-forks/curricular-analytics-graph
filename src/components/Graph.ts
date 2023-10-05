@@ -142,11 +142,7 @@ export class Graph<
     )
     this.#longestPath.setAttributeNS(null, 'class', styles.longestPath)
     this.#linksHighlighted.wrapper.append(this.#longestPath)
-    this.wrapper.append(
-      this.#allLinks.wrapper,
-      this.#linksHighlighted.wrapper,
-      this.#longestPath
-    )
+    this.wrapper.append(this.#allLinks.wrapper, this.#linksHighlighted.wrapper)
 
     new ResizeObserver(([{ contentBoxSize }]) => {
       const [{ blockSize, inlineSize }] = contentBoxSize

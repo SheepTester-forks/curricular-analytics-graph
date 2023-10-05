@@ -40,7 +40,9 @@ const graph = new Graph<
     const dfw = (dfwRates as Record<string, number>)[
       source.name.replaceAll(' ', '')
     ]
-    path.setAttributeNS(null, 'stroke', dfw > 0.1 ? 'red' : '')
+    if (dfw) {
+      path.setAttributeNS(null, 'stroke', dfw > 0.1 ? 'red' : '')
+    }
     path.classList.add(classes[toRequisiteType(type)])
   },
   styleLinkedNode: (node, { type }) => {
