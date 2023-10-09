@@ -18,11 +18,9 @@ export class Course<C, R> {
   backward: CourseLink<C, R>[] = []
 
   wrapper: HTMLElement = Object.assign(document.createElement('div'), {
-    className: styles.course,
-    role: 'button',
-    tabIndex: 0
+    className: styles.course
   })
-  ball: HTMLElement = Object.assign(document.createElement('div'), {
+  ball: HTMLElement = Object.assign(document.createElement('button'), {
     className: styles.courseBall
   })
   name: HTMLElement = Object.assign(document.createElement('div'), {

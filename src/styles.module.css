@@ -56,7 +56,6 @@
   border-radius: 50%;
   border: 1px solid currentColor;
   background-color: #e2e8f0;
-  cursor: pointer;
   transition: color 0.2s, background-color 0.2s;
 }
 .courseName {

@@ -44,7 +44,7 @@ const graph = new Graph<
       course.name.replaceAll(' ', '')
     ]
     if (dfw && dfw > 0.1) {
-      node.style.borderColor = 'red'
+      // node.style.borderColor = 'red'
     }
   },
   styleLink: (path, { type, source }) => {

@@ -11,6 +11,16 @@ body {
   background-color: #f8fafc;
 }
 
+button {
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
+}
+button:not(:disabled) {
+  cursor: pointer;
+}
+
 .graph {
   flex: auto;
 }

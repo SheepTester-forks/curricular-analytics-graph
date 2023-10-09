@@ -69,7 +69,8 @@ export class Graph<
   #links: Link<C, R>[] = []
   #allLinks: LinkRenderer<C, R>
   #linksHighlighted: LinkRenderer<C, R>
-  #longestPath: SVGPathElement
+  #longestPath: Course<C, R>[] = []
+  #longestPathElement: SVGPathElement
 
   #maxTermLength: number = 0
   #options: Omit<GraphOptions<R, C, T>, 'styleLink'>
@@ -154,12 +155,12 @@ export class Graph<
     this.#linksHighlighted = new LinkRenderer(styleLink)
     this.#linksHighlighted.wrapper.classList.add(styles.highlightedLinks)
 
-    this.#longestPath = document.createElementNS(
+    this.#longestPathElement = document.createElementNS(
       'http://www.w3.org/2000/svg',
       'path'
     )
-    this.#longestPath.setAttributeNS(null, 'class', styles.longestPath)
-    this.#linksHighlighted.wrapper.append(this.#longestPath)
+    this.#longestPathElement.setAttributeNS(null, 'class', styles.longestPath)
+    this.#linksHighlighted.wrapper.append(this.#longestPathElement)
     this.wrapper.append(this.#allLinks.wrapper, this.#linksHighlighted.wrapper)
 
     new ResizeObserver(([{ contentBoxSize }]) => {
@@ -181,6 +182,21 @@ export class Graph<
     }
   }
 
+  #renderLongestPath () {
+    this.#longestPathElement.setAttributeNS(
+      null,
+      'd',
+      this.#longestPath.length > 0
+        ? this.#longestPath
+            .slice(0, -1)
+            .map((course, i) =>
+              LinkRenderer.linkPath(course, this.#longestPath[i + 1])
+            )
+            .join('')
+        : ''
+    )
+  }
+
   #handleHoverCourse (course: Course<C, R> | null) {
     for (const course of this.#highlighted) {
       course.wrapper.classList.remove(styles.highlighted)
@@ -190,6 +206,7 @@ export class Graph<
       this.wrapper.classList.remove(styles.courseSelected)
       this.#highlighted = []
       this.#linksHighlighted.join([])
+      this.#longestPath = []
       return
     }
     this.wrapper.classList.add(styles.courseSelected)
@@ -224,21 +241,15 @@ export class Graph<
       )
     )
     try {
-      const longestPath = [
+      this.#longestPath = [
         ...longestPathFrom(course, 'backward').reverse(),
         ...longestPathFrom(course, 'forward').slice(1)
       ]
-      this.#longestPath.setAttributeNS(
-        null,
-        'd',
-        longestPath
-          .slice(0, -1)
-          .map((course, i) => LinkRenderer.linkPath(course, longestPath[i + 1]))
-          .join('')
-      )
     } catch {
-      this.#longestPath.setAttributeNS(null, 'd', '')
+      // Cycle
+      this.#longestPath = []
     }
+    this.#renderLongestPath()
   }
 
   #getCourse (event: Event, type: 'ball' | 'wrapper'): Course<C, R> | null {
@@ -269,7 +280,7 @@ export class Graph<
   }
 
   #handleClick = (e: MouseEvent): void => {
-    const course = this.#getCourse(e, 'wrapper')
+    const course = this.#getCourse(e, 'ball')
     this.#selected = course
     this.#handleHoverCourse(this.#selected)
   }
@@ -282,6 +293,9 @@ export class Graph<
     this.#allLinks.setSize(width, height)
     this.#linksHighlighted.forceUpdate()
     this.#linksHighlighted.setSize(width, height)
+    if (this.#longestPath.length > 0) {
+      this.#renderLongestPath()
+    }
   }
 
   setCurriculum (curriculum: ICurriculum<T>): void {
