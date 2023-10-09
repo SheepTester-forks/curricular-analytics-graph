@@ -6,6 +6,10 @@ export type CourseLink<C, R> = {
 }
 
 export class Course<C, R> {
+  static #id = 0
+  /** Guaranteed to be nonzero. */
+  id: number
+
   term: number
   index: number
   raw: C
@@ -14,7 +18,9 @@ export class Course<C, R> {
   backward: CourseLink<C, R>[] = []
 
   wrapper: HTMLElement = Object.assign(document.createElement('div'), {
-    className: styles.course
+    className: styles.course,
+    role: 'button',
+    tabIndex: 0
   })
   ball: HTMLElement = Object.assign(document.createElement('div'), {
     className: styles.courseBall
@@ -26,6 +32,7 @@ export class Course<C, R> {
   position = { x: 0, y: 0, radius: 0 }
 
   constructor (course: C, term: number, index: number) {
+    this.id = ++Course.#id
     this.term = term
     this.index = index
     this.raw = course

@@ -64,6 +64,7 @@ export class Graph<
 > extends Join<GridItem<C, R>, HTMLElement> {
   #courseNodes = new WeakMap<Element, Course<C, R>>()
   #highlighted: Course<C, R>[] = []
+  #selected: Course<C, R> | null = null
 
   #links: Link<C, R>[] = []
   #allLinks: LinkRenderer<C, R>
@@ -87,7 +88,7 @@ export class Graph<
       }),
       key: item =>
         item.type === 'course'
-          ? `course\0${item.course.name}`
+          ? `course\0${item.course.id}`
           : `${item.type}\0${item.index}`,
       enter: item => {
         if (item.type === 'course') {
@@ -146,6 +147,7 @@ export class Graph<
 
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
     this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
+    this.wrapper.addEventListener('click', this.#handleClick)
 
     this.#allLinks = new LinkRenderer(styleLink)
     this.#allLinks.wrapper.classList.add(styles.allLinks)
@@ -239,29 +241,37 @@ export class Graph<
     }
   }
 
+  #getCourse (event: Event, type: 'ball' | 'wrapper'): Course<C, R> | null {
+    if (!(event.target instanceof HTMLElement)) {
+      return null
+    }
+    let courseNode = event.target.closest(
+      type === 'ball' ? `.${styles.courseBall}` : `.${styles.course}`
+    )
+    if (type === 'ball') {
+      courseNode = courseNode?.parentElement ?? null
+    }
+    return courseNode && (this.#courseNodes.get(courseNode) ?? null)
+  }
+
   #handlePointerOver = (e: PointerEvent): void => {
-    if (!(e.target instanceof HTMLElement)) {
-      return
+    const course = this.#getCourse(e, 'ball')
+    if (course && !this.#selected) {
+      this.#handleHoverCourse(course)
     }
-    const courseNode = e.target.closest(`.${styles.courseBall}`)
-    if (!courseNode) {
-      return
-    }
-    const course = this.#courseNodes.get(courseNode)
-    if (!course) {
-      return
-    }
-    this.#handleHoverCourse(course)
   }
 
   #handlePointerOut = (e: PointerEvent): void => {
-    if (!(e.target instanceof HTMLElement)) {
-      return
-    }
-    const courseNode = e.target.closest(`.${styles.courseBall}`)
-    if (courseNode) {
+    const course = this.#getCourse(e, 'ball')
+    if (course && !this.#selected) {
       this.#handleHoverCourse(null)
     }
+  }
+
+  #handleClick = (e: MouseEvent): void => {
+    const course = this.#getCourse(e, 'wrapper')
+    this.#selected = course
+    this.#handleHoverCourse(this.#selected)
   }
 
   #handleResize (width: number, height: number) {
@@ -299,7 +309,7 @@ export class Graph<
       for (const [j, item] of term.curriculum_items.entries()) {
         const course = new Course<C, R>(item, i, j)
         items.push({ type: 'course', course })
-        this.#courseNodes.set(course.ball, course)
+        this.#courseNodes.set(course.wrapper, course)
         courses.push(course)
 
         coursesById[course.raw.id] ??= course

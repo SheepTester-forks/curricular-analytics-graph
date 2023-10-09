@@ -47,7 +47,7 @@ export class LinkRenderer<C, R> extends Join<
   constructor (handleLink: LinkHandler<C, R>) {
     super({
       wrapper: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
-      key: link => `${link.source.name}\0${link.target.name}`,
+      key: link => `${link.source.id}\0${link.target.id}`,
       enter: () =>
         document.createElementNS('http://www.w3.org/2000/svg', 'path'),
       update: ({ source, target, raw }, element, _old) => {
