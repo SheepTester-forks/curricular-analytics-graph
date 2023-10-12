@@ -2,6 +2,7 @@ import { Course, longestPathFrom } from './Course'
 import styles from '../styles.module.css'
 import { Link, LinkHandler, LinkRenderer } from './LinkRenderer'
 import { Join } from '../util/Join'
+import { Tooltip } from './Tooltip'
 
 export interface ICurriculum<T> {
   curriculum_terms: T[]
@@ -71,6 +72,8 @@ export class Graph<
   #linksHighlighted: LinkRenderer<C, R>
   #longestPath: Course<C, R>[] = []
   #longestPathElement: SVGPathElement
+
+  #tooltip = new Tooltip()
 
   #maxTermLength: number = 0
   #options: Omit<GraphOptions<R, C, T>, 'styleLink'>
@@ -283,6 +286,14 @@ export class Graph<
     const course = this.#getCourse(e, 'ball')
     this.#selected = course
     this.#handleHoverCourse(this.#selected)
+    if (course) {
+      if (!course.ball.contains(this.#tooltip.wrapper)) {
+        course.ball.append(this.#tooltip.wrapper)
+      }
+      this.#tooltip.show(course)
+    } else {
+      this.#tooltip.hide()
+    }
   }
 
   #handleResize (width: number, height: number) {

@@ -47,6 +47,7 @@
   z-index: 3;
 }
 .courseBall {
+  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -128,4 +129,50 @@
   stroke-width: 3;
   stroke-dasharray: 10 10;
   stroke-linecap: round;
+}
+
+.tooltip {
+  position: absolute;
+  z-index: 5;
+  top: 100%;
+  margin-top: 15px;
+  width: 200px;
+  height: 300px;
+  background-color: white;
+  padding: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+  animation: tooltip-show 0.2s;
+  transition: all 0.2s;
+}
+@keyframes tooltip-show {
+  from {
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    visibility: visible;
+    opacity: 1;
+    transform: none;
+  }
+}
+.tooltip::before {
+  content: '';
+  position: absolute;
+  top: -1px;
+  left: 50%;
+  border: 0 solid rgba(0, 0, 0, 0.1);
+  border-top-left-radius: 5px;
+  border-top-width: 1px;
+  border-left-width: 1px;
+  padding: 8px;
+  margin: -8px;
+  transform: rotate(45deg);
+  background-color: white;
+}
+.tooltipHidden {
+  visibility: hidden;
+  opacity: 0;
+  transform: translateY(10px);
 }
