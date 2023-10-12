@@ -56,6 +56,7 @@ export type GraphOptions<R, C, T> = {
       | { relation: 'selected' }
       | null
   ) => void
+  tooltipContent: (element: HTMLElement, course: C) => void
 }
 
 export class Graph<
@@ -84,7 +85,8 @@ export class Graph<
     courseName = () => '',
     styleNode = () => '',
     styleLink = () => {},
-    styleLinkedNode = () => {}
+    styleLinkedNode = () => {},
+    tooltipContent = () => {}
   }: Partial<GraphOptions<R, C, T>> = {}) {
     super({
       wrapper: Object.assign(document.createElement('div'), {
@@ -146,7 +148,8 @@ export class Graph<
       termSummary,
       courseName,
       styleNode,
-      styleLinkedNode
+      styleLinkedNode,
+      tooltipContent
     }
 
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
@@ -290,6 +293,7 @@ export class Graph<
       if (!course.ball.contains(this.#tooltip.wrapper)) {
         course.ball.append(this.#tooltip.wrapper)
       }
+      this.#options.tooltipContent(this.#tooltip.wrapper, course.raw)
       this.#tooltip.show(course)
     } else {
       this.#tooltip.hide()
@@ -317,9 +321,9 @@ export class Graph<
     )
 
     this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
-    this.wrapper.style.gridTemplateRows = `40px repeat(${
+    this.wrapper.style.gridTemplateRows = `auto repeat(${
       this.#maxTermLength
-    }, minmax(0, 1fr)) 60px`
+    }, minmax(0, 1fr)) auto`
 
     const courses: Course<C, R>[] = []
     const coursesById: Record<number, Course<C, R>> = {}

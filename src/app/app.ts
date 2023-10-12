@@ -27,7 +27,7 @@ const graph = new Graph<
 >({
   termName: term => term.name,
   termSummary: term =>
-    `Complexity: ${term.curriculum_items.reduce(
+    `Complex.: ${term.curriculum_items.reduce(
       (acc, curr) => acc + (curr.metrics.complexity ?? 0),
       0
     )}\nUnits: ${term.curriculum_items.reduce(
@@ -84,6 +84,23 @@ const graph = new Graph<
         ? styles.directCoreq
         : styles.directStrictCoreq
     )
+  },
+  tooltipContent: (node, course) => {
+    // TEMP
+    const dfw = (dfwRates as Record<string, number>)[
+      course.name.replaceAll(' ', '')
+    ]
+    node.style.whiteSpace = 'pre-wrap'
+    node.style.textAlign = 'left'
+    node.textContent = [
+      `Name: ${course.name}`,
+      `Units: ${course.credits}`,
+      `Complexity: ${course.metrics.complexity}`,
+      `Centrality: ${course.metrics.centrality}`,
+      `Blocking factor: ${course.metrics['blocking factor']}`,
+      `Delay factor: ${course.metrics['delay factor']}`,
+      `DFW rate: ${(dfw * 100).toFixed(1)}%`
+    ].join('\n')
   }
 })
 graph.setCurriculum(example)
