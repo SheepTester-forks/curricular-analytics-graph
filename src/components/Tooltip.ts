@@ -99,7 +99,8 @@ export class Tooltip<C, R> {
     this.position()
   }
 
-  static #TOOLTIP_PADDING = 10
+  static #TOOLTIP_PADDING_X = 10
+  static #TOOLTIP_PADDING_Y = 25
 
   position (): void {
     if (!this.#course) {
@@ -110,9 +111,9 @@ export class Tooltip<C, R> {
     const left = Math.min(
       Math.max(
         this.#course.position.x - this.#width / 2,
-        Tooltip.#TOOLTIP_PADDING
+        Tooltip.#TOOLTIP_PADDING_X
       ),
-      windowWidth - this.#width - Tooltip.#TOOLTIP_PADDING
+      windowWidth - this.#width - Tooltip.#TOOLTIP_PADDING_X
     )
     this.wrapper.style.left = `${left}px`
     this.wrapper.style.setProperty(
@@ -121,7 +122,7 @@ export class Tooltip<C, R> {
     )
     const bottom =
       this.#course.position.y + this.#course.position.radius + this.#height
-    if (bottom < windowHeight) {
+    if (bottom <= windowHeight - Tooltip.#TOOLTIP_PADDING_Y) {
       this.wrapper.style.top = `${
         this.#course.position.y + this.#course.position.radius
       }px`
