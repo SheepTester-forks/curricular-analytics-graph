@@ -1,7 +1,6 @@
 html,
 body,
-#root,
-.graph-wrapper {
+#root {
   height: 100%;
 }
 body {
@@ -20,11 +19,4 @@ button {
 }
 button:not(:disabled) {
   cursor: pointer;
-}
-
-.graph-wrapper {
-  display: flex;
-}
-.graph {
-  flex: auto;
 }

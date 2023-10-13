@@ -1,0 +1,40 @@
+.graphWrapper {
+  height: 100%;
+  display: flex;
+}
+.graph {
+  flex: auto;
+}
+
+.prereqs,
+.coreqs,
+.strictCoreqs {
+  marker-end: url(#arrow);
+}
+.coreqs,
+.strictCoreqs {
+  stroke-dasharray: 5 5;
+}
+
+.prereq {
+  --color: #fee2e2;
+}
+.blocking {
+  --color: #dbeafe;
+}
+.directPrereq {
+  --color: #fca5a5;
+}
+.directCoreq {
+  --color: #fdba74;
+}
+.directStrictCoreq {
+  --color: #fde047;
+}
+.directBlocking {
+  --color: #93c5fd;
+}
+
+.tooltipReqType {
+  font-style: italic;
+}

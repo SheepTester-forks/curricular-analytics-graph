@@ -17,15 +17,6 @@
   stroke: none;
   fill: currentColor;
 }
-.prereqs,
-.coreqs,
-.strictCoreqs {
-  marker-end: url(#arrow);
-}
-.coreqs,
-.strictCoreqs {
-  stroke-dasharray: 5 5;
-}
 
 .termHeading,
 .termFooter {
@@ -44,6 +35,7 @@
   align-items: center;
   flex-direction: column;
   text-align: center;
+  --color: #e2e8f0;
 }
 .courseBall {
   display: flex;
@@ -54,7 +46,7 @@
   height: 30px;
   border-radius: 50%;
   border: 1px solid currentColor;
-  background-color: #e2e8f0;
+  background-color: var(--color);
   transition: color 0.2s, background-color 0.2s;
 }
 .courseName {
@@ -92,7 +84,7 @@
     }
     .courseBall {
       color: #0f172a22;
-      background-color: #f8fafc;
+      --color: #f8fafc;
     }
   }
 }
@@ -100,24 +92,6 @@
   z-index: 2;
   pointer-events: none;
   opacity: 0;
-}
-.prereq .courseBall {
-  background-color: #fee2e2;
-}
-.blocking .courseBall {
-  background-color: #dbeafe;
-}
-.directPrereq .courseBall {
-  background-color: #fca5a5;
-}
-.directCoreq .courseBall {
-  background-color: #fdba74;
-}
-.directStrictCoreq .courseBall {
-  background-color: #fde047;
-}
-.directBlocking .courseBall {
-  background-color: #93c5fd;
 }
 .longestPath {
   stroke: #3b82f6;
@@ -215,7 +189,4 @@
 .tooltipReq {
   display: flex;
   justify-content: space-between;
-}
-.tooltipReqType {
-  font-style: italic;
 }

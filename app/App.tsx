@@ -1,6 +1,8 @@
-import './index.css'
+import { useEffect, useRef } from 'react'
 import { Graph } from '../src/index'
+import styles from './app.module.css'
 import example from './example.json'
+import './index.css'
 import {
   RequisiteType,
   VisualizationCourse,
@@ -8,8 +10,6 @@ import {
   VisualizationTerm,
   toRequisiteType
 } from './types'
-import styles from './app.module.css'
-import { useEffect, useRef } from 'react'
 
 // TEMP: Contains sensitive info
 import dfwRates from '../../ExploratoryCurricularAnalytics/files/summarize_dfw.json'
@@ -122,7 +122,7 @@ export function App () {
       }
     })
     graph.setCurriculum(example)
-    graph.wrapper.classList.add('graph')
+    graph.wrapper.classList.add(styles.graph)
     ref.current?.append(graph.wrapper)
 
     return () => {
@@ -130,5 +130,5 @@ export function App () {
     }
   }, [])
 
-  return <div className='graph-wrapper' ref={ref} />
+  return <div className={styles.graphWrapper} ref={ref} />
 }
