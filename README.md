@@ -9,5 +9,5 @@ A CurricularVisualization.jl-compatible graph renderer
 $ npm run build:app
 
 # Start a local HTTP server that recompiles on the fly
-$ npm run watch
+$ npm run serve
 ```

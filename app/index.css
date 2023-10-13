@@ -1,10 +1,11 @@
 html,
-body {
+body,
+#root,
+.graph-wrapper {
   height: 100%;
 }
 body {
   margin: 0;
-  display: flex;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
     'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
     'Segoe UI Symbol';
@@ -21,6 +22,9 @@ button:not(:disabled) {
   cursor: pointer;
 }
 
+.graph-wrapper {
+  display: flex;
+}
 .graph {
   flex: auto;
 }

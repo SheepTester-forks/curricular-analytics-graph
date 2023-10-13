@@ -4,9 +4,9 @@
   "description": "Visualize curricula and degree plans. Compatible with CurricularVisualization.jl.",
   "main": "dist/index.js",
   "scripts": {
-    "build:app": "esbuild --bundle src/app/app.ts --outdir=dist --supported:nesting=false --minify --sourcemap",
-    "watch": "esbuild --bundle src/app/app.ts --outdir=dist --servedir=dist --sourcemap",
+    "build:app": "esbuild --bundle app/index.tsx --outdir=dist --supported:nesting=false --minify --sourcemap",
     "clean": "rm -f dist/*.js dist/*.css dist/*.map",
+    "serve": "esbuild --bundle app/index.tsx --outdir=dist --servedir=dist --sourcemap",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -20,6 +20,9 @@
   },
   "homepage": "https://github.com/SheepTester-forks/curricular-analytics-graph#readme",
   "devDependencies": {
-    "esbuild": "0.19.3"
+    "@types/react-dom": "^18.2.13",
+    "esbuild": "0.19.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }
