@@ -64,7 +64,6 @@ export class LinkRenderer<C, R> extends Join<
     if (source === target) {
       return ''
     }
-    console.log(source, target)
     // Same term (e.g. coreqs)
     if (source.term === target.term) {
       const midpoint = (source.position.y + target.position.y) / 2

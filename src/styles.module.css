@@ -44,7 +44,6 @@
   align-items: center;
   flex-direction: column;
   text-align: center;
-  z-index: 3;
 }
 .courseBall {
   display: flex;
@@ -102,9 +101,6 @@
   pointer-events: none;
   opacity: 0;
 }
-.highlighted {
-  position: relative;
-}
 .prereq .courseBall {
   background-color: #fee2e2;
 }
@@ -132,10 +128,10 @@
 
 .tooltip {
   position: fixed;
-  z-index: 5;
+  z-index: 10;
   margin-top: 15px;
+  width: 250px;
   background-color: white;
-  padding: 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   animation: tooltip-show 0.2s;
@@ -173,6 +169,36 @@
   opacity: 0;
   transform: translateY(10px);
 }
+.tooltipTitle {
+  margin: 10px 10px 5px;
+  font-size: 1.2em;
+}
+.tooltipTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.tooltipKey,
+.tooltipValue {
+  padding: 0 10px;
+}
 .tooltipKey {
   text-align: left;
+  font-weight: normal;
+  border-right: 1px solid rgba(0, 0, 0, 0.1);
+}
+.tooltipReqHeading {
+  font-size: 1em;
+  margin: 10px 10px -5px;
+}
+.tooltipReqs {
+  margin: 0;
+  padding: 10px;
+  list-style: none;
+}
+.tooltipReq {
+  display: flex;
+  justify-content: space-between;
+}
+.tooltipReqType {
+  font-style: italic;
 }

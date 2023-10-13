@@ -2,7 +2,7 @@ import { Course, longestPathFrom } from './Course'
 import styles from '../styles.module.css'
 import { Link, LinkHandler, LinkRenderer } from './LinkRenderer'
 import { Join } from '../util/Join'
-import { Tooltip } from './Tooltip'
+import { Tooltip, TooltipOptions } from './Tooltip'
 
 export interface ICurriculum<T> {
   curriculum_terms: T[]
@@ -27,7 +27,7 @@ type GridItem<C, R> =
   | { type: 'term-header'; index: number; content: string }
   | { type: 'term-footer'; index: number; content: string }
 
-export type GraphOptions<R, C, T> = {
+export type GraphOptions<R, C, T> = TooltipOptions<C, R> & {
   /** Shown at the top of each term column. */
   termName: (term: T, index: number) => string
   /** Shown at the bottom of each term column. */
@@ -56,8 +56,6 @@ export type GraphOptions<R, C, T> = {
       | { relation: 'selected' }
       | null
   ) => void
-  tooltipContent: (course: C) => [string, string][]
-  tooltipRequisiteInfo: (element: HTMLElement, requisite: R, course: C) => void
 }
 
 export class Graph<
@@ -75,10 +73,13 @@ export class Graph<
   #longestPath: Course<C, R>[] = []
   #longestPathElement: SVGPathElement
 
-  #tooltip = new Tooltip()
+  #tooltip: Tooltip<C, R>
 
   #maxTermLength: number = 0
-  #options: Omit<GraphOptions<R, C, T>, 'styleLink'>
+  #options: Omit<
+    GraphOptions<R, C, T>,
+    'styleLink' | keyof TooltipOptions<C, R>
+  >
 
   constructor ({
     termName = (_, i) => `Term ${i + 1}`,
@@ -87,6 +88,7 @@ export class Graph<
     styleNode = () => '',
     styleLink = () => {},
     styleLinkedNode = () => {},
+    tooltipTitle = () => '',
     tooltipContent = () => [],
     tooltipRequisiteInfo = () => {}
   }: Partial<GraphOptions<R, C, T>> = {}) {
@@ -150,10 +152,13 @@ export class Graph<
       termSummary,
       courseName,
       styleNode,
-      styleLinkedNode,
+      styleLinkedNode
+    }
+    this.#tooltip = new Tooltip<C, R>({
+      tooltipTitle,
       tooltipContent,
       tooltipRequisiteInfo
-    }
+    })
 
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
     this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
@@ -289,14 +294,16 @@ export class Graph<
   }
 
   #handleClick = (e: MouseEvent): void => {
+    if (e.target instanceof Node && this.#tooltip.wrapper.contains(e.target)) {
+      return
+    }
     const course = this.#getCourse(e, 'ball')
     this.#selected = course
     this.#handleHoverCourse(this.#selected)
     if (course) {
-      if (!course.ball.contains(this.#tooltip.wrapper)) {
-        course.ball.append(this.#tooltip.wrapper)
+      if (!course.wrapper.contains(this.#tooltip.wrapper)) {
+        course.wrapper.append(this.#tooltip.wrapper)
       }
-      this.#tooltip.table.join(this.#options.tooltipContent(course.raw))
       this.#tooltip.show(course)
     } else {
       this.#tooltip.hide()

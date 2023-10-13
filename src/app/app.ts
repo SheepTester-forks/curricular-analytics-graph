@@ -85,20 +85,35 @@ const graph = new Graph<
         : styles.directStrictCoreq
     )
   },
+  tooltipTitle: course => course.name,
   tooltipContent: course => {
     // TEMP
     const dfw = (dfwRates as Record<string, number>)[
       course.name.replaceAll(' ', '')
     ]
     return [
-      ['Name', course.name],
       ['Units', String(course.credits)],
       ['Complexity', String(course.metrics.complexity)],
       ['Centrality', String(course.metrics.centrality)],
       ['Blocking factor', String(course.metrics['blocking factor'])],
       ['Delay factor', String(course.metrics['delay factor'])],
-      ['DFW rate', `${(dfw * 100).toFixed(1)}%`]
+      ['DFW rate', dfw !== undefined ? `${(dfw * 100).toFixed(1)}%` : 'N/A']
     ]
+  },
+  tooltipRequisiteInfo: (element, { source, type }) => {
+    if (element.children.length < 2) {
+      element.append(
+        Object.assign(document.createElement('span'), {
+          className: styles.tooltipReqName
+        }),
+        ' ',
+        Object.assign(document.createElement('span'), {
+          className: styles.tooltipReqType
+        })
+      )
+    }
+    element.children[0].textContent = source.name
+    element.children[1].textContent = type
   }
 })
 graph.setCurriculum(example)
