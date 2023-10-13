@@ -14,6 +14,8 @@ export type TooltipOptions<C, R> = {
 export class Tooltip<C, R> {
   #options: TooltipOptions<C, R>
   #course: Course<C, R> | null = null
+  #width = 0
+  #height = 0
 
   wrapper = Object.assign(document.createElement('div'), {
     className: styles.tooltip
@@ -78,17 +80,61 @@ export class Tooltip<C, R> {
       }),
       this.#reqs.wrapper
     )
+    this.hide()
+
+    new ResizeObserver(([{ contentBoxSize }]) => {
+      const [{ blockSize, inlineSize }] = contentBoxSize
+      this.#width = inlineSize
+      this.#height = blockSize
+      this.position()
+    }).observe(this.wrapper)
   }
 
-  show (course: Course<C, R>) {
+  show (course: Course<C, R>): void {
     this.#course = course
     this.wrapper.classList.remove(styles.tooltipHidden)
     this.#title.textContent = this.#options.tooltipTitle(course.raw)
     this.#table.join(this.#options.tooltipContent(course.raw))
     this.#reqs.join(course.backward)
+    this.position()
   }
 
-  hide () {
+  position (): void {
+    if (!this.#course) {
+      return
+    }
+    const TOOLTIP_PADDING = 10
+    const windowWidth = window.innerWidth
+    const windowHeight = window.innerHeight
+    const left = Math.min(
+      Math.max(this.#course.position.x - this.#width / 2, TOOLTIP_PADDING),
+      windowWidth - this.#width - TOOLTIP_PADDING
+    )
+    this.wrapper.style.left = `${left}px`
+    this.wrapper.style.setProperty(
+      '--left',
+      `${this.#course.position.x - left}px`
+    )
+    const bottom =
+      this.#course.position.y + this.#course.position.radius + this.#height
+    if (bottom < windowHeight) {
+      this.wrapper.style.top = `${
+        this.#course.position.y + this.#course.position.radius
+      }px`
+      this.wrapper.style.bottom = ''
+      this.wrapper.classList.add(styles.tooltipTop)
+      this.wrapper.classList.remove(styles.tooltipBottom)
+    } else {
+      this.wrapper.style.top = ''
+      this.wrapper.style.bottom = `${
+        windowHeight - (this.#course.position.y - this.#course.position.radius)
+      }px`
+      this.wrapper.classList.remove(styles.tooltipTop)
+      this.wrapper.classList.add(styles.tooltipBottom)
+    }
+  }
+
+  hide (): void {
     this.wrapper.classList.add(styles.tooltipHidden)
   }
 }

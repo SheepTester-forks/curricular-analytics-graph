@@ -175,7 +175,11 @@ export class Graph<
     )
     this.#longestPathElement.setAttributeNS(null, 'class', styles.longestPath)
     this.#linksHighlighted.wrapper.append(this.#longestPathElement)
-    this.wrapper.append(this.#allLinks.wrapper, this.#linksHighlighted.wrapper)
+    this.wrapper.append(
+      this.#allLinks.wrapper,
+      this.#linksHighlighted.wrapper,
+      this.#tooltip.wrapper
+    )
 
     new ResizeObserver(([{ contentBoxSize }]) => {
       const [{ blockSize, inlineSize }] = contentBoxSize
@@ -321,6 +325,7 @@ export class Graph<
     if (this.#longestPath.length > 0) {
       this.#renderLongestPath()
     }
+    this.#tooltip.position()
   }
 
   setCurriculum (curriculum: ICurriculum<T>): void {
