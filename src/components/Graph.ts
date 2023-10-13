@@ -56,7 +56,8 @@ export type GraphOptions<R, C, T> = {
       | { relation: 'selected' }
       | null
   ) => void
-  tooltipContent: (element: HTMLElement, course: C) => void
+  tooltipContent: (course: C) => [string, string][]
+  tooltipRequisiteInfo: (element: HTMLElement, requisite: R, course: C) => void
 }
 
 export class Graph<
@@ -86,7 +87,8 @@ export class Graph<
     styleNode = () => '',
     styleLink = () => {},
     styleLinkedNode = () => {},
-    tooltipContent = () => {}
+    tooltipContent = () => [],
+    tooltipRequisiteInfo = () => {}
   }: Partial<GraphOptions<R, C, T>> = {}) {
     super({
       wrapper: Object.assign(document.createElement('div'), {
@@ -149,7 +151,8 @@ export class Graph<
       courseName,
       styleNode,
       styleLinkedNode,
-      tooltipContent
+      tooltipContent,
+      tooltipRequisiteInfo
     }
 
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
@@ -293,7 +296,7 @@ export class Graph<
       if (!course.ball.contains(this.#tooltip.wrapper)) {
         course.ball.append(this.#tooltip.wrapper)
       }
-      this.#options.tooltipContent(this.#tooltip.wrapper, course.raw)
+      this.#tooltip.table.join(this.#options.tooltipContent(course.raw))
       this.#tooltip.show(course)
     } else {
       this.#tooltip.hide()

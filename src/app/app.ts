@@ -85,22 +85,20 @@ const graph = new Graph<
         : styles.directStrictCoreq
     )
   },
-  tooltipContent: (node, course) => {
+  tooltipContent: course => {
     // TEMP
     const dfw = (dfwRates as Record<string, number>)[
       course.name.replaceAll(' ', '')
     ]
-    node.style.whiteSpace = 'pre-wrap'
-    node.style.textAlign = 'left'
-    node.textContent = [
-      `Name: ${course.name}`,
-      `Units: ${course.credits}`,
-      `Complexity: ${course.metrics.complexity}`,
-      `Centrality: ${course.metrics.centrality}`,
-      `Blocking factor: ${course.metrics['blocking factor']}`,
-      `Delay factor: ${course.metrics['delay factor']}`,
-      `DFW rate: ${(dfw * 100).toFixed(1)}%`
-    ].join('\n')
+    return [
+      ['Name', course.name],
+      ['Units', String(course.credits)],
+      ['Complexity', String(course.metrics.complexity)],
+      ['Centrality', String(course.metrics.centrality)],
+      ['Blocking factor', String(course.metrics['blocking factor'])],
+      ['Delay factor', String(course.metrics['delay factor'])],
+      ['DFW rate', `${(dfw * 100).toFixed(1)}%`]
+    ]
   }
 })
 graph.setCurriculum(example)

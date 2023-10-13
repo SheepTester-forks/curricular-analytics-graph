@@ -47,7 +47,6 @@
   z-index: 3;
 }
 .courseBall {
-  position: relative;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -132,18 +131,16 @@
 }
 
 .tooltip {
-  position: absolute;
+  position: fixed;
   z-index: 5;
-  top: 100%;
   margin-top: 15px;
-  width: 200px;
-  height: 300px;
   background-color: white;
   padding: 10px;
   border: 1px solid rgba(0, 0, 0, 0.1);
   border-radius: 5px;
   animation: tooltip-show 0.2s;
   transition: all 0.2s;
+  text-align: left; /* TEMP */
 }
 @keyframes tooltip-show {
   from {
@@ -175,4 +172,7 @@
   visibility: hidden;
   opacity: 0;
   transform: translateY(10px);
+}
+.tooltipKey {
+  text-align: left;
 }
