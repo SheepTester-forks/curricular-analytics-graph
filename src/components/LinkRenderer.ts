@@ -64,10 +64,9 @@ export class LinkRenderer<C, R> extends Join<
     if (source === target) {
       return ''
     }
+    console.log(source, target)
     // Same term (e.g. coreqs)
     if (source.term === target.term) {
-      const minY = Math.min(source.position.y, target.position.y)
-      const maxY = Math.max(source.position.y, target.position.y)
       const midpoint = (source.position.y + target.position.y) / 2
 
       // More than one course apart
@@ -77,13 +76,17 @@ export class LinkRenderer<C, R> extends Join<
           'M',
           // Source should be behind target
           source.position.x,
-          minY + source.position.radius,
+          source.position.y +
+            source.position.radius *
+              (source.position.y < target.position.y ? 1 : -1),
           'Q',
           source.position.x +
             (diff * 10 + 30) * (source.position.y < target.position.y ? -1 : 1),
           midpoint,
           target.position.x,
-          maxY - target.position.radius
+          target.position.y +
+            target.position.radius *
+              (target.position.y < source.position.y ? 1 : -1)
         ].join(' ')
       }
 
@@ -91,15 +94,17 @@ export class LinkRenderer<C, R> extends Join<
         'M',
         // Source should be behind target
         source.position.x,
-        minY + source.position.radius,
+        source.position.y +
+          source.position.radius *
+            (source.position.y < target.position.y ? 1 : -1),
         'L',
         target.position.x,
-        maxY - target.position.radius
+        target.position.y +
+          target.position.radius *
+            (target.position.y < source.position.y ? 1 : -1)
       ].join(' ')
     }
 
-    const minX = Math.min(source.position.x, target.position.x)
-    const maxX = Math.max(source.position.x, target.position.x)
     const midpoint = (source.position.x + target.position.x) / 2
 
     // Same y-level, more than one term apart
@@ -108,12 +113,16 @@ export class LinkRenderer<C, R> extends Join<
       return [
         'M',
         // Source should be behind target
-        minX + source.position.radius,
+        source.position.x +
+          source.position.radius *
+            (source.position.x < target.position.x ? 1 : -1),
         source.position.y,
         'Q',
         midpoint,
         source.position.y + diff * 10 + 30,
-        maxX - target.position.radius,
+        target.position.x +
+          target.position.radius *
+            (target.position.x < source.position.x ? 1 : -1),
         target.position.y
       ].join(' ')
     }
@@ -121,14 +130,18 @@ export class LinkRenderer<C, R> extends Join<
     return [
       'M',
       // Source should be behind target
-      minX + source.position.radius,
+      source.position.x +
+        source.position.radius *
+          (source.position.x < target.position.x ? 1 : -1),
       source.position.y,
       'C',
       midpoint,
       source.position.y,
       midpoint,
       target.position.y,
-      maxX - target.position.radius,
+      target.position.x +
+        target.position.radius *
+          (target.position.x < source.position.x ? 1 : -1),
       target.position.y
     ].join(' ')
   }
