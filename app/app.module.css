@@ -1,5 +1,6 @@
 .graphWrapper {
   height: 100%;
+  flex: auto;
   display: flex;
 }
 .graph {
@@ -37,4 +38,15 @@
 
 .tooltipReqType {
   font-style: italic;
+}
+
+.options {
+  color-scheme: dark;
+  background-color: #0f172a;
+  color: #f1f5f9;
+  padding: 20px;
+
+  & h2 {
+    margin: 0;
+  }
 }

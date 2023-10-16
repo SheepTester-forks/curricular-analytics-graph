@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Graph } from '../src/index'
 import styles from './app.module.css'
 import example from './example.json'
@@ -13,6 +13,16 @@ import {
 
 // TEMP: Contains sensitive info
 import dfwRates from '../../ExploratoryCurricularAnalytics/files/summarize_dfw.json'
+import { Dropdown } from './components/Dropdown'
+
+const options = {
+  courseBall: {
+    none: 'None',
+    complexity: 'Complexity',
+    units: 'Units',
+    dfw: 'DFW rate'
+  }
+} as const
 
 const classes: Record<RequisiteType, string> = {
   prereq: styles.prereqs,
@@ -22,6 +32,9 @@ const classes: Record<RequisiteType, string> = {
 
 export function App () {
   const ref = useRef<HTMLDivElement>(null)
+
+  const [courseBall, setCourseBall] =
+    useState<keyof typeof options['courseBall']>('complexity')
 
   useEffect(() => {
     // https://curricularanalytics.org/degree_plans/11085
@@ -44,10 +57,17 @@ export function App () {
         (nameSub ? `\n${nameSub}` : '') +
         (nameCanonical ? `\n(${nameCanonical})` : ''),
       styleNode: (node, course) => {
-        node.textContent = String(course.metrics.complexity ?? '')
         const dfw = (dfwRates as Record<string, number>)[
           course.name.replaceAll(' ', '')
         ]
+        node.textContent =
+          courseBall === 'complexity'
+            ? String(course.metrics.complexity ?? '')
+            : courseBall === 'dfw'
+            ? String(dfw ?? '')
+            : courseBall === 'units'
+            ? String(course.credits)
+            : ''
         if (dfw && dfw > 0.1) {
           // node.style.borderColor = 'red'
         }
@@ -130,5 +150,19 @@ export function App () {
     }
   }, [])
 
-  return <div className={styles.graphWrapper} ref={ref} />
+  return (
+    <>
+      <div className={styles.graphWrapper} ref={ref} />
+      <aside className={styles.options}>
+        <h2>Options</h2>
+        <Dropdown
+          options={options.courseBall}
+          value={courseBall}
+          onChange={setCourseBall}
+        >
+          Course node value
+        </Dropdown>
+      </aside>
+    </>
+  )
 }
