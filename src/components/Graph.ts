@@ -76,22 +76,9 @@ export class Graph<
   #tooltip: Tooltip<C, R>
 
   #maxTermLength: number = 0
-  #options: Omit<
-    GraphOptions<R, C, T>,
-    'styleLink' | keyof TooltipOptions<C, R>
-  >
+  options: Partial<GraphOptions<R, C, T>>
 
-  constructor ({
-    termName = (_, i) => `Term ${i + 1}`,
-    termSummary = () => '',
-    courseName = () => '',
-    styleNode = () => '',
-    styleLink = () => {},
-    styleLinkedNode = () => {},
-    tooltipTitle = () => '',
-    tooltipContent = () => [],
-    tooltipRequisiteInfo = () => {}
-  }: Partial<GraphOptions<R, C, T>> = {}) {
+  constructor (options: Partial<GraphOptions<R, C, T>> = {}) {
     super({
       wrapper: Object.assign(document.createElement('div'), {
         className: styles.graph
@@ -126,8 +113,8 @@ export class Graph<
         if (item.type === 'course') {
           const course = item.course
           course.name.title = course.name.textContent =
-            this.#options.courseName(item.course.raw)
-          this.#options.styleNode(course.ball, item.course.raw)
+            this.options.courseName?.(item.course.raw) ?? ''
+          this.options.styleNode?.(course.ball, item.course.raw)
           element.style.gridColumn = `${course.term + 1} / ${course.term + 2}`
           element.setAttribute(
             'aria-describedby',
@@ -147,26 +134,22 @@ export class Graph<
       }
     })
 
-    this.#options = {
-      termName,
-      termSummary,
-      courseName,
-      styleNode,
-      styleLinkedNode
-    }
+    this.options = options
     this.#tooltip = new Tooltip<C, R>({
-      tooltipTitle,
-      tooltipContent,
-      tooltipRequisiteInfo
+      tooltipTitle: (...args) => options.tooltipTitle?.(...args) ?? '',
+      tooltipContent: (...args) => options.tooltipContent?.(...args) ?? [],
+      tooltipRequisiteInfo: (...args) => options.tooltipRequisiteInfo?.(...args)
     })
 
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
     this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
     this.wrapper.addEventListener('click', this.#handleClick)
 
-    this.#allLinks = new LinkRenderer(styleLink)
+    this.#allLinks = new LinkRenderer((...args) => options.styleLink?.(...args))
     this.#allLinks.wrapper.classList.add(styles.allLinks)
-    this.#linksHighlighted = new LinkRenderer(styleLink)
+    this.#linksHighlighted = new LinkRenderer((...args) =>
+      options.styleLink?.(...args)
+    )
     this.#linksHighlighted.wrapper.classList.add(styles.highlightedLinks)
 
     this.#longestPathElement = document.createElementNS(
@@ -191,7 +174,7 @@ export class Graph<
     this.#highlighted.push(course)
     course.wrapper.classList.add(styles.highlighted)
     for (const { course: neighbor, raw } of course[direction]) {
-      this.#options.styleLinkedNode(neighbor.wrapper, neighbor.raw, {
+      this.options.styleLinkedNode?.(neighbor.wrapper, neighbor.raw, {
         ...raw,
         relation: direction,
         direct: false
@@ -218,7 +201,7 @@ export class Graph<
   #handleHoverCourse (course: Course<C, R> | null) {
     for (const course of this.#highlighted) {
       course.wrapper.classList.remove(styles.highlighted)
-      this.#options.styleLinkedNode(course.wrapper, course.raw, null)
+      this.options.styleLinkedNode?.(course.wrapper, course.raw, null)
     }
     if (!course) {
       this.wrapper.classList.remove(styles.courseSelected)
@@ -230,12 +213,12 @@ export class Graph<
     this.wrapper.classList.add(styles.courseSelected)
     course.wrapper.classList.add(styles.highlighted)
     this.#highlighted = [course]
-    this.#options.styleLinkedNode(course.wrapper, course.raw, {
+    this.options.styleLinkedNode?.(course.wrapper, course.raw, {
       relation: 'selected'
     })
     for (const link of course.backward) {
       link.course.wrapper.classList.add(styles.highlighted)
-      this.#options.styleLinkedNode(link.course.wrapper, course.raw, {
+      this.options.styleLinkedNode?.(link.course.wrapper, course.raw, {
         ...link.raw,
         relation: 'backward',
         direct: true
@@ -244,7 +227,7 @@ export class Graph<
     }
     for (const link of course.forward) {
       link.course.wrapper.classList.add(styles.highlighted)
-      this.#options.styleLinkedNode(link.course.wrapper, course.raw, {
+      this.options.styleLinkedNode?.(link.course.wrapper, course.raw, {
         ...link.raw,
         relation: 'forward',
         direct: true
@@ -347,7 +330,7 @@ export class Graph<
       items.push({
         type: 'term-header',
         index: i,
-        content: this.#options.termName(term, i)
+        content: this.options.termName?.(term, i) ?? `Term ${i + 1}`
       })
 
       for (const [j, item] of term.curriculum_items.entries()) {
@@ -362,7 +345,7 @@ export class Graph<
       items.push({
         type: 'term-footer',
         index: i,
-        content: this.#options.termSummary(term, i)
+        content: this.options.termSummary?.(term, i) ?? ''
       })
     }
 

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Graph } from '../src/index'
+import { Graph, GraphOptions } from '../src/index'
 import styles from './app.module.css'
 import example from './example.json'
 import './index.css'
@@ -33,16 +33,38 @@ const classes: Record<RequisiteType, string> = {
 export function App () {
   const ref = useRef<HTMLDivElement>(null)
 
+  const graph = useRef<Graph<
+    VisualizationRequisite,
+    VisualizationCourse,
+    VisualizationTerm
+  > | null>(null)
+
   const [courseBall, setCourseBall] =
     useState<keyof typeof options['courseBall']>('complexity')
 
   useEffect(() => {
     // https://curricularanalytics.org/degree_plans/11085
-    const graph = new Graph<
+    graph.current = new Graph<
       VisualizationRequisite,
       VisualizationCourse,
       VisualizationTerm
-    >({
+    >()
+    graph.current.setCurriculum(example)
+    graph.current.wrapper.classList.add(styles.graph)
+    ref.current?.append(graph.current.wrapper)
+
+    return () => {
+      graph.current?.wrapper.remove()
+      graph.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    const options: GraphOptions<
+      VisualizationRequisite,
+      VisualizationCourse,
+      VisualizationTerm
+    > = {
       termName: term => term.name,
       termSummary: term =>
         `Complex.: ${term.curriculum_items.reduce(
@@ -64,7 +86,9 @@ export function App () {
           courseBall === 'complexity'
             ? String(course.metrics.complexity ?? '')
             : courseBall === 'dfw'
-            ? String(dfw ?? '')
+            ? dfw !== undefined
+              ? (dfw * 100).toFixed(0)
+              : ''
             : courseBall === 'units'
             ? String(course.credits)
             : ''
@@ -140,15 +164,12 @@ export function App () {
         element.children[0].textContent = source.name
         element.children[1].textContent = type
       }
-    })
-    graph.setCurriculum(example)
-    graph.wrapper.classList.add(styles.graph)
-    ref.current?.append(graph.wrapper)
-
-    return () => {
-      graph.wrapper.remove()
     }
-  }, [])
+    if (graph.current) {
+      Object.assign(graph.current.options, options)
+      graph.current?.forceUpdate()
+    }
+  }, [courseBall])
 
   return (
     <>
