@@ -20,6 +20,7 @@ function defineArrow (): SVGDefsElement {
   marker.setAttributeNS(null, 'refY', '5')
   marker.setAttributeNS(null, 'markerWidth', '8')
   marker.setAttributeNS(null, 'markerHeight', '8')
+  marker.setAttributeNS(null, 'markerUnits', 'userSpaceOnUse')
   marker.setAttributeNS(null, 'orient', 'auto-start-reverse')
   marker.append(arrowPath)
 

@@ -21,6 +21,29 @@ const options = {
     complexity: 'Complexity',
     units: 'Units',
     dfw: 'DFW rate'
+  },
+  courseBallColor: {
+    none: 'None',
+    flagHighDfw: 'Flag DFW > 10% as red'
+  },
+  courseBallWidth: {
+    none: 'None',
+    dfwThick: 'High DFW is thicker',
+    dfwThin: 'High DFW is thinner',
+    unitsThick: 'More units is thicker'
+  },
+  lineWidth: {
+    none: 'None',
+    dfwThick: 'High DFW is thicker',
+    dfwThin: 'High DFW is thinner'
+  },
+  lineColor: {
+    none: 'None',
+    flagHighDfw: 'Flag DFW > 10% as red'
+  },
+  lineDash: {
+    none: 'None',
+    flagHighDfw: 'Flag DFW > 10% as dashed line'
   }
 } as const
 
@@ -41,6 +64,16 @@ export function App () {
 
   const [courseBall, setCourseBall] =
     useState<keyof typeof options['courseBall']>('complexity')
+  const [courseBallColor, setCourseBallColor] =
+    useState<keyof typeof options['courseBallColor']>('none')
+  const [courseBallWidth, setCourseBallWidth] =
+    useState<keyof typeof options['courseBallWidth']>('none')
+  const [lineWidth, setLineWidth] =
+    useState<keyof typeof options['lineWidth']>('none')
+  const [lineColor, setLineColor] =
+    useState<keyof typeof options['lineColor']>('none')
+  const [lineDash, setLineDash] =
+    useState<keyof typeof options['lineDash']>('none')
 
   useEffect(() => {
     // https://curricularanalytics.org/degree_plans/11085
@@ -92,17 +125,46 @@ export function App () {
             : courseBall === 'units'
             ? String(course.credits)
             : ''
-        if (dfw && dfw > 0.1) {
-          // node.style.borderColor = 'red'
-        }
+        node.style.borderColor =
+          dfw !== undefined && dfw > 0.1 && courseBallColor === 'flagHighDfw'
+            ? 'red'
+            : ''
+        node.style.borderWidth =
+          dfw !== undefined && courseBallWidth === 'dfwThick'
+            ? `${dfw * 30 + 1}px`
+            : dfw !== undefined && courseBallWidth === 'dfwThin'
+            ? `${(1 - dfw) * 5}px`
+            : courseBallWidth === 'unitsThick'
+            ? `${course.credits}px`
+            : ''
       },
       styleLink: (path, { type, source }) => {
         const dfw = (dfwRates as Record<string, number>)[
           source.name.replaceAll(' ', '')
         ]
-        if (dfw) {
-          // path.setAttributeNS(null, 'stroke', dfw > 0.1 ? 'red' : '')
-        }
+        path.setAttributeNS(
+          null,
+          'stroke',
+          dfw !== undefined && dfw > 0.1 && lineColor === 'flagHighDfw'
+            ? 'red'
+            : ''
+        )
+        path.setAttributeNS(
+          null,
+          'stroke-width',
+          dfw !== undefined && lineWidth === 'dfwThick'
+            ? `${dfw * 15 + 0.5}`
+            : dfw !== undefined && lineWidth === 'dfwThin'
+            ? `${(1 - dfw) * 3}`
+            : ''
+        )
+        path.setAttributeNS(
+          null,
+          'stroke-dasharray',
+          dfw !== undefined && dfw > 0.1 && lineDash === 'flagHighDfw'
+            ? '5 5'
+            : ''
+        )
         path.classList.add(classes[toRequisiteType(type)])
       },
       styleLinkedNode: (node, _, link) => {
@@ -169,7 +231,14 @@ export function App () {
       Object.assign(graph.current.options, options)
       graph.current?.forceUpdate()
     }
-  }, [courseBall])
+  }, [
+    courseBall,
+    courseBallColor,
+    courseBallWidth,
+    lineWidth,
+    lineColor,
+    lineDash
+  ])
 
   return (
     <>
@@ -181,7 +250,42 @@ export function App () {
           value={courseBall}
           onChange={setCourseBall}
         >
-          Course node value
+          Course node number
+        </Dropdown>
+        <Dropdown
+          options={options.courseBallColor}
+          value={courseBallColor}
+          onChange={setCourseBallColor}
+        >
+          Course node outline color
+        </Dropdown>
+        <Dropdown
+          options={options.courseBallWidth}
+          value={courseBallWidth}
+          onChange={setCourseBallWidth}
+        >
+          Course node outline thickness
+        </Dropdown>
+        <Dropdown
+          options={options.lineWidth}
+          value={lineWidth}
+          onChange={setLineWidth}
+        >
+          Prereq line thickness
+        </Dropdown>
+        <Dropdown
+          options={options.lineColor}
+          value={lineColor}
+          onChange={setLineColor}
+        >
+          Prereq line color
+        </Dropdown>
+        <Dropdown
+          options={options.lineDash}
+          value={lineDash}
+          onChange={setLineDash}
+        >
+          Prereq line pattern
         </Dropdown>
       </aside>
     </>

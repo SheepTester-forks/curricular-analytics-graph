@@ -366,4 +366,10 @@ export class Graph<
     this.join(items)
     this.#allLinks.join(this.#links)
   }
+
+  forceUpdate (): void {
+    super.forceUpdate()
+    this.#allLinks.forceUpdate()
+    this.#linksHighlighted.forceUpdate()
+  }
 }
