@@ -3,8 +3,9 @@ import { Graph, GraphOptions } from '../src/index'
 import styles from './app.module.css'
 // https://curricularanalytics.org/degree_plans/11085
 // import example from './example.json'
-// https://curricularanalytics.org/degree_plans/25144 (reordered for cleaner lines)
+// https://curricularanalytics.org/degree_plans/25144 (extraneous reqs removed)
 import example from './BE27.json'
+import { Dropdown } from './components/Dropdown'
 import './index.css'
 import {
   RequisiteType,
@@ -13,10 +14,13 @@ import {
   VisualizationTerm,
   toRequisiteType
 } from './types'
-
 // TEMP: Contains sensitive info
 import dfwRates from '../../ExploratoryCurricularAnalytics/files/summarize_dfw.json'
-import { Dropdown } from './components/Dropdown'
+
+// Sort classes alphabetically in each term to clean up lines
+for (const term of example.curriculum_terms) {
+  term.curriculum_items.sort((a, b) => a.name.localeCompare(b.name))
+}
 
 const options = {
   courseBall: {
@@ -54,6 +58,13 @@ const classes: Record<RequisiteType, string> = {
   prereq: styles.prereqs,
   coreq: styles.coreqs,
   'strict-coreq': styles.strictCoreqs
+}
+
+function getDfw (courseName: string): number | null {
+  const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
+  return (
+    (match && (dfwRates as Record<string, number>)[match[1] + match[2]]) ?? null
+  )
 }
 
 export function App () {
@@ -114,58 +125,50 @@ export function App () {
         (nameSub ? `\n${nameSub}` : '') +
         (nameCanonical ? `\n(${nameCanonical})` : ''),
       styleNode: (node, course) => {
-        const dfw = (dfwRates as Record<string, number>)[
-          course.name.replaceAll(' ', '')
-        ]
+        const dfw = getDfw(course.name)
         node.textContent =
           courseBall === 'complexity'
             ? String(course.metrics.complexity ?? '')
             : courseBall === 'dfw'
-            ? dfw !== undefined
+            ? dfw !== null
               ? (dfw * 100).toFixed(0)
               : ''
             : courseBall === 'units'
             ? String(course.credits)
             : ''
         node.style.borderColor =
-          dfw !== undefined && dfw > 0.1 && courseBallColor === 'flagHighDfw'
+          dfw !== null && dfw > 0.1 && courseBallColor === 'flagHighDfw'
             ? 'red'
             : ''
         node.style.borderWidth =
-          dfw !== undefined && courseBallWidth === 'dfwThick'
+          dfw !== null && courseBallWidth === 'dfwThick'
             ? `${dfw * 30 + 1}px`
-            : dfw !== undefined && courseBallWidth === 'dfwThin'
+            : dfw !== null && courseBallWidth === 'dfwThin'
             ? `${(1 - dfw) * 5}px`
             : courseBallWidth === 'unitsThick'
             ? `${course.credits}px`
             : ''
       },
       styleLink: (path, { type, source }) => {
-        const dfw = (dfwRates as Record<string, number>)[
-          source.name.replaceAll(' ', '')
-        ]
+        const dfw = getDfw(source.name)
         path.setAttributeNS(
           null,
           'stroke',
-          dfw !== undefined && dfw > 0.1 && lineColor === 'flagHighDfw'
-            ? 'red'
-            : ''
+          dfw !== null && dfw > 0.1 && lineColor === 'flagHighDfw' ? 'red' : ''
         )
         path.setAttributeNS(
           null,
           'stroke-width',
-          dfw !== undefined && lineWidth === 'dfwThick'
+          dfw !== null && lineWidth === 'dfwThick'
             ? `${dfw * 15 + 0.5}`
-            : dfw !== undefined && lineWidth === 'dfwThin'
+            : dfw !== null && lineWidth === 'dfwThin'
             ? `${(1 - dfw) * 3}`
             : ''
         )
         path.setAttributeNS(
           null,
           'stroke-dasharray',
-          dfw !== undefined && dfw > 0.1 && lineDash === 'flagHighDfw'
-            ? '5 5'
-            : ''
+          dfw !== null && dfw > 0.1 && lineDash === 'flagHighDfw' ? '5 5' : ''
         )
         path.classList.add(classes[toRequisiteType(type)])
       },
@@ -200,17 +203,14 @@ export function App () {
       },
       tooltipTitle: course => course.name,
       tooltipContent: course => {
-        // TEMP
-        const dfw = (dfwRates as Record<string, number>)[
-          course.name.replaceAll(' ', '')
-        ]
+        const dfw = getDfw(course.name)
         return [
           ['Units', String(course.credits)],
           ['Complexity', String(course.metrics.complexity)],
           ['Centrality', String(course.metrics.centrality)],
           ['Blocking factor', String(course.metrics['blocking factor'])],
           ['Delay factor', String(course.metrics['delay factor'])],
-          ['DFW rate', dfw !== undefined ? `${(dfw * 100).toFixed(1)}%` : 'N/A']
+          ['DFW rate', dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A']
         ]
       },
       tooltipRequisiteInfo: (element, { source, type }) => {
