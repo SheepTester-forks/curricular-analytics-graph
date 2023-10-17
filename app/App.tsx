@@ -14,8 +14,7 @@ import {
   VisualizationTerm,
   toRequisiteType
 } from './types'
-// TEMP: Contains sensitive info
-import dfwRates from '../../ExploratoryCurricularAnalytics/files/summarize_dfw.json'
+import dfwRates from './fake-dfw.json'
 
 // Sort classes alphabetically in each term to clean up lines
 for (const term of example.curriculum_terms) {
@@ -289,6 +288,7 @@ export function App () {
         >
           Prereq line pattern
         </Dropdown>
+        <p>For this demo, DFW rates have been randomized.</p>
       </aside>
     </>
   )
