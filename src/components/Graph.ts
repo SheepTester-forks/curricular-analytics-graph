@@ -22,10 +22,10 @@ export type IRequisite = {
   target_id: number
 }
 
-type GridItem<C, R> =
+type GridItem<C, R, T> =
   | { type: 'course'; course: Course<C, R> }
-  | { type: 'term-header'; index: number; content: string }
-  | { type: 'term-footer'; index: number; content: string }
+  | { type: 'term-header'; index: number; term: T }
+  | { type: 'term-footer'; index: number; term: T }
 
 export type GraphOptions<R, C, T> = TooltipOptions<C, R> & {
   /** Shown at the top of each term column. */
@@ -62,7 +62,7 @@ export class Graph<
   R extends IRequisite,
   C extends ICourse<R>,
   T extends ITerm<C>
-> extends Join<GridItem<C, R>, HTMLElement> {
+> extends Join<GridItem<C, R, T>, HTMLElement> {
   #courseNodes = new WeakMap<Element, Course<C, R>>()
   #highlighted: Course<C, R>[] = []
   #selected: Course<C, R> | null = null
@@ -121,9 +121,12 @@ export class Graph<
             `term-heading-${course.index}`
           )
         } else if (item.type === 'term-header') {
-          element.textContent = item.content
+          element.textContent =
+            this.options.termName?.(item.term, item.index) ??
+            `Term ${item.index + 1}`
         } else if (item.type === 'term-footer') {
-          element.textContent = item.content
+          element.textContent =
+            this.options.termSummary?.(item.term, item.index) ?? ''
           element.style.gridRow = `${this.#maxTermLength + 2}`
         }
       },
@@ -325,16 +328,12 @@ export class Graph<
 
     const courses: Course<C, R>[] = []
     const coursesById: Record<number, Course<C, R>> = {}
-    const items: GridItem<C, R>[] = []
-    for (const [i, term] of curriculum.curriculum_terms.entries()) {
-      items.push({
-        type: 'term-header',
-        index: i,
-        content: this.options.termName?.(term, i) ?? `Term ${i + 1}`
-      })
+    const items: GridItem<C, R, T>[] = []
+    for (const [index, term] of curriculum.curriculum_terms.entries()) {
+      items.push({ type: 'term-header', index, term })
 
       for (const [j, item] of term.curriculum_items.entries()) {
-        const course = new Course<C, R>(item, i, j)
+        const course = new Course<C, R>(item, index, j)
         items.push({ type: 'course', course })
         this.#courseNodes.set(course.wrapper, course)
         courses.push(course)
@@ -342,11 +341,7 @@ export class Graph<
         coursesById[course.raw.id] ??= course
       }
 
-      items.push({
-        type: 'term-footer',
-        index: i,
-        content: this.options.termSummary?.(term, i) ?? ''
-      })
+      items.push({ type: 'term-footer', index, term })
     }
 
     this.#links = []

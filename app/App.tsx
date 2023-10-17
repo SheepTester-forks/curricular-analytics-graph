@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Graph, GraphOptions } from '../src/index'
 import styles from './app.module.css'
-import example from './example.json'
+// https://curricularanalytics.org/degree_plans/11085
+// import example from './example.json'
+// https://curricularanalytics.org/degree_plans/25144 (reordered for cleaner lines)
+import example from './BE27.json'
 import './index.css'
 import {
   RequisiteType,
@@ -76,7 +79,6 @@ export function App () {
     useState<keyof typeof options['lineDash']>('none')
 
   useEffect(() => {
-    // https://curricularanalytics.org/degree_plans/11085
     graph.current = new Graph<
       VisualizationRequisite,
       VisualizationCourse,

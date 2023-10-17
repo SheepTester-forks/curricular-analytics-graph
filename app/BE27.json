@@ -1,0 +1,1047 @@
+{
+  "name": "",
+  "metrics": {
+    "complexity": 532,
+    "centrality": 1209
+  },
+  "curriculum_terms": [
+    {
+      "name": "Term 1",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [],
+          "name": "CHEM 6A",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 18,
+            "blocking factor": 11,
+            "delay factor": 7
+          },
+          "id": 1,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "MATH 20A",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 41,
+            "blocking factor": 32,
+            "delay factor": 9
+          },
+          "id": 2,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "WCWP 10A",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 7,
+            "blocking factor": 3,
+            "delay factor": 4
+          },
+          "id": 39,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "GE 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 48,
+          "credits": 4
+        }
+      ],
+      "id": 1
+    },
+    {
+      "name": "Term 2",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 2,
+              "target_id": 4,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20B",
+          "metrics": {
+            "centrality": 117,
+            "complexity": 34,
+            "blocking factor": 25,
+            "delay factor": 9
+          },
+          "id": 4,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "BENG 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 17,
+            "blocking factor": 10,
+            "delay factor": 7
+          },
+          "id": 5,
+          "credits": 2
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 2,
+              "target_id": 3,
+              "type": "prereq"
+            },
+            {
+              "source_id": 1,
+              "target_id": 3,
+              "type": "prereq"
+            }
+          ],
+          "name": "CHEM 6B",
+          "metrics": {
+            "centrality": 56,
+            "complexity": 17,
+            "blocking factor": 10,
+            "delay factor": 7
+          },
+          "id": 3,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 2,
+              "target_id": 6,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2A",
+          "metrics": {
+            "centrality": 73,
+            "complexity": 20,
+            "blocking factor": 12,
+            "delay factor": 8
+          },
+          "id": 6,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 39,
+              "target_id": 40,
+              "type": "prereq"
+            }
+          ],
+          "name": "WCWP 10B",
+          "metrics": {
+            "centrality": 4,
+            "complexity": 6,
+            "blocking factor": 2,
+            "delay factor": 4
+          },
+          "id": 40,
+          "credits": 4
+        }
+      ],
+      "id": 2
+    },
+    {
+      "name": "Term 3",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 10,
+              "type": "prereq"
+            },
+            {
+              "source_id": 6,
+              "target_id": 10,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2B",
+          "metrics": {
+            "centrality": 50,
+            "complexity": 15,
+            "blocking factor": 7,
+            "delay factor": 8
+          },
+          "id": 10,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 9,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20C / 31BH",
+          "metrics": {
+            "centrality": 86,
+            "complexity": 30,
+            "blocking factor": 21,
+            "delay factor": 9
+          },
+          "id": 9,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 3,
+              "target_id": 8,
+              "type": "prereq"
+            }
+          ],
+          "name": "CHEM 7L",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 3,
+            "blocking factor": 0,
+            "delay factor": 3
+          },
+          "id": 8,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 3,
+              "target_id": 7,
+              "type": "prereq"
+            }
+          ],
+          "name": "CHEM 6C",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 3,
+            "blocking factor": 0,
+            "delay factor": 3
+          },
+          "id": 7,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 39,
+              "target_id": 41,
+              "type": "prereq"
+            },
+            {
+              "source_id": 40,
+              "target_id": 41,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHIL / POLI 27",
+          "metrics": {
+            "centrality": 7,
+            "complexity": 5,
+            "blocking factor": 1,
+            "delay factor": 4
+          },
+          "id": 41,
+          "credits": 4
+        }
+      ],
+      "id": 3
+    },
+    {
+      "name": "Term 4",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 3,
+              "target_id": 11,
+              "type": "prereq"
+            }
+          ],
+          "name": "CHEM 40A",
+          "metrics": {
+            "centrality": 38,
+            "complexity": 13,
+            "blocking factor": 6,
+            "delay factor": 7
+          },
+          "id": 11,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "BILD 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 16,
+            "blocking factor": 10,
+            "delay factor": 6
+          },
+          "id": 13,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 9,
+              "target_id": 12,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20D",
+          "metrics": {
+            "centrality": 31,
+            "complexity": 16,
+            "blocking factor": 9,
+            "delay factor": 7
+          },
+          "id": 12,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 41,
+              "target_id": 42,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHIL / POLI 28",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 4,
+            "blocking factor": 0,
+            "delay factor": 4
+          },
+          "id": 42,
+          "credits": 4
+        }
+      ],
+      "id": 4
+    },
+    {
+      "name": "Term 5",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 6,
+              "target_id": 17,
+              "type": "prereq"
+            },
+            {
+              "source_id": 10,
+              "target_id": 17,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2CL",
+          "metrics": {
+            "centrality": 60,
+            "complexity": 13,
+            "blocking factor": 5,
+            "delay factor": 8
+          },
+          "id": 17,
+          "credits": 2
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 6,
+              "target_id": 16,
+              "type": "prereq"
+            },
+            {
+              "source_id": 9,
+              "target_id": 16,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2C",
+          "metrics": {
+            "centrality": 48,
+            "complexity": 14,
+            "blocking factor": 6,
+            "delay factor": 8
+          },
+          "id": 16,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "MATH 18 / 31AH",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 24,
+            "blocking factor": 17,
+            "delay factor": 7
+          },
+          "id": 15,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 11,
+              "target_id": 14,
+              "type": "prereq"
+            }
+          ],
+          "name": "CHEM 40B",
+          "metrics": {
+            "centrality": 38,
+            "complexity": 12,
+            "blocking factor": 5,
+            "delay factor": 7
+          },
+          "id": 14,
+          "credits": 4
+        }
+      ],
+      "id": 5
+    },
+    {
+      "name": "Term 6",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 5,
+              "target_id": 20,
+              "type": "prereq"
+            },
+            {
+              "source_id": 15,
+              "target_id": 20,
+              "type": "prereq"
+            },
+            {
+              "source_id": 9,
+              "target_id": 20,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 100",
+          "metrics": {
+            "centrality": 54,
+            "complexity": 18,
+            "blocking factor": 9,
+            "delay factor": 9
+          },
+          "id": 20,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 15,
+              "target_id": 19,
+              "type": "prereq"
+            },
+            {
+              "source_id": 9,
+              "target_id": 19,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20E / 31CH",
+          "metrics": {
+            "centrality": 12,
+            "complexity": 10,
+            "blocking factor": 3,
+            "delay factor": 7
+          },
+          "id": 19,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 18,
+              "type": "prereq"
+            },
+            {
+              "source_id": 2,
+              "target_id": 18,
+              "type": "prereq"
+            }
+          ],
+          "name": "MAE 8",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 3,
+            "blocking factor": 0,
+            "delay factor": 3
+          },
+          "id": 18,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "GE 2",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 49,
+          "credits": 4
+        }
+      ],
+      "id": 6
+    },
+    {
+      "name": "Term 7",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 13,
+              "target_id": 21,
+              "type": "prereq"
+            }
+          ],
+          "name": "BICD 100",
+          "metrics": {
+            "centrality": 9,
+            "complexity": 9,
+            "blocking factor": 4,
+            "delay factor": 5
+          },
+          "id": 21,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 16,
+              "target_id": 22,
+              "type": "prereq"
+            },
+            {
+              "source_id": 17,
+              "target_id": 22,
+              "type": "prereq"
+            }
+          ],
+          "name": "MAE 170",
+          "metrics": {
+            "centrality": 99,
+            "complexity": 12,
+            "blocking factor": 4,
+            "delay factor": 8
+          },
+          "id": 22,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 6,
+              "target_id": 23,
+              "type": "prereq"
+            },
+            {
+              "source_id": 12,
+              "target_id": 23,
+              "type": "prereq"
+            },
+            {
+              "source_id": 19,
+              "target_id": 23,
+              "type": "prereq"
+            }
+          ],
+          "name": "CENG 101A",
+          "metrics": {
+            "centrality": 24,
+            "complexity": 9,
+            "blocking factor": 2,
+            "delay factor": 7
+          },
+          "id": 23,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "GE 3",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 50,
+          "credits": 4
+        }
+      ],
+      "id": 7
+    },
+    {
+      "name": "Term 8",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 15,
+              "target_id": 24,
+              "type": "prereq"
+            },
+            {
+              "source_id": 12,
+              "target_id": 24,
+              "type": "prereq"
+            },
+            {
+              "source_id": 14,
+              "target_id": 24,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 123",
+          "metrics": {
+            "centrality": 67,
+            "complexity": 11,
+            "blocking factor": 4,
+            "delay factor": 7
+          },
+          "id": 24,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 13,
+              "target_id": 25,
+              "type": "prereq"
+            },
+            {
+              "source_id": 20,
+              "target_id": 25,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 168",
+          "metrics": {
+            "centrality": 29,
+            "complexity": 13,
+            "blocking factor": 4,
+            "delay factor": 9
+          },
+          "id": 25,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 6,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 16,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 2,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 10,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 12,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 3,
+              "target_id": 26,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 130",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 5,
+            "blocking factor": 0,
+            "delay factor": 5
+          },
+          "id": 26,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "GE / DEI",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 43,
+          "credits": 4
+        }
+      ],
+      "id": 8
+    },
+    {
+      "name": "Term 9",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 25,
+              "target_id": 27,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 187A",
+          "metrics": {
+            "centrality": 29,
+            "complexity": 12,
+            "blocking factor": 3,
+            "delay factor": 9
+          },
+          "id": 27,
+          "credits": 1
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 23,
+              "target_id": 28,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 103B",
+          "metrics": {
+            "centrality": 24,
+            "complexity": 8,
+            "blocking factor": 1,
+            "delay factor": 7
+          },
+          "id": 28,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 24,
+              "target_id": 29,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 186A",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 6,
+            "blocking factor": 0,
+            "delay factor": 6
+          },
+          "id": 29,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 22,
+              "target_id": 30,
+              "type": "prereq"
+            },
+            {
+              "source_id": 21,
+              "target_id": 30,
+              "type": "prereq"
+            },
+            {
+              "source_id": 20,
+              "target_id": 30,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 160",
+          "metrics": {
+            "centrality": 111,
+            "complexity": 11,
+            "blocking factor": 3,
+            "delay factor": 8
+          },
+          "id": 30,
+          "credits": 4
+        }
+      ],
+      "id": 9
+    },
+    {
+      "name": "Term 10",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 28,
+              "target_id": 31,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 166A",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 7,
+            "blocking factor": 0,
+            "delay factor": 7
+          },
+          "id": 31,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 24,
+              "target_id": 32,
+              "type": "prereq"
+            },
+            {
+              "source_id": 30,
+              "target_id": 32,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 161A",
+          "metrics": {
+            "centrality": 85,
+            "complexity": 9,
+            "blocking factor": 1,
+            "delay factor": 8
+          },
+          "id": 32,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 22,
+              "target_id": 33,
+              "type": "prereq"
+            },
+            {
+              "source_id": 30,
+              "target_id": 33,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 162",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 7,
+            "blocking factor": 0,
+            "delay factor": 7
+          },
+          "id": 33,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "BENG DE COURSE (ASSIGNED) 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 44,
+          "credits": 3
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 27,
+              "target_id": 34,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 187B",
+          "metrics": {
+            "centrality": 29,
+            "complexity": 11,
+            "blocking factor": 2,
+            "delay factor": 9
+          },
+          "id": 34,
+          "credits": 1
+        }
+      ],
+      "id": 10
+    },
+    {
+      "name": "Term 11",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 34,
+              "target_id": 35,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 187C",
+          "metrics": {
+            "centrality": 29,
+            "complexity": 10,
+            "blocking factor": 1,
+            "delay factor": 9
+          },
+          "id": 35,
+          "credits": 1
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "BENG DE COURSE (ASSIGNED) 2",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 45,
+          "credits": 3
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 32,
+              "target_id": 36,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 161B",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 8,
+            "blocking factor": 0,
+            "delay factor": 8
+          },
+          "id": 36,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "TECHNICAL ELECTIVE 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 46,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "GE 4",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 51,
+          "credits": 4
+        }
+      ],
+      "id": 11
+    },
+    {
+      "name": "Term 12",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 35,
+              "target_id": 37,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 187D",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 9,
+            "blocking factor": 0,
+            "delay factor": 9
+          },
+          "id": 37,
+          "credits": 1
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 24,
+              "target_id": 38,
+              "type": "prereq"
+            }
+          ],
+          "name": "BENG 125",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 6,
+            "blocking factor": 0,
+            "delay factor": 6
+          },
+          "id": 38,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "TECHNICAL ELECTIVE 2",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 47,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "GE 5",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 52,
+          "credits": 4
+        }
+      ],
+      "id": 12
+    }
+  ],
+  "metadata": {}
+}
