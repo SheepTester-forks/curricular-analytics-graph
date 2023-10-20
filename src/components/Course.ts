@@ -46,6 +46,56 @@ export class Course<C, R> {
       radius: width / 2
     }
   }
+
+  #reachable (): Set<Course<C, R>> {
+    const reachable = new Set<Course<C, R>>([this])
+    const toVisit: Course<C, R>[] = [this]
+    let next: Course<C, R> | undefined
+    while ((next = toVisit.pop())) {
+      for (const { course } of next.forward) {
+        if (!reachable.has(course)) {
+          reachable.add(course)
+          toVisit.push(course)
+        }
+      }
+    }
+    return reachable
+  }
+
+  #blockingFactor (): number {
+    return this.#reachable().size
+  }
+
+  static #allPaths<C, R> (courses: Course<C, R>[]): Course<C, R>[][] {
+    const paths: Course<C, R>[][] = []
+    for (const sink of courses) {
+      // Only consider sink nodes
+      if (sink.backward.length === 0 || sink.forward.length > 0) {
+        continue
+      }
+
+      const toVisit: Course<C, R>[][] = [[sink]]
+      let path: Course<C, R>[] | undefined
+      while ((path = toVisit.pop())) {
+        for (const [i, { course }] of path[0].backward.entries()) {
+          if (i === 0) {
+            // First neighbor, build onto existing path
+            path.unshift(course)
+          } else {
+            path = [...path]
+            path[0] = course
+          }
+          // If reached a source, then the path is done
+          if (course.backward.length === 0) {
+            paths.push(path)
+          } else {
+            toVisit.push(path)
+          }
+        }
+      }
+    }
+    return paths
+  }
 }
 
 export function longestPathFrom<C, R> (
