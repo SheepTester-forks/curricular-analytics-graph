@@ -14,7 +14,8 @@ import {
   VisualizationTerm,
   toRequisiteType
 } from './types'
-import dfwRates from './fake-dfw.json'
+// import dfwRates from './fake-dfw.json'
+import dfwRates from '../../ExploratoryCurricularAnalytics/files/summarize_dfw.json'
 
 // Sort classes alphabetically in each term to clean up lines
 for (const term of example.curriculum_terms) {
@@ -53,7 +54,8 @@ const options = {
   },
   complexity: {
     default: 'Same as Curricular Analytics',
-    dfw: 'Multiply course complexity by DFW rate'
+    dfw: 'Multiply course complexity by DFW rate',
+    dfwPlus1: 'Multiply course complexity by (DFW rate + 1)'
   }
 } as const
 
@@ -82,17 +84,17 @@ export function App () {
   const [courseBall, setCourseBall] =
     useState<keyof typeof options['courseBall']>('complexity')
   const [courseBallColor, setCourseBallColor] =
-    useState<keyof typeof options['courseBallColor']>('none')
+    useState<keyof typeof options['courseBallColor']>('flagHighDfw')
   const [courseBallWidth, setCourseBallWidth] =
-    useState<keyof typeof options['courseBallWidth']>('none')
+    useState<keyof typeof options['courseBallWidth']>('dfwThick')
   const [lineWidth, setLineWidth] =
-    useState<keyof typeof options['lineWidth']>('none')
+    useState<keyof typeof options['lineWidth']>('dfwThick')
   const [lineColor, setLineColor] =
-    useState<keyof typeof options['lineColor']>('none')
+    useState<keyof typeof options['lineColor']>('flagHighDfw')
   const [lineDash, setLineDash] =
     useState<keyof typeof options['lineDash']>('none')
   const [complexity, setComplexity] =
-    useState<keyof typeof options['complexity']>('default')
+    useState<keyof typeof options['complexity']>('dfwPlus1')
 
   useEffect(() => {
     graph.current = new Graph<
@@ -126,7 +128,9 @@ export function App () {
             dfw === null ||
             curr.metrics.complexity === undefined
               ? curr.metrics.complexity ?? 0
-              : curr.metrics.complexity * dfw)
+              : complexity === 'dfw'
+              ? curr.metrics.complexity * dfw
+              : curr.metrics.complexity * (dfw + 1))
           )
         }, 0)
         return `Complex.: ${
@@ -148,7 +152,9 @@ export function App () {
               dfw === null ||
               course.metrics.complexity === undefined
               ? String(course.metrics.complexity ?? '')
-              : (course.metrics.complexity * dfw).toFixed(2)
+              : complexity === 'dfw'
+              ? (course.metrics.complexity * dfw).toFixed(2)
+              : (course.metrics.complexity * (dfw + 1)).toFixed(2)
             : courseBall === 'dfw'
             ? dfw !== null
               ? (dfw * 100).toFixed(0)
@@ -232,7 +238,9 @@ export function App () {
             dfw === null ||
             course.metrics.complexity === undefined
               ? String(course.metrics.complexity ?? '')
-              : (course.metrics.complexity * dfw).toFixed(2)
+              : complexity === 'dfw'
+              ? (course.metrics.complexity * dfw).toFixed(2)
+              : (course.metrics.complexity * (dfw + 1)).toFixed(2)
           ],
           ['Centrality', String(course.metrics.centrality)],
           ['Blocking factor', String(course.metrics['blocking factor'])],
