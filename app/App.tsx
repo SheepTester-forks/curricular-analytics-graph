@@ -154,7 +154,7 @@ export function App () {
               ? String(course.metrics.complexity ?? '')
               : complexity === 'dfw'
               ? (course.metrics.complexity * dfw).toFixed(2)
-              : (course.metrics.complexity * (dfw + 1)).toFixed(2)
+              : (course.metrics.complexity * (dfw + 1)).toFixed(1)
             : courseBall === 'dfw'
             ? dfw !== null
               ? (dfw * 100).toFixed(0)
@@ -164,7 +164,7 @@ export function App () {
             : ''
         node.style.borderColor =
           dfw !== null && dfw > 0.1 && courseBallColor === 'flagHighDfw'
-            ? 'red'
+            ? '#ef4444'
             : ''
         node.style.borderWidth =
           dfw !== null && courseBallWidth === 'dfwThick'
@@ -180,7 +180,9 @@ export function App () {
         path.setAttributeNS(
           null,
           'stroke',
-          dfw !== null && dfw > 0.1 && lineColor === 'flagHighDfw' ? 'red' : ''
+          dfw !== null && dfw > 0.1 && lineColor === 'flagHighDfw'
+            ? '#ef4444'
+            : ''
         )
         path.setAttributeNS(
           null,
@@ -240,7 +242,7 @@ export function App () {
               ? String(course.metrics.complexity ?? '')
               : complexity === 'dfw'
               ? (course.metrics.complexity * dfw).toFixed(2)
-              : (course.metrics.complexity * (dfw + 1)).toFixed(2)
+              : (course.metrics.complexity * (dfw + 1)).toFixed(1)
           ],
           ['Centrality', String(course.metrics.centrality)],
           ['Blocking factor', String(course.metrics['blocking factor'])],
