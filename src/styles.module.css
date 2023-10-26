@@ -1,15 +1,20 @@
 .graph {
+  --term-count: 1;
+  --longest-term-length: 1;
   display: grid;
   grid-auto-flow: column;
+  grid-template-columns: repeat(var(--term-count), minmax(0, 1fr));
+  grid-template-rows: auto repeat(var(--longest-term-length), minmax(0, 1fr)) 80px;
   position: relative;
   z-index: 0;
   color: #0f172a;
 }
 .links {
   position: absolute;
+  z-index: -1;
+  /* grid-area: 2 / 1 / -2 / -1; */
   stroke: currentColor;
   fill: none;
-  z-index: -1;
   transition: opacity 0.2s;
   color: #64748b;
 }

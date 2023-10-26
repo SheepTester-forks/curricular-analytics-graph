@@ -66,7 +66,16 @@ export class Course<C, R> {
     return this.#reachable().size
   }
 
-  static #allPaths<C, R> (courses: Course<C, R>[]): Course<C, R>[][] {
+  #delayFactor (paths: Course<C, R>[][]): number {
+    // assign DF to courses
+    for (const path of paths) {
+      //
+    }
+    return 0
+  }
+
+  /** Gets all paths in a graph. */
+  static allPaths<C, R> (courses: Course<C, R>[]): Course<C, R>[][] {
     const paths: Course<C, R>[][] = []
     for (const sink of courses) {
       // Only consider sink nodes

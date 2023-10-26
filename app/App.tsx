@@ -50,6 +50,10 @@ const options = {
   lineDash: {
     none: 'None',
     flagHighDfw: 'Flag DFW > 10% as dashed line'
+  },
+  complexity: {
+    default: 'Same as Curricular Analytics',
+    dfw: 'Multiply course complexity by DFW rate'
   }
 } as const
 
@@ -87,6 +91,8 @@ export function App () {
     useState<keyof typeof options['lineColor']>('none')
   const [lineDash, setLineDash] =
     useState<keyof typeof options['lineDash']>('none')
+  const [complexity, setComplexity] =
+    useState<keyof typeof options['complexity']>('default')
 
   useEffect(() => {
     graph.current = new Graph<
@@ -111,14 +117,25 @@ export function App () {
       VisualizationTerm
     > = {
       termName: term => term.name,
-      termSummary: term =>
-        `Complex.: ${term.curriculum_items.reduce(
-          (acc, curr) => acc + (curr.metrics.complexity ?? 0),
-          0
-        )}\nUnits: ${term.curriculum_items.reduce(
+      termSummary: term => {
+        const termComplexity = term.curriculum_items.reduce((acc, curr) => {
+          const dfw = getDfw(curr.name)
+          return (
+            acc +
+            (complexity === 'default' ||
+            dfw === null ||
+            curr.metrics.complexity === undefined
+              ? curr.metrics.complexity ?? 0
+              : curr.metrics.complexity * dfw)
+          )
+        }, 0)
+        return `Complex.: ${
+          complexity === 'default' ? termComplexity : termComplexity.toFixed(2)
+        }\nUnits: ${term.curriculum_items.reduce(
           (acc, curr) => acc + (curr.credits ?? 0),
           0
-        )}`,
+        )}`
+      },
       courseName: ({ name, nameSub, nameCanonical }) =>
         name +
         (nameSub ? `\n${nameSub}` : '') +
@@ -127,7 +144,11 @@ export function App () {
         const dfw = getDfw(course.name)
         node.textContent =
           courseBall === 'complexity'
-            ? String(course.metrics.complexity ?? '')
+            ? complexity === 'default' ||
+              dfw === null ||
+              course.metrics.complexity === undefined
+              ? String(course.metrics.complexity ?? '')
+              : (course.metrics.complexity * dfw).toFixed(2)
             : courseBall === 'dfw'
             ? dfw !== null
               ? (dfw * 100).toFixed(0)
@@ -205,7 +226,14 @@ export function App () {
         const dfw = getDfw(course.name)
         return [
           ['Units', String(course.credits)],
-          ['Complexity', String(course.metrics.complexity)],
+          [
+            'Complexity',
+            complexity === 'default' ||
+            dfw === null ||
+            course.metrics.complexity === undefined
+              ? String(course.metrics.complexity ?? '')
+              : (course.metrics.complexity * dfw).toFixed(2)
+          ],
           ['Centrality', String(course.metrics.centrality)],
           ['Blocking factor', String(course.metrics['blocking factor'])],
           ['Delay factor', String(course.metrics['delay factor'])],
@@ -238,7 +266,8 @@ export function App () {
     courseBallWidth,
     lineWidth,
     lineColor,
-    lineDash
+    lineDash,
+    complexity
   ])
 
   return (
@@ -287,6 +316,13 @@ export function App () {
           onChange={setLineDash}
         >
           Prereq line pattern
+        </Dropdown>
+        <Dropdown
+          options={options.complexity}
+          value={complexity}
+          onChange={setComplexity}
+        >
+          Complexity formula
         </Dropdown>
         <p>For this demo, DFW rates have been randomized.</p>
       </aside>

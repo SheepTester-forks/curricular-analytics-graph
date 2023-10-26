@@ -321,10 +321,14 @@ export class Graph<
       0
     )
 
-    this.wrapper.style.gridTemplateColumns = `repeat(${curriculum.curriculum_terms.length}, minmax(0, 1fr))`
-    this.wrapper.style.gridTemplateRows = `auto repeat(${
-      this.#maxTermLength
-    }, minmax(0, 1fr)) auto`
+    this.wrapper.style.setProperty(
+      '--term-count',
+      `${curriculum.curriculum_terms.length}`
+    )
+    this.wrapper.style.setProperty(
+      '--longest-term-length',
+      `${this.#maxTermLength}`
+    )
 
     const courses: Course<C, R>[] = []
     const coursesById: Record<number, Course<C, R>> = {}
