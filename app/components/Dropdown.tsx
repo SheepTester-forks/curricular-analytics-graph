@@ -45,3 +45,27 @@ export function Dropdown<Options extends {}> ({
     </label>
   )
 }
+
+export type TextFieldProps = {
+  numeric?: boolean
+  value: string
+  onChange: (value: string) => void
+  children?: React.ReactNode
+}
+export function TextField ({
+  numeric,
+  value,
+  onChange,
+  children
+}: TextFieldProps) {
+  return (
+    <label className={styles.wrapper}>
+      <span className={styles.label}>{children}</span>
+      <input
+        value={value}
+        onChange={e => onChange(e.currentTarget.value)}
+        {...(numeric ? { type: 'number' } : {})}
+      />
+    </label>
+  )
+}

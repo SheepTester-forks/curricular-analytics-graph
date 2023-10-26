@@ -5,7 +5,7 @@ import styles from './app.module.css'
 // import example from './example.json'
 // https://curricularanalytics.org/degree_plans/25144 (extraneous reqs removed)
 import example from './BE27.json'
-import { Dropdown } from './components/Dropdown'
+import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
 import {
   RequisiteType,
@@ -31,7 +31,7 @@ const options = {
   },
   courseBallColor: {
     none: 'None',
-    flagHighDfw: 'Flag DFW > 10% as red'
+    flagHighDfw: 'Flag high DFW as red'
   },
   courseBallWidth: {
     none: 'None',
@@ -46,11 +46,11 @@ const options = {
   },
   lineColor: {
     none: 'None',
-    flagHighDfw: 'Flag DFW > 10% as red'
+    flagHighDfw: 'Flag high DFW as red'
   },
   lineDash: {
     none: 'None',
-    flagHighDfw: 'Flag DFW > 10% as dashed line'
+    flagHighDfw: 'Flag high DFW as dashed line'
   },
   complexity: {
     default: 'Same as Curricular Analytics',
@@ -96,6 +96,8 @@ export function App () {
   const [complexity, setComplexity] =
     useState<keyof typeof options['complexity']>('dfwPlus1')
 
+  const [dfwThreshold, setDfwThreshold] = useState('10')
+
   useEffect(() => {
     graph.current = new Graph<
       VisualizationRequisite,
@@ -113,6 +115,7 @@ export function App () {
   }, [])
 
   useEffect(() => {
+    const threshold = +dfwThreshold / 100
     const options: GraphOptions<
       VisualizationRequisite,
       VisualizationCourse,
@@ -163,7 +166,7 @@ export function App () {
             ? String(course.credits)
             : ''
         node.style.borderColor =
-          dfw !== null && dfw > 0.1 && courseBallColor === 'flagHighDfw'
+          dfw !== null && dfw > threshold && courseBallColor === 'flagHighDfw'
             ? '#ef4444'
             : ''
         node.style.borderWidth =
@@ -180,7 +183,7 @@ export function App () {
         path.setAttributeNS(
           null,
           'stroke',
-          dfw !== null && dfw > 0.1 && lineColor === 'flagHighDfw'
+          dfw !== null && dfw > threshold && lineColor === 'flagHighDfw'
             ? '#ef4444'
             : ''
         )
@@ -196,7 +199,9 @@ export function App () {
         path.setAttributeNS(
           null,
           'stroke-dasharray',
-          dfw !== null && dfw > 0.1 && lineDash === 'flagHighDfw' ? '5 5' : ''
+          dfw !== null && dfw > threshold && lineDash === 'flagHighDfw'
+            ? '5 5'
+            : ''
         )
         path.classList.add(classes[toRequisiteType(type)])
       },
@@ -277,7 +282,8 @@ export function App () {
     lineWidth,
     lineColor,
     lineDash,
-    complexity
+    complexity,
+    dfwThreshold
   ])
 
   return (
@@ -292,6 +298,9 @@ export function App () {
         >
           Course node number
         </Dropdown>
+        <TextField value={dfwThreshold} onChange={setDfwThreshold} numeric>
+          Minimum DFW considered "high" (%)
+        </TextField>
         <Dropdown
           options={options.courseBallColor}
           value={courseBallColor}
@@ -334,7 +343,13 @@ export function App () {
         >
           Complexity formula
         </Dropdown>
-        <p>For this demo, DFW rates have been randomized.</p>
+        {dfwRates['MATH18'] < 0.001 ? (
+          <p>For this demo, DFW rates have been randomized.</p>
+        ) : (
+          <p>
+            This demo is currently showing <em>real</em> DFW data.
+          </p>
+        )}
       </aside>
     </>
   )
