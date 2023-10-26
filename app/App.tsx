@@ -15,7 +15,8 @@ import {
   toRequisiteType
 } from './types'
 // import dfwRates from './fake-dfw.json'
-import dfwRates from '../../ExploratoryCurricularAnalytics/files/summarize_dfw.json'
+import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
+import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
 
 // Sort classes alphabetically in each term to clean up lines
 for (const term of example.curriculum_terms) {
@@ -69,6 +70,14 @@ function getDfw (courseName: string): number | null {
   const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
   return (
     (match && (dfwRates as Record<string, number>)[match[1] + match[2]]) ?? null
+  )
+}
+
+function getFrequency (courseName: string): string[] | null {
+  const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
+  return (
+    (match && (frequencies as Record<string, string[]>)[match[1] + match[2]]) ??
+    null
   )
 }
 
@@ -237,6 +246,7 @@ export function App () {
       tooltipTitle: course => course.name,
       tooltipContent: course => {
         const dfw = getDfw(course.name)
+        const frequency = getFrequency(course.name)
         return [
           ['Units', String(course.credits)],
           [
@@ -252,7 +262,13 @@ export function App () {
           ['Centrality', String(course.metrics.centrality)],
           ['Blocking factor', String(course.metrics['blocking factor'])],
           ['Delay factor', String(course.metrics['delay factor'])],
-          ['DFW rate', dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A']
+          ['DFW rate', dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A'],
+          [
+            'Offered',
+            frequency !== null
+              ? [...new Set(frequency.map(term => term.slice(0, 2)))].join(', ')
+              : 'N/A'
+          ]
         ]
       },
       tooltipRequisiteInfo: (element, { source, type }) => {
