@@ -98,6 +98,10 @@
 .highlighted {
   z-index: 3;
 }
+.selected {
+  /* Needed because the tooltip is a child of the course. */
+  z-index: 4;
+}
 .highlightedLinks {
   z-index: 2;
   pointer-events: none;

@@ -40,6 +40,7 @@ const options = {
     none: 'None',
     dfwThick: 'High DFW is thicker',
     dfwThin: 'High DFW is thinner',
+    dfwFlag: 'Flag high DFW as thick',
     unitsThick: 'More units is thicker',
     waitlistThick: 'Longer waitlist is thicker'
   },
@@ -47,6 +48,7 @@ const options = {
     none: 'None',
     dfwThick: 'High DFW is thicker',
     dfwThin: 'High DFW is thinner',
+    dfwFlag: 'Flag high DFW as thick',
     waitlistThick: 'Longer waitlist is thicker'
   },
   lineColor: {
@@ -222,6 +224,8 @@ export function App () {
             ? `${dfw * 30 + 1}px`
             : dfw !== null && courseBallWidth === 'dfwThin'
             ? `${(1 - dfw) * 5}px`
+            : dfw !== null && courseBallWidth === 'dfwFlag' && dfw > threshold
+            ? '3px'
             : courseBallWidth === 'unitsThick'
             ? `${course.credits}px`
             : waitlist !== null && courseBallWidth === 'waitlistThick'
@@ -244,6 +248,8 @@ export function App () {
             ? `${dfw * 15 + 0.5}`
             : dfw !== null && lineWidth === 'dfwThin'
             ? `${(1 - dfw) * 3}`
+            : dfw !== null && lineWidth === 'dfwFlag' && dfw > threshold
+            ? '3'
             : waitlist !== null && lineWidth === 'waitlistThick'
             ? `${waitlist / 4 + 0.5}`
             : ''

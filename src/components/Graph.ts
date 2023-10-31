@@ -203,7 +203,7 @@ export class Graph<
 
   #handleHoverCourse (course: Course<C, R> | null) {
     for (const course of this.#highlighted) {
-      course.wrapper.classList.remove(styles.highlighted)
+      course.wrapper.classList.remove(styles.highlighted, styles.selected)
       this.options.styleLinkedNode?.(course.wrapper, course.raw, null)
     }
     if (!course) {
@@ -214,7 +214,7 @@ export class Graph<
       return
     }
     this.wrapper.classList.add(styles.courseSelected)
-    course.wrapper.classList.add(styles.highlighted)
+    course.wrapper.classList.add(styles.highlighted, styles.selected)
     this.#highlighted = [course]
     this.options.styleLinkedNode?.(course.wrapper, course.raw, {
       relation: 'selected'
