@@ -3,7 +3,7 @@ import { Graph, GraphOptions } from '../src/index'
 import styles from './app.module.css'
 // https://curricularanalytics.org/degree_plans/11085
 // import example from './example.json'
-// https://curricularanalytics.org/degree_plans/25144 (extraneous reqs removed)
+// https://curricularanalytics.org/degree_plans/25144
 import example from './BE27.json'
 import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'

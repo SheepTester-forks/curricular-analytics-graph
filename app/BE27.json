@@ -237,6 +237,11 @@
         {
           "curriculum_requisites": [
             {
+              "source_id": 39,
+              "target_id": 41,
+              "type": "prereq"
+            },
+            {
               "source_id": 40,
               "target_id": 41,
               "type": "prereq"
@@ -332,6 +337,11 @@
       "curriculum_items": [
         {
           "curriculum_requisites": [
+            {
+              "source_id": 6,
+              "target_id": 17,
+              "type": "prereq"
+            },
             {
               "source_id": 10,
               "target_id": 17,
@@ -462,6 +472,11 @@
           "curriculum_requisites": [
             {
               "source_id": 4,
+              "target_id": 18,
+              "type": "prereq"
+            },
+            {
+              "source_id": 2,
               "target_id": 18,
               "type": "prereq"
             }
@@ -635,7 +650,22 @@
         {
           "curriculum_requisites": [
             {
+              "source_id": 4,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 6,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
               "source_id": 16,
+              "target_id": 26,
+              "type": "prereq"
+            },
+            {
+              "source_id": 2,
               "target_id": 26,
               "type": "prereq"
             },
@@ -814,6 +844,11 @@
         },
         {
           "curriculum_requisites": [
+            {
+              "source_id": 22,
+              "target_id": 33,
+              "type": "prereq"
+            },
             {
               "source_id": 30,
               "target_id": 33,
