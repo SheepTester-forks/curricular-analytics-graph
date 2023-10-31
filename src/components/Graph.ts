@@ -23,7 +23,7 @@ export type IRequisite = {
 }
 
 type GridItem<C, R, T> =
-  | { type: 'course'; course: Course<C, R> }
+  | { type: 'course'; course: Course<C, R>; index: number }
   | { type: 'term-header'; index: number; term: T }
   | { type: 'term-footer'; index: number; term: T }
 
@@ -116,6 +116,7 @@ export class Graph<
             this.options.courseName?.(item.course.raw) ?? ''
           this.options.styleNode?.(course.ball, item.course.raw)
           element.style.gridColumn = `${course.term + 1} / ${course.term + 2}`
+          element.style.gridRow = `${item.index + 1} / ${item.index + 2}`
           element.setAttribute(
             'aria-describedby',
             `term-heading-${course.index}`
@@ -338,7 +339,7 @@ export class Graph<
 
       for (const [j, item] of term.curriculum_items.entries()) {
         const course = new Course<C, R>(item, index, j)
-        items.push({ type: 'course', course })
+        items.push({ type: 'course', course, index: j + 1 })
         this.#courseNodes.set(course.wrapper, course)
         courses.push(course)
 
