@@ -17,6 +17,7 @@ import {
 // import dfwRates from './fake-dfw.json'
 import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
+import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
 
 // Sort classes alphabetically in each term to clean up lines
 for (const term of example.curriculum_terms) {
@@ -28,7 +29,8 @@ const options = {
     none: 'None',
     complexity: 'Complexity',
     units: 'Units',
-    dfw: 'DFW rate'
+    dfw: 'DFW rate',
+    waitlist: 'Waitlist length'
   },
   courseBallColor: {
     none: 'None',
@@ -38,12 +40,14 @@ const options = {
     none: 'None',
     dfwThick: 'High DFW is thicker',
     dfwThin: 'High DFW is thinner',
-    unitsThick: 'More units is thicker'
+    unitsThick: 'More units is thicker',
+    waitlistThick: 'Longer waitlist is thicker'
   },
   lineWidth: {
     none: 'None',
     dfwThick: 'High DFW is thicker',
-    dfwThin: 'High DFW is thinner'
+    dfwThin: 'High DFW is thinner',
+    waitlistThick: 'Longer waitlist is thicker'
   },
   lineColor: {
     none: 'None',
@@ -66,19 +70,45 @@ const classes: Record<RequisiteType, string> = {
   'strict-coreq': styles.strictCoreqs
 }
 
-function getDfw (courseName: string): number | null {
-  const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
-  return (
-    (match && (dfwRates as Record<string, number>)[match[1] + match[2]]) ?? null
-  )
+type CourseStats = {
+  dfw: number | null
+  frequency: string[] | null
+  waitlist: number | null
 }
 
-function getFrequency (courseName: string): string[] | null {
+function getStats (courseName: string): CourseStats {
   const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
-  return (
-    (match && (frequencies as Record<string, string[]>)[match[1] + match[2]]) ??
-    null
-  )
+  return {
+    dfw:
+      (match && (dfwRates as Record<string, number>)[match[1] + match[2]]) ??
+      null,
+    frequency:
+      (match &&
+        (frequencies as Record<string, string[]>)[match[1] + match[2]]) ??
+      null,
+    waitlist:
+      (match &&
+        (waitlists as Record<string, number>)[match[1] + ' ' + match[2]]) ??
+      null
+  }
+}
+
+function interpretFrequency (terms: string[]): string {
+  const quarters = terms.map(term => term.slice(0, 2))
+  const summer = quarters.includes('S1') || quarters.includes('S2')
+  const regular = [
+    quarters.includes('FA') ? 'Fall' : '',
+    quarters.includes('WI') ? 'Winter' : '',
+    quarters.includes('SP') ? 'Spring' : ''
+  ].filter(quarter => quarter)
+  if (regular.length === 3) {
+    return summer ? 'Year-round (incl. summer)' : 'Regular year (no summer)'
+  } else {
+    if (summer) {
+      regular.push('Summer')
+    }
+    return regular.join(', ')
+  }
 }
 
 export function App () {
@@ -130,10 +160,11 @@ export function App () {
       VisualizationCourse,
       VisualizationTerm
     > = {
-      termName: term => term.name,
+      termName: (_, i) =>
+        `${['Fall', 'Winter', 'Spring'][i % 3]} ${Math.floor(i / 3) + 1}`,
       termSummary: term => {
         const termComplexity = term.curriculum_items.reduce((acc, curr) => {
-          const dfw = getDfw(curr.name)
+          const { dfw } = getStats(curr.name)
           return (
             acc +
             (complexity === 'default' ||
@@ -157,7 +188,7 @@ export function App () {
         (nameSub ? `\n${nameSub}` : '') +
         (nameCanonical ? `\n(${nameCanonical})` : ''),
       styleNode: (node, course) => {
-        const dfw = getDfw(course.name)
+        const { dfw, waitlist } = getStats(course.name)
         node.textContent =
           courseBall === 'complexity'
             ? complexity === 'default' ||
@@ -173,7 +204,13 @@ export function App () {
               : ''
             : courseBall === 'units'
             ? String(course.credits)
+            : courseBall === 'waitlist'
+            ? waitlist !== null
+              ? waitlist.toFixed(0)
+              : ''
             : ''
+        node.style.fontSize =
+          courseBall === 'complexity' && complexity !== 'default' ? '0.8em' : ''
         node.style.borderColor =
           dfw !== null && dfw > threshold && courseBallColor === 'flagHighDfw'
             ? '#ef4444'
@@ -185,10 +222,12 @@ export function App () {
             ? `${(1 - dfw) * 5}px`
             : courseBallWidth === 'unitsThick'
             ? `${course.credits}px`
+            : waitlist !== null && courseBallWidth === 'waitlistThick'
+            ? `${waitlist / 4 + 1}px`
             : ''
       },
       styleLink: (path, { type, source }) => {
-        const dfw = getDfw(source.name)
+        const { dfw, waitlist } = getStats(source.name)
         path.setAttributeNS(
           null,
           'stroke',
@@ -203,6 +242,8 @@ export function App () {
             ? `${dfw * 15 + 0.5}`
             : dfw !== null && lineWidth === 'dfwThin'
             ? `${(1 - dfw) * 3}`
+            : waitlist !== null && lineWidth === 'waitlistThick'
+            ? `${waitlist / 4 + 0.5}`
             : ''
         )
         path.setAttributeNS(
@@ -245,8 +286,7 @@ export function App () {
       },
       tooltipTitle: course => course.name,
       tooltipContent: course => {
-        const dfw = getDfw(course.name)
-        const frequency = getFrequency(course.name)
+        const { dfw, frequency, waitlist } = getStats(course.name)
         return [
           ['Units', String(course.credits)],
           [
@@ -265,10 +305,9 @@ export function App () {
           ['DFW rate', dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A'],
           [
             'Offered',
-            frequency !== null
-              ? [...new Set(frequency.map(term => term.slice(0, 2)))].join(', ')
-              : 'N/A'
-          ]
+            frequency !== null ? interpretFrequency(frequency) : 'N/A'
+          ],
+          ['Average waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A']
         ]
       },
       tooltipRequisiteInfo: (element, { source, type }) => {
@@ -363,9 +402,11 @@ export function App () {
           <p>For this demo, DFW rates have been randomized.</p>
         ) : (
           <p>
-            This demo is currently showing <em>real</em> DFW data.
+            This demo is currently showing <em>real</em> DFW rates, which is
+            protected data.
           </p>
         )}
+        <p>Data were sampled from the 2021–2022 academic year.</p>
       </aside>
     </>
   )
