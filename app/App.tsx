@@ -211,10 +211,12 @@ export function App () {
             : ''
         node.style.fontSize =
           courseBall === 'complexity' && complexity !== 'default' ? '0.8em' : ''
-        node.style.borderColor =
+        node.style.setProperty(
+          '--border-color',
           dfw !== null && dfw > threshold && courseBallColor === 'flagHighDfw'
             ? '#ef4444'
             : ''
+        )
         node.style.borderWidth =
           dfw !== null && courseBallWidth === 'dfwThick'
             ? `${dfw * 30 + 1}px`

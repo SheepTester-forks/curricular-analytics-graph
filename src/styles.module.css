@@ -40,7 +40,8 @@
   align-items: center;
   flex-direction: column;
   text-align: center;
-  --color: #e2e8f0;
+  --ball-color: #e2e8f0;
+  --border-color: #64748b;
 }
 .courseBall {
   display: flex;
@@ -50,9 +51,9 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid #64748b;
-  background-color: var(--color);
-  transition: color 0.2s, background-color 0.2s;
+  border: 1px solid var(--border-color);
+  background-color: var(--ball-color);
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
 }
 .courseName {
   white-space: pre;
@@ -89,9 +90,13 @@
     }
     .courseBall {
       color: #0f172a22;
-      --color: #f8fafc;
+      border-color: color-mix(in srgb, var(--border-color) 13%, transparent);
+      background-color: color-mix(in srgb, var(--ball-color) 13%, white);
     }
   }
+}
+.highlighted {
+  z-index: 3;
 }
 .highlightedLinks {
   z-index: 2;
