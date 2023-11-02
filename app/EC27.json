@@ -1,0 +1,877 @@
+{
+  "name": "",
+  "metrics": {
+    "complexity": 290,
+    "centrality": 1288
+  },
+  "curriculum_terms": [
+    {
+      "name": "Term 1",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [],
+          "name": "MATH 20A",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 27,
+            "blocking factor": 20,
+            "delay factor": 7
+          },
+          "id": 1,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ECE 15",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 3,
+            "blocking factor": 1,
+            "delay factor": 2
+          },
+          "id": 2,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ECE 5",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 3,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ALTERNATIVE 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 39,
+          "credits": 4
+        }
+      ],
+      "id": 1
+    },
+    {
+      "name": "Term 2",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [],
+          "name": "CHEM 6A",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 5,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ECE 25",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 3,
+            "blocking factor": 1,
+            "delay factor": 2
+          },
+          "id": 6,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 1,
+              "target_id": 4,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20B",
+          "metrics": {
+            "centrality": 114,
+            "complexity": 25,
+            "blocking factor": 18,
+            "delay factor": 7
+          },
+          "id": 4,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "SYN 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 5,
+            "blocking factor": 2,
+            "delay factor": 3
+          },
+          "id": 28,
+          "credits": 4
+        }
+      ],
+      "id": 2
+    },
+    {
+      "name": "Term 3",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [],
+          "name": "MATH 18",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 19,
+            "blocking factor": 13,
+            "delay factor": 6
+          },
+          "id": 7,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 6,
+              "target_id": 9,
+              "type": "prereq"
+            },
+            {
+              "source_id": 2,
+              "target_id": 9,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 30",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 2,
+            "blocking factor": 0,
+            "delay factor": 2
+          },
+          "id": 9,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 1,
+              "target_id": 8,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2A",
+          "metrics": {
+            "centrality": 99,
+            "complexity": 21,
+            "blocking factor": 14,
+            "delay factor": 7
+          },
+          "id": 8,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ALTERNATIVE 2",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 40,
+          "credits": 4
+        }
+      ],
+      "id": 3
+    },
+    {
+      "name": "Term 4",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 11,
+              "type": "prereq"
+            },
+            {
+              "source_id": 8,
+              "target_id": 11,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2B",
+          "metrics": {
+            "centrality": 20,
+            "complexity": 9,
+            "blocking factor": 4,
+            "delay factor": 5
+          },
+          "id": 11,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 10,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20C",
+          "metrics": {
+            "centrality": 25,
+            "complexity": 14,
+            "blocking factor": 8,
+            "delay factor": 6
+          },
+          "id": 10,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 12,
+              "type": "prereq"
+            },
+            {
+              "source_id": 7,
+              "target_id": 12,
+              "type": "prereq"
+            },
+            {
+              "source_id": 8,
+              "target_id": 12,
+              "type": "prereq"
+            },
+            {
+              "source_id": 1,
+              "target_id": 12,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 35",
+          "metrics": {
+            "centrality": 280,
+            "complexity": 17,
+            "blocking factor": 10,
+            "delay factor": 7
+          },
+          "id": 12,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 28,
+              "target_id": 29,
+              "type": "prereq"
+            }
+          ],
+          "name": "SYN 2",
+          "metrics": {
+            "centrality": 3,
+            "complexity": 4,
+            "blocking factor": 1,
+            "delay factor": 3
+          },
+          "id": 29,
+          "credits": 4
+        }
+      ],
+      "id": 4
+    },
+    {
+      "name": "Term 5",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 12,
+              "target_id": 15,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 45",
+          "metrics": {
+            "centrality": 118,
+            "complexity": 14,
+            "blocking factor": 7,
+            "delay factor": 7
+          },
+          "id": 15,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 10,
+              "target_id": 14,
+              "type": "prereq"
+            },
+            {
+              "source_id": 8,
+              "target_id": 14,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2C",
+          "metrics": {
+            "centrality": 11,
+            "complexity": 8,
+            "blocking factor": 2,
+            "delay factor": 6
+          },
+          "id": 14,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 10,
+              "target_id": 13,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20D",
+          "metrics": {
+            "centrality": 11,
+            "complexity": 9,
+            "blocking factor": 3,
+            "delay factor": 6
+          },
+          "id": 13,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ALTERNATIVE 3",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 41,
+          "credits": 4
+        }
+      ],
+      "id": 5
+    },
+    {
+      "name": "Term 6",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 13,
+              "target_id": 17,
+              "type": "prereq"
+            },
+            {
+              "source_id": 11,
+              "target_id": 17,
+              "type": "prereq"
+            },
+            {
+              "source_id": 8,
+              "target_id": 17,
+              "type": "prereq"
+            }
+          ],
+          "name": "PHYS 2D",
+          "metrics": {
+            "centrality": 20,
+            "complexity": 7,
+            "blocking factor": 1,
+            "delay factor": 6
+          },
+          "id": 17,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 7,
+              "target_id": 16,
+              "type": "prereq"
+            },
+            {
+              "source_id": 10,
+              "target_id": 16,
+              "type": "prereq"
+            }
+          ],
+          "name": "MATH 20E",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 4,
+            "blocking factor": 0,
+            "delay factor": 4
+          },
+          "id": 16,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 12,
+              "target_id": 18,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 65",
+          "metrics": {
+            "centrality": 162,
+            "complexity": 13,
+            "blocking factor": 6,
+            "delay factor": 7
+          },
+          "id": 18,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ALTERNATIVE 4",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 42,
+          "credits": 4
+        }
+      ],
+      "id": 6
+    },
+    {
+      "name": "Term 7",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 15,
+              "target_id": 19,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 101",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 5,
+            "blocking factor": 0,
+            "delay factor": 5
+          },
+          "id": 19,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 18,
+              "target_id": 20,
+              "type": "prereq"
+            },
+            {
+              "source_id": 17,
+              "target_id": 20,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 103",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 6,
+            "blocking factor": 0,
+            "delay factor": 6
+          },
+          "id": 20,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 15,
+              "target_id": 21,
+              "type": "prereq"
+            },
+            {
+              "source_id": 18,
+              "target_id": 21,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 100",
+          "metrics": {
+            "centrality": 156,
+            "complexity": 11,
+            "blocking factor": 4,
+            "delay factor": 7
+          },
+          "id": 21,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 29,
+              "target_id": 30,
+              "type": "prereq"
+            },
+            {
+              "source_id": 28,
+              "target_id": 30,
+              "type": "prereq"
+            }
+          ],
+          "name": "SYN 100",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 3,
+            "blocking factor": 0,
+            "delay factor": 3
+          },
+          "id": 30,
+          "credits": 4
+        }
+      ],
+      "id": 7
+    },
+    {
+      "name": "Term 8",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 21,
+              "target_id": 22,
+              "type": "prereq"
+            },
+            {
+              "source_id": 18,
+              "target_id": 22,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 102",
+          "metrics": {
+            "centrality": 222,
+            "complexity": 10,
+            "blocking factor": 3,
+            "delay factor": 7
+          },
+          "id": 22,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 4,
+              "target_id": 23,
+              "type": "prereq"
+            },
+            {
+              "source_id": 13,
+              "target_id": 23,
+              "type": "prereq"
+            },
+            {
+              "source_id": 7,
+              "target_id": 23,
+              "type": "prereq"
+            },
+            {
+              "source_id": 10,
+              "target_id": 23,
+              "type": "prereq"
+            },
+            {
+              "source_id": 1,
+              "target_id": 23,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 109",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 5,
+            "blocking factor": 0,
+            "delay factor": 5
+          },
+          "id": 23,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 15,
+              "target_id": 24,
+              "type": "prereq"
+            },
+            {
+              "source_id": 11,
+              "target_id": 24,
+              "type": "prereq"
+            },
+            {
+              "source_id": 8,
+              "target_id": 24,
+              "type": "prereq"
+            },
+            {
+              "source_id": 14,
+              "target_id": 24,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 107",
+          "metrics": {
+            "centrality": 47,
+            "complexity": 7,
+            "blocking factor": 1,
+            "delay factor": 6
+          },
+          "id": 24,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ALTERNATIVE 5",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 43,
+          "credits": 4
+        }
+      ],
+      "id": 8
+    },
+    {
+      "name": "Term 9",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [],
+          "name": "PROFESSIONAL ELECTIVE 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 31,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 22,
+              "target_id": 25,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 165",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 7,
+            "blocking factor": 0,
+            "delay factor": 7
+          },
+          "id": 25,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "TECHNICAL ELECTIVE 1",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 32,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "ALTERNATIVE 6",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 44,
+          "credits": 4
+        }
+      ],
+      "id": 9
+    },
+    {
+      "name": "Term 10",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 22,
+              "target_id": 26,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 164",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 7,
+            "blocking factor": 0,
+            "delay factor": 7
+          },
+          "id": 26,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "PROFESSIONAL ELECTIVE 2",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 33,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [
+            {
+              "source_id": 22,
+              "target_id": 27,
+              "type": "prereq"
+            },
+            {
+              "source_id": 24,
+              "target_id": 27,
+              "type": "prereq"
+            }
+          ],
+          "name": "ECE 166",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 7,
+            "blocking factor": 0,
+            "delay factor": 7
+          },
+          "id": 27,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "HIGH - IMPACT",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 45,
+          "credits": 2
+        }
+      ],
+      "id": 10
+    },
+    {
+      "name": "Term 11",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [],
+          "name": "TECHNICAL ELECTIVE 2",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 34,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "DESIGN",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 35,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "TECHNICAL ELECTIVE 3",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 36,
+          "credits": 4
+        }
+      ],
+      "id": 11
+    },
+    {
+      "name": "Term 12",
+      "curriculum_items": [
+        {
+          "curriculum_requisites": [],
+          "name": "TECHNICAL ELECTIVE 4",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 37,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "TECHNICAL ELECTIVE 5",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 38,
+          "credits": 4
+        },
+        {
+          "curriculum_requisites": [],
+          "name": "DEI",
+          "metrics": {
+            "centrality": 0,
+            "complexity": 1,
+            "blocking factor": 0,
+            "delay factor": 1
+          },
+          "id": 46,
+          "credits": 4
+        }
+      ],
+      "id": 12
+    }
+  ],
+  "metadata": {}
+}

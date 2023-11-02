@@ -4,7 +4,9 @@ import styles from './app.module.css'
 // https://curricularanalytics.org/degree_plans/11085
 // import example from './example.json'
 // https://curricularanalytics.org/degree_plans/25144
-import example from './BE27.json'
+// import example from './BE27.json'
+// https://curricularanalytics.org/degree_plans/25403
+import example from './EC27.json'
 import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
 import {
@@ -127,9 +129,9 @@ export function App () {
   const [courseBallColor, setCourseBallColor] =
     useState<keyof typeof options['courseBallColor']>('flagHighDfw')
   const [courseBallWidth, setCourseBallWidth] =
-    useState<keyof typeof options['courseBallWidth']>('dfwThick')
+    useState<keyof typeof options['courseBallWidth']>('dfwFlag')
   const [lineWidth, setLineWidth] =
-    useState<keyof typeof options['lineWidth']>('dfwThick')
+    useState<keyof typeof options['lineWidth']>('dfwFlag')
   const [lineColor, setLineColor] =
     useState<keyof typeof options['lineColor']>('flagHighDfw')
   const [lineDash, setLineDash] =
@@ -138,6 +140,9 @@ export function App () {
     useState<keyof typeof options['complexity']>('dfwPlus1')
 
   const [dfwThreshold, setDfwThreshold] = useState('10')
+  const [waitlistThreshold, setWaitlistThreshold] = useState('10')
+
+  const [showWaitlistWarning, setShowWaitlistWarning] = useState(true)
 
   useEffect(() => {
     graph.current = new Graph<
@@ -185,10 +190,19 @@ export function App () {
           0
         )}`
       },
-      courseName: ({ name, nameSub, nameCanonical }) =>
-        name +
-        (nameSub ? `\n${nameSub}` : '') +
-        (nameCanonical ? `\n(${nameCanonical})` : ''),
+      courseName: ({ name, nameSub, nameCanonical }) => {
+        const { waitlist } = getStats(name)
+        return (
+          (showWaitlistWarning &&
+          waitlist !== null &&
+          waitlist > +waitlistThreshold
+            ? '⚠️'
+            : '') +
+          name +
+          (nameSub ? `\n${nameSub}` : '') +
+          (nameCanonical ? `\n(${nameCanonical})` : '')
+        )
+      },
       styleNode: (node, course) => {
         const { dfw, waitlist } = getStats(course.name)
         node.textContent =
@@ -215,7 +229,7 @@ export function App () {
           courseBall === 'complexity' && complexity !== 'default' ? '0.8em' : ''
         node.style.setProperty(
           '--border-color',
-          dfw !== null && dfw > threshold && courseBallColor === 'flagHighDfw'
+          dfw !== null && dfw >= threshold && courseBallColor === 'flagHighDfw'
             ? '#ef4444'
             : ''
         )
@@ -224,7 +238,7 @@ export function App () {
             ? `${dfw * 30 + 1}px`
             : dfw !== null && courseBallWidth === 'dfwThin'
             ? `${(1 - dfw) * 5}px`
-            : dfw !== null && courseBallWidth === 'dfwFlag' && dfw > threshold
+            : dfw !== null && courseBallWidth === 'dfwFlag' && dfw >= threshold
             ? '3px'
             : courseBallWidth === 'unitsThick'
             ? `${course.credits}px`
@@ -237,7 +251,7 @@ export function App () {
         path.setAttributeNS(
           null,
           'stroke',
-          dfw !== null && dfw > threshold && lineColor === 'flagHighDfw'
+          dfw !== null && dfw >= threshold && lineColor === 'flagHighDfw'
             ? '#ef4444'
             : ''
         )
@@ -248,7 +262,7 @@ export function App () {
             ? `${dfw * 15 + 0.5}`
             : dfw !== null && lineWidth === 'dfwThin'
             ? `${(1 - dfw) * 3}`
-            : dfw !== null && lineWidth === 'dfwFlag' && dfw > threshold
+            : dfw !== null && lineWidth === 'dfwFlag' && dfw >= threshold
             ? '3'
             : waitlist !== null && lineWidth === 'waitlistThick'
             ? `${waitlist / 4 + 0.5}`
@@ -257,7 +271,7 @@ export function App () {
         path.setAttributeNS(
           null,
           'stroke-dasharray',
-          dfw !== null && dfw > threshold && lineDash === 'flagHighDfw'
+          dfw !== null && dfw >= threshold && lineDash === 'flagHighDfw'
             ? '5 5'
             : ''
         )
@@ -315,7 +329,7 @@ export function App () {
             'Offered',
             frequency !== null ? interpretFrequency(frequency) : 'N/A'
           ],
-          ['Average waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A']
+          ['Avg. waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A']
         ]
       },
       tooltipRequisiteInfo: (element, { source, type }) => {
@@ -346,7 +360,9 @@ export function App () {
     lineColor,
     lineDash,
     complexity,
-    dfwThreshold
+    dfwThreshold,
+    waitlistThreshold,
+    showWaitlistWarning
   ])
 
   return (
@@ -406,6 +422,23 @@ export function App () {
         >
           Complexity formula
         </Dropdown>
+        <p>
+          <label>
+            <input
+              type='checkbox'
+              checked={showWaitlistWarning}
+              onInput={e => setShowWaitlistWarning(e.currentTarget.checked)}
+            />{' '}
+            Show a warning icon on courses with a long waitlist.
+          </label>
+        </p>
+        <TextField
+          value={waitlistThreshold}
+          onChange={setWaitlistThreshold}
+          numeric
+        >
+          Minimum waitlist length for warning
+        </TextField>
         {dfwRates['MATH18'] < 0.001 ? (
           <p>For this demo, DFW rates have been randomized.</p>
         ) : (
