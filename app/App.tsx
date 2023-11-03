@@ -4,9 +4,9 @@ import styles from './app.module.css'
 // https://curricularanalytics.org/degree_plans/11085
 // import example from './example.json'
 // https://curricularanalytics.org/degree_plans/25144
-// import example from './BE27.json'
+import example from './BE27.json'
 // https://curricularanalytics.org/degree_plans/25403
-import example from './EC27.json'
+// import example from './EC27.json'
 import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
 import {
@@ -427,7 +427,7 @@ export function App () {
             <input
               type='checkbox'
               checked={showWaitlistWarning}
-              onInput={e => setShowWaitlistWarning(e.currentTarget.checked)}
+              onChange={e => setShowWaitlistWarning(e.currentTarget.checked)}
             />{' '}
             Show a warning icon on courses with a long waitlist.
           </label>
