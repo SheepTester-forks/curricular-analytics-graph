@@ -246,7 +246,6 @@ export function App () {
             console.log(node.querySelector(`.${styles.triangleShape}`))
             if (!node.querySelector(`.${styles.triangleShape}`)) {
               const shape = triangleShape?.cloneNode(true)
-              console.log(shape)
               if (shape instanceof Element) {
                 shape.id = ''
                 shape.classList.add(styles.triangleShape)
@@ -367,16 +366,18 @@ export function App () {
         if (element.children.length < 2) {
           element.append(
             Object.assign(document.createElement('span'), {
-              className: styles.tooltipReqName
+              // className: styles.tooltipReqName
             }),
             ' ',
             Object.assign(document.createElement('span'), {
-              className: styles.tooltipReqType
+              // className: styles.tooltipReqType
             })
           )
         }
+        const { dfw } = getStats(source.name)
         element.children[0].textContent = source.name
-        element.children[1].textContent = type
+        element.children[1].textContent =
+          dfw !== null ? `${(dfw * 100).toFixed(1)}% DFW` : ''
       }
     }
     if (graph.current) {
