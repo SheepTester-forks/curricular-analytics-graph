@@ -65,6 +65,10 @@ const options = {
     default: 'Same as Curricular Analytics',
     dfw: 'Multiply course complexity by DFW rate',
     dfwPlus1: 'Multiply course complexity by (DFW rate + 1)'
+  },
+  shapes: {
+    nothing: 'Nothing',
+    frequency: 'Number of terms offered per year'
   }
 } as const
 
@@ -138,6 +142,8 @@ export function App () {
     useState<keyof typeof options['lineDash']>('none')
   const [complexity, setComplexity] =
     useState<keyof typeof options['complexity']>('dfwPlus1')
+  const [shapes, setShapes] =
+    useState<keyof typeof options['shapes']>('nothing')
 
   const [dfwThreshold, setDfwThreshold] = useState('10')
   const [waitlistThreshold, setWaitlistThreshold] = useState('10')
@@ -204,7 +210,18 @@ export function App () {
         )
       },
       styleNode: (node, course) => {
-        const { dfw, waitlist } = getStats(course.name)
+        const { dfw, waitlist, frequency } = getStats(course.name)
+        node.classList.remove(styles.square, styles.triangle)
+        const terms = new Set(frequency?.map(term => term.slice(0, 2)))
+        terms.delete('S1')
+        terms.delete('S2')
+        if (shapes === 'frequency') {
+          if (terms.size === 2) {
+            node.classList.add(styles.square)
+          } else if (terms.size === 1) {
+            node.classList.add(styles.triangle)
+          }
+        }
         node.textContent =
           courseBall === 'complexity'
             ? complexity === 'default' ||
@@ -360,6 +377,7 @@ export function App () {
     lineColor,
     lineDash,
     complexity,
+    shapes,
     dfwThreshold,
     waitlistThreshold,
     showWaitlistWarning
@@ -421,6 +439,9 @@ export function App () {
           onChange={setComplexity}
         >
           Complexity formula
+        </Dropdown>
+        <Dropdown options={options.shapes} value={shapes} onChange={setShapes}>
+          Course node shape
         </Dropdown>
         <p>
           <label>

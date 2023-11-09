@@ -36,6 +36,10 @@
   --color: #93c5fd;
 }
 
+.square {
+  border-radius: 5px;
+}
+
 .tooltipReqType {
   font-style: italic;
 }
