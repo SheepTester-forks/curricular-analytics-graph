@@ -39,6 +39,18 @@
 .square {
   border-radius: 5px;
 }
+.triangle {
+  background-image: url('./assets/triangle.svg');
+  background-position: center;
+  background-size: contain;
+  width: 40px;
+  height: 40px;
+  margin: -5px;
+  background-repeat: no-repeat;
+  border-radius: 0;
+  background-color: transparent;
+  border: 0;
+}
 
 .tooltipReqType {
   font-style: italic;
