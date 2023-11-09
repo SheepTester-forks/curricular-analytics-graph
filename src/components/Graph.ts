@@ -34,6 +34,8 @@ export type GraphOptions<R, C, T> = TooltipOptions<C, R> & {
   termSummary: (term: T, index: number) => string
   /** Shown under each course node. */
   courseName: (course: C) => string
+  /** Shown inside each course node. */
+  courseNode: (course: C) => string
   /** Apply styles to a node. */
   styleNode: (element: HTMLElement, course: C) => void
   /** Apply styles to a link. */
@@ -114,6 +116,8 @@ export class Graph<
           const course = item.course
           course.name.title = course.name.textContent =
             this.options.courseName?.(item.course.raw) ?? ''
+          course.ballLabel.nodeValue =
+            this.options.courseNode?.(item.course.raw) ?? null
           this.options.styleNode?.(course.ball, item.course.raw)
           element.style.gridColumn = `${course.term + 1} / ${course.term + 2}`
           element.style.gridRow = `${item.index + 1} / ${item.index + 2}`

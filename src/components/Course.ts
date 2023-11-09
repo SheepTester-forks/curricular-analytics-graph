@@ -23,6 +23,7 @@ export class Course<C, R> {
   ball: HTMLElement = Object.assign(document.createElement('button'), {
     className: styles.courseBall
   })
+  ballLabel = document.createTextNode('')
   name: HTMLElement = Object.assign(document.createElement('div'), {
     className: styles.courseName
   })
@@ -35,6 +36,7 @@ export class Course<C, R> {
     this.index = index
     this.raw = course
 
+    this.ball.append(this.ballLabel)
     this.wrapper.append(this.ball, this.name)
   }
 

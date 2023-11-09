@@ -44,6 +44,7 @@
 }
 .courseBall {
   display: flex;
+  position: relative;
   justify-content: center;
   align-items: center;
   flex: none;
@@ -51,7 +52,9 @@
   height: 30px;
   border-radius: 50%;
   border: 1px solid var(--border-color);
+  stroke: var(--border-color);
   background-color: var(--ball-color);
+  fill: var(--ball-color);
   transition: color 0.2s, background-color 0.2s, border-color 0.2s;
 }
 .courseName {
@@ -90,7 +93,9 @@
     .courseBall {
       color: #0f172a22;
       border-color: color-mix(in srgb, var(--border-color) 13%, transparent);
+      stroke: color-mix(in srgb, var(--border-color) 13%, transparent);
       background-color: color-mix(in srgb, var(--ball-color) 13%, white);
+      fill: color-mix(in srgb, var(--ball-color) 13%, white);
     }
   }
 }

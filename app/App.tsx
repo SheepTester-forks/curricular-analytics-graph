@@ -26,6 +26,8 @@ for (const term of example.curriculum_terms) {
   term.curriculum_items.sort((a, b) => a.name.localeCompare(b.name))
 }
 
+const triangleShape = document.getElementById('triangle')
+
 const options = {
   courseBall: {
     none: 'None',
@@ -143,7 +145,7 @@ export function App () {
   const [complexity, setComplexity] =
     useState<keyof typeof options['complexity']>('dfwPlus1')
   const [shapes, setShapes] =
-    useState<keyof typeof options['shapes']>('nothing')
+    useState<keyof typeof options['shapes']>('frequency')
 
   const [dfwThreshold, setDfwThreshold] = useState('10')
   const [waitlistThreshold, setWaitlistThreshold] = useState('10')
@@ -209,6 +211,28 @@ export function App () {
           (nameCanonical ? `\n(${nameCanonical})` : '')
         )
       },
+      courseNode: course => {
+        const { dfw, waitlist } = getStats(course.name)
+        return courseBall === 'complexity'
+          ? complexity === 'default' ||
+            dfw === null ||
+            course.metrics.complexity === undefined
+            ? String(course.metrics.complexity ?? '')
+            : complexity === 'dfw'
+            ? (course.metrics.complexity * dfw).toFixed(2)
+            : (course.metrics.complexity * (dfw + 1)).toFixed(1)
+          : courseBall === 'dfw'
+          ? dfw !== null
+            ? (dfw * 100).toFixed(0)
+            : ''
+          : courseBall === 'units'
+          ? String(course.credits)
+          : courseBall === 'waitlist'
+          ? waitlist !== null
+            ? waitlist.toFixed(0)
+            : ''
+          : ''
+      },
       styleNode: (node, course) => {
         const { dfw, waitlist, frequency } = getStats(course.name)
         node.classList.remove(styles.square, styles.triangle)
@@ -219,29 +243,19 @@ export function App () {
           if (terms.size === 2) {
             node.classList.add(styles.square)
           } else if (terms.size === 1) {
+            console.log(node.querySelector(`.${styles.triangleShape}`))
+            if (!node.querySelector(`.${styles.triangleShape}`)) {
+              const shape = triangleShape?.cloneNode(true)
+              console.log(shape)
+              if (shape instanceof Element) {
+                shape.id = ''
+                shape.classList.add(styles.triangleShape)
+                node.append(shape)
+              }
+            }
             node.classList.add(styles.triangle)
           }
         }
-        node.textContent =
-          courseBall === 'complexity'
-            ? complexity === 'default' ||
-              dfw === null ||
-              course.metrics.complexity === undefined
-              ? String(course.metrics.complexity ?? '')
-              : complexity === 'dfw'
-              ? (course.metrics.complexity * dfw).toFixed(2)
-              : (course.metrics.complexity * (dfw + 1)).toFixed(1)
-            : courseBall === 'dfw'
-            ? dfw !== null
-              ? (dfw * 100).toFixed(0)
-              : ''
-            : courseBall === 'units'
-            ? String(course.credits)
-            : courseBall === 'waitlist'
-            ? waitlist !== null
-              ? waitlist.toFixed(0)
-              : ''
-            : ''
         node.style.fontSize =
           courseBall === 'complexity' && complexity !== 'default' ? '0.8em' : ''
         node.style.setProperty(

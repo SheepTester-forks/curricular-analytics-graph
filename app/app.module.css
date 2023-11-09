@@ -39,17 +39,21 @@
 .square {
   border-radius: 5px;
 }
-.triangle {
-  background-image: url('./assets/triangle.svg');
-  background-position: center;
-  background-size: contain;
+.triangleShape {
+  display: none;
+  position: absolute;
+  inset: -5px;
   width: 40px;
   height: 40px;
-  margin: -5px;
-  background-repeat: no-repeat;
-  border-radius: 0;
-  background-color: transparent;
+  z-index: -1;
+}
+.triangle {
+  background-color: transparent !important;
   border: 0;
+
+  & .triangleShape {
+    display: block;
+  }
 }
 
 .tooltipReqType {

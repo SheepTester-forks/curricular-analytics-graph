@@ -24,3 +24,7 @@ button:not(:disabled) {
 #root {
   display: flex;
 }
+
+#triangle {
+  display: none;
+}
