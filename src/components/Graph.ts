@@ -220,10 +220,10 @@ export class Graph<T extends GraphNode<T>> extends Join<
       for (const neighbor of course.raw[direction]) {
         const neighborObj = this.#fromRaw(neighbor)
         neighborObj.wrapper.classList.add(styles.highlighted)
-        this.options.styleLinkedNode?.(neighborObj.wrapper, course.raw, {
+        this.options.styleLinkedNode?.(neighborObj.wrapper, neighbor, {
           relation: direction,
           direct: true,
-          from: neighbor
+          from: course.raw
         })
         this.#dfs(neighborObj, direction)
       }

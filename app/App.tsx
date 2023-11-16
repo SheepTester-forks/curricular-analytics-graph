@@ -15,7 +15,10 @@ import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summa
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
 import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
 
-type LinkedCourse = VisualizationCourse & {
+type LinkedCourse = Pick<
+  VisualizationCourse,
+  'id' | 'name' | 'credits' | 'curriculum_requisites'
+> & {
   backwards: LinkedCourse[]
   forwards: LinkedCourse[]
 }
@@ -204,17 +207,14 @@ export function App () {
           complexity === 'default' ? termComplexity : termComplexity.toFixed(2)
         }\nUnits: ${term.reduce((acc, curr) => acc + (curr.credits ?? 0), 0)}`
       },
-      courseName: ({ name, nameSub, nameCanonical }) => {
+      courseName: ({ name }) => {
         const { waitlist } = getStats(name)
         return (
           (showWaitlistWarning &&
           waitlist !== null &&
           waitlist > +waitlistThreshold
             ? '⚠️'
-            : '') +
-          name +
-          (nameSub ? `\n${nameSub}` : '') +
-          (nameCanonical ? `\n(${nameCanonical})` : '')
+            : '') + name
         )
       },
       courseNode: course => {

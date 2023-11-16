@@ -18,22 +18,22 @@
 }
 
 .prereq {
-  --color: #fee2e2;
+  --ball-color: #fee2e2;
 }
 .blocking {
-  --color: #dbeafe;
+  --ball-color: #dbeafe;
 }
 .directPrereq {
-  --color: #fca5a5;
+  --ball-color: #fca5a5;
 }
 .directCoreq {
-  --color: #fdba74;
+  --ball-color: #fdba74;
 }
 .directStrictCoreq {
-  --color: #fde047;
+  --ball-color: #fde047;
 }
 .directBlocking {
-  --color: #93c5fd;
+  --ball-color: #93c5fd;
 }
 
 .square {
