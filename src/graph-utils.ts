@@ -1,7 +1,7 @@
 export type GraphNode<T> = { backwards: T[]; forwards: T[] }
 
 function reachable<T extends GraphNode<T>> (node: T): Set<T> {
-  const reachable = new Set<T>([node])
+  const reachable = new Set<T>()
   const toVisit: T[] = [node]
   let next: T | undefined
   while ((next = toVisit.pop())) {
@@ -30,7 +30,10 @@ export function allPaths<T extends GraphNode<T>> (nodes: T[]): T[][] {
     const toVisit: T[][] = [[source]]
     let path: T[] | undefined
     while ((path = toVisit.pop())) {
-      for (const node of path[0].forwards) {
+      for (const node of path[path.length - 1].forwards) {
+        if (path.includes(node)) {
+          throw new RangeError('Cycle.')
+        }
         const newPath = [...path, node]
         // If reached a sink, then the path is done
         if (node.forwards.length === 0) {
@@ -141,7 +144,7 @@ export function longestPathFrom<T extends GraphNode<T>> (
     const cached = cache.get(node)
     if (cached !== undefined) {
       if (cached === null) {
-        throw new TypeError('Cycle.')
+        throw new RangeError('Cycle.')
       }
       return cached
     }

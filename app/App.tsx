@@ -1,53 +1,23 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Graph, GraphOptions } from '../src/index'
 import styles from './app.module.css'
-// https://curricularanalytics.org/degree_plans/11085
-// import example from './example.json'
-// https://curricularanalytics.org/degree_plans/25144
-import example from './BE27.json'
-// https://curricularanalytics.org/degree_plans/25403
-// import example from './EC27.json'
 import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
-import { RequisiteType, VisualizationCourse, toRequisiteType } from './types'
-// import dfwRates from './fake-dfw.json'
-import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
-import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
-import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
+import { RequisiteType } from './types'
+import * as GraphUtils from '../src/graph-utils'
 
-type LinkedCourse = Pick<
-  VisualizationCourse,
-  'id' | 'name' | 'credits' | 'curriculum_requisites'
-> & {
+export type LinkedCourse = {
+  id: number
+  name: string
+  credits: number
   backwards: LinkedCourse[]
   forwards: LinkedCourse[]
 }
 
-const nodesByTerm = example.curriculum_terms.map(term =>
-  term.curriculum_items.map(
-    (course): LinkedCourse => ({ ...course, backwards: [], forwards: [] })
-  )
-)
-const nodes = nodesByTerm.flat()
-const nodesById: Record<number, LinkedCourse> = {}
-for (const node of nodes) {
-  nodesById[node.id] ??= node
-}
-const reqTypes: Record<string, RequisiteType> = {}
-for (const node of nodes) {
-  for (const { source_id, type } of node.curriculum_requisites) {
-    nodesById[source_id].forwards.push(node)
-    node.backwards.push(nodesById[source_id])
-    reqTypes[`${source_id}->${node.id}`] = toRequisiteType(type)
-  }
-}
-for (const term of nodesByTerm) {
-  // Sort by outgoing nodes, then incoming
-  term.sort(
-    (a, b) =>
-      b.forwards.length - a.forwards.length ||
-      b.backwards.length - a.backwards.length
-  )
+export type CourseStats = {
+  dfw: number | null
+  frequency: string[] | null
+  waitlist: number | null
 }
 
 const triangleShape = document.getElementById('triangle')
@@ -87,7 +57,7 @@ const options = {
     none: 'None',
     flagHighDfw: 'Flag high DFW as dashed line'
   },
-  complexity: {
+  complexityMode: {
     default: 'Same as Curricular Analytics',
     dfw: 'Multiply course complexity by DFW rate',
     dfwPlus1: 'Multiply course complexity by (DFW rate + 1)'
@@ -102,29 +72,6 @@ const classes: Record<RequisiteType, string> = {
   prereq: styles.prereqs,
   coreq: styles.coreqs,
   'strict-coreq': styles.strictCoreqs
-}
-
-type CourseStats = {
-  dfw: number | null
-  frequency: string[] | null
-  waitlist: number | null
-}
-
-function getStats (courseName: string): CourseStats {
-  const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
-  return {
-    dfw:
-      (match && (dfwRates as Record<string, number>)[match[1] + match[2]]) ??
-      null,
-    frequency:
-      (match &&
-        (frequencies as Record<string, string[]>)[match[1] + match[2]]) ??
-      null,
-    waitlist:
-      (match &&
-        (waitlists as Record<string, number>)[match[1] + ' ' + match[2]]) ??
-      null
-  }
 }
 
 function interpretFrequency (terms: string[]): string {
@@ -145,7 +92,14 @@ function interpretFrequency (terms: string[]): string {
   }
 }
 
-export function App () {
+export type AppProps = {
+  degreePlan: LinkedCourse[][]
+  reqTypes: Record<`${number}->${number}`, RequisiteType>
+  getStats(courseName: string): CourseStats
+  realData?: boolean
+}
+
+export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
   const ref = useRef<HTMLDivElement>(null)
 
   const graph = useRef<Graph<LinkedCourse> | null>(null)
@@ -162,8 +116,8 @@ export function App () {
     useState<keyof typeof options['lineColor']>('flagHighDfw')
   const [lineDash, setLineDash] =
     useState<keyof typeof options['lineDash']>('none')
-  const [complexity, setComplexity] =
-    useState<keyof typeof options['complexity']>('dfwPlus1')
+  const [complexityMode, setComplexityMode] =
+    useState<keyof typeof options['complexityMode']>('dfwPlus1')
   const [shapes, setShapes] =
     useState<keyof typeof options['shapes']>('frequency')
 
@@ -172,9 +126,44 @@ export function App () {
 
   const [showWaitlistWarning, setShowWaitlistWarning] = useState(true)
 
+  const {
+    blockingFactors,
+    delayFactors,
+    complexities,
+    centralities,
+    redundantReqs
+  } = useMemo(() => {
+    const curriculum = degreePlan.flat()
+    const blockingFactors = new Map(
+      curriculum.map(course => [course, GraphUtils.blockingFactor(course)])
+    )
+    const allPaths = GraphUtils.allPaths(curriculum)
+    const delayFactors = GraphUtils.delayFactors(allPaths)
+    const complexities = GraphUtils.complexities(
+      blockingFactors,
+      delayFactors,
+      'semester'
+    )
+    const centralities = new Map(
+      curriculum.map(course => [
+        course,
+        GraphUtils.centrality(allPaths, course)
+      ])
+    )
+    const redundantReqs = GraphUtils.redundantRequisites(curriculum).map(
+      ([source, target]) => `${source.id}->${target.id}`
+    )
+    return {
+      blockingFactors,
+      delayFactors,
+      complexities,
+      centralities,
+      redundantReqs
+    }
+  }, [degreePlan])
+
   useEffect(() => {
     graph.current = new Graph()
-    graph.current.setCurriculum(nodesByTerm)
     graph.current.wrapper.classList.add(styles.graph)
     ref.current?.append(graph.current.wrapper)
 
@@ -185,6 +174,12 @@ export function App () {
   }, [])
 
   useEffect(() => {
+    if (graph.current) {
+      graph.current.setCurriculum(degreePlan)
+    }
+  }, [degreePlan])
+
+  useEffect(() => {
     const threshold = +dfwThreshold / 100
     const options: GraphOptions<LinkedCourse> = {
       termName: (_, i) =>
@@ -192,19 +187,22 @@ export function App () {
       termSummary: term => {
         const termComplexity = term.reduce((acc, curr) => {
           const { dfw } = getStats(curr.name)
+          const complexity = complexities.get(curr)
           return (
             acc +
-            (complexity === 'default' ||
+            (complexityMode === 'default' ||
             dfw === null ||
-            curr.metrics.complexity === undefined
-              ? curr.metrics.complexity ?? 0
-              : complexity === 'dfw'
-              ? curr.metrics.complexity * dfw
-              : curr.metrics.complexity * (dfw + 1))
+            complexity === undefined
+              ? complexity ?? 0
+              : complexityMode === 'dfw'
+              ? complexity * dfw
+              : complexity * (dfw + 1))
           )
         }, 0)
         return `Complex.: ${
-          complexity === 'default' ? termComplexity : termComplexity.toFixed(2)
+          complexityMode === 'default'
+            ? termComplexity
+            : termComplexity.toFixed(2)
         }\nUnits: ${term.reduce((acc, curr) => acc + (curr.credits ?? 0), 0)}`
       },
       courseName: ({ name }) => {
@@ -219,14 +217,15 @@ export function App () {
       },
       courseNode: course => {
         const { dfw, waitlist } = getStats(course.name)
+        const complexity = complexities.get(course)
         return courseBall === 'complexity'
-          ? complexity === 'default' ||
+          ? complexityMode === 'default' ||
             dfw === null ||
-            course.metrics.complexity === undefined
-            ? String(course.metrics.complexity ?? '')
-            : complexity === 'dfw'
-            ? (course.metrics.complexity * dfw).toFixed(2)
-            : (course.metrics.complexity * (dfw + 1)).toFixed(1)
+            complexity === undefined
+            ? String(complexity ?? '')
+            : complexityMode === 'dfw'
+            ? (complexity * dfw).toFixed(2)
+            : (complexity * (dfw + 1)).toFixed(1)
           : courseBall === 'dfw'
           ? dfw !== null
             ? (dfw * 100).toFixed(0)
@@ -261,7 +260,9 @@ export function App () {
           }
         }
         node.style.fontSize =
-          courseBall === 'complexity' && complexity !== 'default' ? '0.8em' : ''
+          courseBall === 'complexity' && complexityMode !== 'default'
+            ? '0.8em'
+            : ''
         node.style.setProperty(
           '--border-color',
           dfw !== null && dfw >= threshold && courseBallColor === 'flagHighDfw'
@@ -349,21 +350,22 @@ export function App () {
       tooltipTitle: course => course.name,
       tooltipContent: course => {
         const { dfw, frequency, waitlist } = getStats(course.name)
+        const complexity = complexities.get(course)
         return [
           ['Units', String(course.credits)],
           [
             'Complexity',
-            complexity === 'default' ||
+            complexityMode === 'default' ||
             dfw === null ||
-            course.metrics.complexity === undefined
-              ? String(course.metrics.complexity ?? '')
-              : complexity === 'dfw'
-              ? (course.metrics.complexity * dfw).toFixed(2)
-              : (course.metrics.complexity * (dfw + 1)).toFixed(1)
+            complexity === undefined
+              ? String(complexity ?? '')
+              : complexityMode === 'dfw'
+              ? (complexity * dfw).toFixed(2)
+              : (complexity * (dfw + 1)).toFixed(1)
           ],
-          ['Centrality', String(course.metrics.centrality)],
-          ['Blocking factor', String(course.metrics['blocking factor'])],
-          ['Delay factor', String(course.metrics['delay factor'])],
+          ['Centrality', String(centralities.get(course))],
+          ['Blocking factor', String(blockingFactors.get(course))],
+          ['Delay factor', String(delayFactors.get(course))],
           ['DFW rate', dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A'],
           [
             'Offered',
@@ -401,7 +403,7 @@ export function App () {
     lineWidth,
     lineColor,
     lineDash,
-    complexity,
+    complexityMode,
     shapes,
     dfwThreshold,
     waitlistThreshold,
@@ -459,9 +461,9 @@ export function App () {
           Prereq line pattern
         </Dropdown>
         <Dropdown
-          options={options.complexity}
-          value={complexity}
-          onChange={setComplexity}
+          options={options.complexityMode}
+          value={complexityMode}
+          onChange={setComplexityMode}
         >
           Complexity formula
         </Dropdown>
@@ -485,7 +487,7 @@ export function App () {
         >
           Minimum waitlist length for warning
         </TextField>
-        {dfwRates['MATH18'] < 0.001 ? (
+        {realData ? (
           <p>For this demo, DFW rates have been randomized.</p>
         ) : (
           <p>
