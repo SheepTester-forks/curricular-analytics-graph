@@ -79,7 +79,7 @@ export class Join<T, E extends Element, W extends Element = HTMLElement> {
     }
     // Update order of elements
     if (newEntries.length > 0) {
-      this.wrapper.append(newEntries[0].element)
+      this.wrapper.prepend(newEntries[0].element)
       for (const [i, { element }] of newEntries.slice(0, -1).entries()) {
         element.after(newEntries[i + 1].element)
       }

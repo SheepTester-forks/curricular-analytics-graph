@@ -7,6 +7,7 @@ import { GraphNode, longestPathFrom } from '../graph-utils'
 
 type GridItem<T> =
   | { type: 'course'; course: Course<T>; index: number }
+  | { type: 'term-background'; index: number }
   | { type: 'term-header'; index: number; term: T[] }
   | { type: 'term-footer'; index: number; term: T[] }
 
@@ -81,15 +82,21 @@ export class Graph<T extends GraphNode<T>> extends Join<
             role: 'columnheader',
             id: `term-heading-${item.index}`
           })
-          header.style.gridColumn = `${item.index + 1} / ${item.index + 2}`
+          header.style.gridColumn = `${item.index + 1}`
           return header
         } else if (item.type === 'term-footer') {
           const footer = Object.assign(document.createElement('div'), {
             className: styles.termFooter
           })
-          footer.style.gridColumn = `${item.index + 1} / ${item.index + 2}`
+          footer.style.gridColumn = `${item.index + 1}`
           footer.setAttribute('aria-describedby', `term-heading-${item.index}`)
           return footer
+        } else if (item.type === 'term-background') {
+          const background = Object.assign(document.createElement('div'), {
+            className: styles.termBackground
+          })
+          background.style.gridColumn = `${item.index + 1}`
+          return background
         } else {
           throw new TypeError(`${item['type']}??`)
         }
@@ -115,7 +122,6 @@ export class Graph<T extends GraphNode<T>> extends Join<
         } else if (item.type === 'term-footer') {
           element.textContent =
             this.options.termSummary?.(item.term, item.index) ?? ''
-          element.style.gridRow = `${this.#maxTermLength + 2}`
         }
       },
       measure: item => {
@@ -322,6 +328,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
     this.#links = []
     for (const [index, term] of curriculum.entries()) {
       items.push({ type: 'term-header', index, term })
+      items.push({ type: 'term-background', index })
 
       for (const [j, item] of term.entries()) {
         const course = new Course<T>(item, index, j)
