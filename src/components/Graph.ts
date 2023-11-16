@@ -1,45 +1,28 @@
-import { Course, longestPathFrom } from './Course'
+import { Course } from './Course'
 import styles from '../styles.module.css'
 import { Link, LinkHandler, LinkRenderer } from './LinkRenderer'
 import { Join } from '../util/Join'
 import { Tooltip, TooltipOptions } from './Tooltip'
+import { GraphNode, longestPathFrom } from '../graph-utils'
 
-export interface ICurriculum<T> {
-  curriculum_terms: T[]
-}
+type GridItem<T> =
+  | { type: 'course'; course: Course<T>; index: number }
+  | { type: 'term-header'; index: number; term: T[] }
+  | { type: 'term-footer'; index: number; term: T[] }
 
-export interface ITerm<C> {
-  curriculum_items: C[]
-}
-
-export interface ICourse<R> {
-  id: number
-  curriculum_requisites: R[]
-}
-
-export type IRequisite = {
-  source_id: number
-  target_id: number
-}
-
-type GridItem<C, R, T> =
-  | { type: 'course'; course: Course<C, R>; index: number }
-  | { type: 'term-header'; index: number; term: T }
-  | { type: 'term-footer'; index: number; term: T }
-
-export type GraphOptions<R, C, T> = TooltipOptions<C, R> & {
+export type GraphOptions<T> = TooltipOptions<T> & {
   /** Shown at the top of each term column. */
-  termName: (term: T, index: number) => string
+  termName: (term: T[], index: number) => string
   /** Shown at the bottom of each term column. */
-  termSummary: (term: T, index: number) => string
+  termSummary: (term: T[], index: number) => string
   /** Shown under each course node. */
-  courseName: (course: C) => string
+  courseName: (course: T) => string
   /** Shown inside each course node. */
-  courseNode: (course: C) => string
+  courseNode: (course: T) => string
   /** Apply styles to a node. */
-  styleNode: (element: HTMLElement, course: C) => void
+  styleNode: (element: HTMLElement, course: T) => void
   /** Apply styles to a link. */
-  styleLink: LinkHandler<C, R>
+  styleLink: LinkHandler<T>
   /**
    * Apply styles to a node that is highlighted when a course is selected.
    *
@@ -52,35 +35,35 @@ export type GraphOptions<R, C, T> = TooltipOptions<C, R> & {
    */
   styleLinkedNode: (
     element: HTMLElement,
-    course: C,
-    link:
-      | (R & { relation: 'backward' | 'forward'; direct: boolean })
+    course: T,
+    relationship:
+      | { relation: 'backwards' | 'forwards'; direct: boolean; from: T }
       | { relation: 'selected' }
       | null
   ) => void
 }
 
-export class Graph<
-  R extends IRequisite,
-  C extends ICourse<R>,
-  T extends ITerm<C>
-> extends Join<GridItem<C, R, T>, HTMLElement> {
-  #courseNodes = new WeakMap<Element, Course<C, R>>()
-  #highlighted: Course<C, R>[] = []
-  #selected: Course<C, R> | null = null
+export class Graph<T extends GraphNode<T>> extends Join<
+  GridItem<T>,
+  HTMLElement
+> {
+  #courseNodes = new WeakMap<Element, Course<T>>()
+  #courseObjects = new WeakMap<T, Course<T>>()
+  #highlighted: Course<T>[] = []
+  #selected: Course<T> | null = null
 
-  #links: Link<C, R>[] = []
-  #allLinks: LinkRenderer<C, R>
-  #linksHighlighted: LinkRenderer<C, R>
-  #longestPath: Course<C, R>[] = []
+  #links: Link<T>[] = []
+  #allLinks: LinkRenderer<T>
+  #linksHighlighted: LinkRenderer<T>
+  #longestPath: Course<T>[] = []
   #longestPathElement: SVGPathElement
 
-  #tooltip: Tooltip<C, R>
+  #tooltip: Tooltip<T>
 
   #maxTermLength: number = 0
-  options: Partial<GraphOptions<R, C, T>>
+  options: Partial<GraphOptions<T>>
 
-  constructor (options: Partial<GraphOptions<R, C, T>> = {}) {
+  constructor (options: Partial<GraphOptions<T>> = {}) {
     super({
       wrapper: Object.assign(document.createElement('div'), {
         className: styles.graph
@@ -143,7 +126,7 @@ export class Graph<
     })
 
     this.options = options
-    this.#tooltip = new Tooltip<C, R>({
+    this.#tooltip = new Tooltip<T>({
       tooltipTitle: (...args) => options.tooltipTitle?.(...args) ?? '',
       tooltipContent: (...args) => options.tooltipContent?.(...args) ?? [],
       tooltipRequisiteInfo: (...args) => options.tooltipRequisiteInfo?.(...args)
@@ -178,16 +161,25 @@ export class Graph<
     }).observe(this.wrapper)
   }
 
-  #dfs (course: Course<C, R>, direction: 'backward' | 'forward'): void {
+  #fromRaw = (raw: T): Course<T> => {
+    const object = this.#courseObjects.get(raw)
+    if (!object) {
+      throw new TypeError('Course does not have an associated course object.')
+    }
+    return object
+  }
+
+  #dfs (course: Course<T>, direction: 'backwards' | 'forwards'): void {
     this.#highlighted.push(course)
     course.wrapper.classList.add(styles.highlighted)
-    for (const { course: neighbor, raw } of course[direction]) {
-      this.options.styleLinkedNode?.(neighbor.wrapper, neighbor.raw, {
-        ...raw,
+    for (const neighbor of course.raw[direction]) {
+      const neighborObj = this.#fromRaw(neighbor)
+      this.options.styleLinkedNode?.(neighborObj.wrapper, neighbor, {
         relation: direction,
-        direct: false
+        direct: false,
+        from: course.raw
       })
-      this.#dfs(neighbor, direction)
+      this.#dfs(neighborObj, direction)
     }
   }
 
@@ -206,7 +198,7 @@ export class Graph<
     )
   }
 
-  #handleHoverCourse (course: Course<C, R> | null) {
+  #handleHoverCourse (course: Course<T> | null) {
     for (const course of this.#highlighted) {
       course.wrapper.classList.remove(styles.highlighted, styles.selected)
       this.options.styleLinkedNode?.(course.wrapper, course.raw, null)
@@ -224,23 +216,17 @@ export class Graph<
     this.options.styleLinkedNode?.(course.wrapper, course.raw, {
       relation: 'selected'
     })
-    for (const link of course.backward) {
-      link.course.wrapper.classList.add(styles.highlighted)
-      this.options.styleLinkedNode?.(link.course.wrapper, course.raw, {
-        ...link.raw,
-        relation: 'backward',
-        direct: true
-      })
-      this.#dfs(link.course, 'backward')
-    }
-    for (const link of course.forward) {
-      link.course.wrapper.classList.add(styles.highlighted)
-      this.options.styleLinkedNode?.(link.course.wrapper, course.raw, {
-        ...link.raw,
-        relation: 'forward',
-        direct: true
-      })
-      this.#dfs(link.course, 'forward')
+    for (const direction of ['backwards', 'forwards'] as const) {
+      for (const neighbor of course.raw[direction]) {
+        const neighborObj = this.#fromRaw(neighbor)
+        neighborObj.wrapper.classList.add(styles.highlighted)
+        this.options.styleLinkedNode?.(neighborObj.wrapper, course.raw, {
+          relation: direction,
+          direct: true,
+          from: neighbor
+        })
+        this.#dfs(neighborObj, direction)
+      }
     }
     this.#linksHighlighted.join(
       this.#links.filter(
@@ -251,9 +237,9 @@ export class Graph<
     )
     try {
       this.#longestPath = [
-        ...longestPathFrom(course, 'backward').reverse(),
-        ...longestPathFrom(course, 'forward').slice(1)
-      ]
+        ...longestPathFrom(course.raw, 'backwards').reverse(),
+        ...longestPathFrom(course.raw, 'forwards').slice(1)
+      ].map(this.#fromRaw)
     } catch {
       // Cycle
       this.#longestPath = []
@@ -261,7 +247,7 @@ export class Graph<
     this.#renderLongestPath()
   }
 
-  #getCourse (event: Event, type: 'ball' | 'wrapper'): Course<C, R> | null {
+  #getCourse (event: Event, type: 'ball' | 'wrapper'): Course<T> | null {
     if (!(event.target instanceof HTMLElement)) {
       return null
     }
@@ -299,7 +285,7 @@ export class Graph<
       if (!course.wrapper.contains(this.#tooltip.wrapper)) {
         course.wrapper.append(this.#tooltip.wrapper)
       }
-      this.#tooltip.show(course)
+      this.#tooltip.show(course, course.raw.backwards.map(this.#fromRaw))
     } else {
       this.#tooltip.hide()
     }
@@ -319,51 +305,42 @@ export class Graph<
     this.#tooltip.position()
   }
 
-  setCurriculum (curriculum: ICurriculum<T>): void {
+  setCurriculum (curriculum: T[][]): void {
     // https://stackoverflow.com/a/61240964
-    this.#maxTermLength = curriculum.curriculum_terms.reduce(
-      (acc, curr) => Math.max(acc, curr.curriculum_items.length),
+    this.#maxTermLength = curriculum.reduce(
+      (acc, curr) => Math.max(acc, curr.length),
       0
     )
 
-    this.wrapper.style.setProperty(
-      '--term-count',
-      `${curriculum.curriculum_terms.length}`
-    )
+    this.wrapper.style.setProperty('--term-count', `${curriculum.length}`)
     this.wrapper.style.setProperty(
       '--longest-term-length',
       `${this.#maxTermLength}`
     )
 
-    const courses: Course<C, R>[] = []
-    const coursesById: Record<number, Course<C, R>> = {}
-    const items: GridItem<C, R, T>[] = []
-    for (const [index, term] of curriculum.curriculum_terms.entries()) {
+    const items: GridItem<T>[] = []
+    this.#links = []
+    for (const [index, term] of curriculum.entries()) {
       items.push({ type: 'term-header', index, term })
 
-      for (const [j, item] of term.curriculum_items.entries()) {
-        const course = new Course<C, R>(item, index, j)
+      for (const [j, item] of term.entries()) {
+        const course = new Course<T>(item, index, j)
         items.push({ type: 'course', course, index: j + 1 })
         this.#courseNodes.set(course.wrapper, course)
-        courses.push(course)
-
-        coursesById[course.raw.id] ??= course
+        this.#courseObjects.set(item, course)
       }
 
       items.push({ type: 'term-footer', index, term })
     }
-
-    this.#links = []
-    for (const target of courses) {
-      for (const requisite of target.raw.curriculum_requisites) {
-        const source = coursesById[requisite.source_id]
+    for (const course of items) {
+      if (course.type !== 'course') {
+        continue
+      }
+      for (const target of course.course.raw.forwards) {
         this.#links.push({
-          source,
-          target,
-          raw: requisite
+          source: course.course,
+          target: this.#fromRaw(target)
         })
-        source.forward.push({ course: target, raw: requisite })
-        target.backward.push({ course: source, raw: requisite })
       }
     }
 

@@ -55,7 +55,8 @@
   stroke: var(--border-color);
   background-color: var(--ball-color);
   fill: var(--ball-color);
-  transition: color 0.2s, background-color 0.2s, border-color 0.2s;
+  transition: color 0.2s, background-color 0.2s, border-color 0.2s, fill 0.2s,
+    stroke 0.2s;
 }
 .courseName {
   white-space: pre;

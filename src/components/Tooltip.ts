@@ -1,19 +1,16 @@
 import styles from '../styles.module.css'
 import { Join } from '../util/Join'
-import { Course, CourseLink } from './Course'
+import { Course } from './Course'
 
-export type TooltipOptions<C, R> = {
-  tooltipTitle: (course: C) => string
-  tooltipContent: (course: C) => [string, string][]
-  tooltipRequisiteInfo: (
-    element: HTMLElement,
-    link: R & { source: C; target: C }
-  ) => void
+export type TooltipOptions<T> = {
+  tooltipTitle: (course: T) => string
+  tooltipContent: (course: T) => [string, string][]
+  tooltipRequisiteInfo: (element: HTMLElement, source: T, target: T) => void
 }
 
-export class Tooltip<C, R> {
-  #options: TooltipOptions<C, R>
-  #course: Course<C, R> | null = null
+export class Tooltip<T> {
+  #options: TooltipOptions<T>
+  #course: Course<T> | null = null
   #width = 0
   #height = 0
 
@@ -48,28 +45,28 @@ export class Tooltip<C, R> {
       row.children[1].textContent = value
     }
   })
-  #reqs = new Join<CourseLink<C, R>, HTMLLIElement>({
+  #reqs = new Join<Course<T>, HTMLLIElement>({
     wrapper: Object.assign(document.createElement('ul'), {
       className: styles.tooltipReqs
     }),
-    key: link => link.course.id,
+    key: source => source.id,
     enter: () => {
       return Object.assign(document.createElement('li'), {
         className: styles.tooltipReq
       })
     },
-    update: (link, element) => {
+    update: (source, element) => {
       if (this.#course) {
-        this.#options.tooltipRequisiteInfo(element, {
-          ...link.raw,
-          source: link.course.raw,
-          target: this.#course.raw
-        })
+        this.#options.tooltipRequisiteInfo(
+          element,
+          source.raw,
+          this.#course.raw
+        )
       }
     }
   })
 
-  constructor (options: TooltipOptions<C, R>) {
+  constructor (options: TooltipOptions<T>) {
     this.#options = options
     this.wrapper.append(
       this.#title,
@@ -90,12 +87,12 @@ export class Tooltip<C, R> {
     }).observe(this.wrapper)
   }
 
-  show (course: Course<C, R>): void {
+  show (course: Course<T>, backwards: Course<T>[]): void {
     this.#course = course
     this.wrapper.classList.remove(styles.tooltipHidden)
     this.#title.textContent = this.#options.tooltipTitle(course.raw)
     this.#table.join(this.#options.tooltipContent(course.raw))
-    this.#reqs.join(course.backward)
+    this.#reqs.join(backwards)
     this.position()
   }
 

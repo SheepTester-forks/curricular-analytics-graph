@@ -9,21 +9,42 @@ import example from './BE27.json'
 // import example from './EC27.json'
 import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
-import {
-  RequisiteType,
-  VisualizationCourse,
-  VisualizationRequisite,
-  VisualizationTerm,
-  toRequisiteType
-} from './types'
+import { RequisiteType, VisualizationCourse, toRequisiteType } from './types'
 // import dfwRates from './fake-dfw.json'
 import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
 import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
 
-// Sort classes alphabetically in each term to clean up lines
-for (const term of example.curriculum_terms) {
-  term.curriculum_items.sort((a, b) => a.name.localeCompare(b.name))
+type LinkedCourse = VisualizationCourse & {
+  backwards: LinkedCourse[]
+  forwards: LinkedCourse[]
+}
+
+const nodesByTerm = example.curriculum_terms.map(term =>
+  term.curriculum_items.map(
+    (course): LinkedCourse => ({ ...course, backwards: [], forwards: [] })
+  )
+)
+const nodes = nodesByTerm.flat()
+const nodesById: Record<number, LinkedCourse> = {}
+for (const node of nodes) {
+  nodesById[node.id] ??= node
+}
+const reqTypes: Record<string, RequisiteType> = {}
+for (const node of nodes) {
+  for (const { source_id, type } of node.curriculum_requisites) {
+    nodesById[source_id].forwards.push(node)
+    node.backwards.push(nodesById[source_id])
+    reqTypes[`${source_id}->${node.id}`] = toRequisiteType(type)
+  }
+}
+for (const term of nodesByTerm) {
+  // Sort by outgoing nodes, then incoming
+  term.sort(
+    (a, b) =>
+      b.forwards.length - a.forwards.length ||
+      b.backwards.length - a.backwards.length
+  )
 }
 
 const triangleShape = document.getElementById('triangle')
@@ -124,11 +145,7 @@ function interpretFrequency (terms: string[]): string {
 export function App () {
   const ref = useRef<HTMLDivElement>(null)
 
-  const graph = useRef<Graph<
-    VisualizationRequisite,
-    VisualizationCourse,
-    VisualizationTerm
-  > | null>(null)
+  const graph = useRef<Graph<LinkedCourse> | null>(null)
 
   const [courseBall, setCourseBall] =
     useState<keyof typeof options['courseBall']>('complexity')
@@ -153,12 +170,8 @@ export function App () {
   const [showWaitlistWarning, setShowWaitlistWarning] = useState(true)
 
   useEffect(() => {
-    graph.current = new Graph<
-      VisualizationRequisite,
-      VisualizationCourse,
-      VisualizationTerm
-    >()
-    graph.current.setCurriculum(example)
+    graph.current = new Graph()
+    graph.current.setCurriculum(nodesByTerm)
     graph.current.wrapper.classList.add(styles.graph)
     ref.current?.append(graph.current.wrapper)
 
@@ -170,15 +183,11 @@ export function App () {
 
   useEffect(() => {
     const threshold = +dfwThreshold / 100
-    const options: GraphOptions<
-      VisualizationRequisite,
-      VisualizationCourse,
-      VisualizationTerm
-    > = {
+    const options: GraphOptions<LinkedCourse> = {
       termName: (_, i) =>
         `${['Fall', 'Winter', 'Spring'][i % 3]} ${Math.floor(i / 3) + 1}`,
       termSummary: term => {
-        const termComplexity = term.curriculum_items.reduce((acc, curr) => {
+        const termComplexity = term.reduce((acc, curr) => {
           const { dfw } = getStats(curr.name)
           return (
             acc +
@@ -193,10 +202,7 @@ export function App () {
         }, 0)
         return `Complex.: ${
           complexity === 'default' ? termComplexity : termComplexity.toFixed(2)
-        }\nUnits: ${term.curriculum_items.reduce(
-          (acc, curr) => acc + (curr.credits ?? 0),
-          0
-        )}`
+        }\nUnits: ${term.reduce((acc, curr) => acc + (curr.credits ?? 0), 0)}`
       },
       courseName: ({ name, nameSub, nameCanonical }) => {
         const { waitlist } = getStats(name)
@@ -243,7 +249,6 @@ export function App () {
           if (terms.size === 2) {
             node.classList.add(styles.square)
           } else if (terms.size === 1) {
-            console.log(node.querySelector(`.${styles.triangleShape}`))
             if (!node.querySelector(`.${styles.triangleShape}`)) {
               const shape = triangleShape?.cloneNode(true)
               if (shape instanceof Element) {
@@ -276,7 +281,7 @@ export function App () {
             ? `${waitlist / 4 + 1}px`
             : ''
       },
-      styleLink: (path, { type, source }) => {
+      styleLink: (path, source, target) => {
         const { dfw, waitlist } = getStats(source.name)
         path.setAttributeNS(
           null,
@@ -305,9 +310,9 @@ export function App () {
             ? '5 5'
             : ''
         )
-        path.classList.add(classes[toRequisiteType(type)])
+        path.classList.add(classes[reqTypes[`${source.id}->${target.id}`]])
       },
-      styleLinkedNode: (node, _, link) => {
+      styleLinkedNode: (node, course, link) => {
         if (link === null) {
           node.classList.remove(
             styles.selected,
@@ -318,23 +323,28 @@ export function App () {
             styles.prereq,
             styles.blocking
           )
-          return
+        } else if (link.relation === 'backwards') {
+          const reqType = reqTypes[`${course.id}->${link.from.id}`]
+          node.classList.add(
+            link.direct
+              ? reqType === 'prereq'
+                ? styles.directPrereq
+                : reqType === 'coreq'
+                ? styles.directCoreq
+                : styles.directStrictCoreq
+              : styles.prereq
+          )
+        } else {
+          node.classList.add(
+            link.relation === 'selected'
+              ? styles.selected
+              : link.relation === 'forwards'
+              ? link.direct
+                ? styles.directBlocking
+                : styles.blocking
+              : link.relation // never
+          )
         }
-        node.classList.add(
-          link.relation === 'selected'
-            ? styles.selected
-            : link.relation === 'forward'
-            ? link.direct
-              ? styles.directBlocking
-              : styles.blocking
-            : !link.direct
-            ? styles.prereq
-            : link.type === 'prereq'
-            ? styles.directPrereq
-            : link.type === 'coreq'
-            ? styles.directCoreq
-            : styles.directStrictCoreq
-        )
       },
       tooltipTitle: course => course.name,
       tooltipContent: course => {
@@ -362,7 +372,7 @@ export function App () {
           ['Avg. waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A']
         ]
       },
-      tooltipRequisiteInfo: (element, { source, type }) => {
+      tooltipRequisiteInfo: (element, source) => {
         if (element.children.length < 2) {
           element.append(
             Object.assign(document.createElement('span'), {

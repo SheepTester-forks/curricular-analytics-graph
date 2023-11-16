@@ -29,31 +29,31 @@ function defineArrow (): SVGDefsElement {
   return defs
 }
 
-export type Link<C, R> = {
-  source: Course<C, R>
-  target: Course<C, R>
-  raw: R
+export type Link<T> = {
+  source: Course<T>
+  target: Course<T>
 }
 
-export type LinkHandler<C, R> = (
+export type LinkHandler<T> = (
   element: SVGPathElement,
-  link: R & { source: C; target: C }
+  source: T,
+  target: T
 ) => void
 
-export class LinkRenderer<C, R> extends Join<
-  Link<C, R>,
+export class LinkRenderer<T> extends Join<
+  Link<T>,
   SVGPathElement,
   SVGSVGElement
 > {
-  constructor (handleLink: LinkHandler<C, R>) {
+  constructor (handleLink: LinkHandler<T>) {
     super({
       wrapper: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
       key: link => `${link.source.id}\0${link.target.id}`,
       enter: () =>
         document.createElementNS('http://www.w3.org/2000/svg', 'path'),
-      update: ({ source, target, raw }, element, _old) => {
+      update: ({ source, target }, element, _old) => {
         element.setAttributeNS(null, 'd', LinkRenderer.linkPath(source, target))
-        handleLink(element, { ...raw, source: source.raw, target: target.raw })
+        handleLink(element, source.raw, target.raw)
       }
     })
     this.wrapper.classList.add(styles.links)
@@ -61,7 +61,7 @@ export class LinkRenderer<C, R> extends Join<
   }
 
   /** Returns the path for a link between two courses. */
-  static linkPath<C, R> (source: Course<C, R>, target: Course<C, R>): string {
+  static linkPath<T> (source: Course<T>, target: Course<T>): string {
     if (source === target) {
       return ''
     }

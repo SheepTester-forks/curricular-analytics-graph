@@ -1,14 +1,11 @@
-export type Graph<T> = {
-  inNeighbors: (node: T) => T[]
-  outNeighbors: (node: T) => T[]
-}
+export type GraphNode<T> = { backwards: T[]; forwards: T[] }
 
-function reachable<T> (graph: Graph<T>, node: T): Set<T> {
+function reachable<T extends GraphNode<T>> (node: T): Set<T> {
   const reachable = new Set<T>([node])
   const toVisit: T[] = [node]
   let next: T | undefined
   while ((next = toVisit.pop())) {
-    for (const neighbor of graph.outNeighbors(next)) {
+    for (const neighbor of next.forwards) {
       if (!reachable.has(neighbor)) {
         reachable.add(neighbor)
         toVisit.push(neighbor)
@@ -18,28 +15,25 @@ function reachable<T> (graph: Graph<T>, node: T): Set<T> {
   return reachable
 }
 
-export function blockingFactor<T> (graph: Graph<T>, node: T): number {
-  return reachable(graph, node).size
+export function blockingFactor<T extends GraphNode<T>> (node: T): number {
+  return reachable(node).size
 }
 
-export function allPaths<T> (graph: Graph<T>, nodes: T[]): T[][] {
+export function allPaths<T extends GraphNode<T>> (nodes: T[]): T[][] {
   const paths: T[][] = []
   for (const source of nodes) {
     // Only consider source nodes
-    if (
-      graph.outNeighbors(source).length === 0 ||
-      graph.inNeighbors(source).length > 0
-    ) {
+    if (source.forwards.length === 0 || source.backwards.length > 0) {
       continue
     }
 
     const toVisit: T[][] = [[source]]
     let path: T[] | undefined
     while ((path = toVisit.pop())) {
-      for (const node of graph.outNeighbors(path[0])) {
+      for (const node of path[0].forwards) {
         const newPath = [...path, node]
         // If reached a sink, then the path is done
-        if (graph.outNeighbors(node).length === 0) {
+        if (node.forwards.length === 0) {
           paths.push(newPath)
         } else {
           toVisit.push(newPath)
@@ -102,22 +96,23 @@ export function centrality<T> (allPaths: T[][], node: T): number {
   return centrality
 }
 
-export function redundantRequisites<T> (graph: Graph<T>, nodes: T[]): [T, T][] {
+export function redundantRequisites<T extends GraphNode<T>> (
+  nodes: T[]
+): [T, T][] {
   const redundant = new Map<T, Set<T>>()
   for (const node of nodes) {
-    if (graph.inNeighbors(node).length === 0) {
+    if (node.backwards.length === 0) {
       continue
     }
-    const nodeNeighbors = graph.outNeighbors(node)
-    const toVisit = [...nodeNeighbors]
+    const toVisit = [...node.forwards]
     let next: T | undefined
     while ((next = toVisit.pop())) {
-      const neighbors = graph.outNeighbors(next)
+      const neighbors = next.forwards
       toVisit.push(...neighbors)
 
       for (const neighbor of neighbors) {
         // Definitely not redundant requisite
-        if (nodeNeighbors.includes(neighbor)) {
+        if (node.forwards.includes(neighbor)) {
           continue
         }
 
@@ -135,4 +130,30 @@ export function redundantRequisites<T> (graph: Graph<T>, nodes: T[]): [T, T][] {
   return Array.from(redundant, ([node, reqs]) =>
     Array.from(reqs, (req): [T, T] => [req, node])
   ).flat()
+}
+
+export function longestPathFrom<T extends GraphNode<T>> (
+  start: T,
+  direction: 'backwards' | 'forwards'
+): T[] {
+  const cache = new Map<T, T[] | null>()
+  function iterate (node: T): T[] {
+    const cached = cache.get(node)
+    if (cached !== undefined) {
+      if (cached === null) {
+        throw new TypeError('Cycle.')
+      }
+      return cached
+    }
+    cache.set(node, null)
+    const path = [
+      node,
+      ...node[direction]
+        .map(iterate)
+        .reduce((acc, curr) => (acc.length > curr.length ? acc : curr), [])
+    ]
+    cache.set(node, path)
+    return path
+  }
+  return iterate(start)
 }
