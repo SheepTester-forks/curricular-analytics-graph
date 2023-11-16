@@ -122,7 +122,7 @@ export function redundantRequisites<T extends GraphNode<T>> (
 
       for (const neighbor of neighbors) {
         // Definitely not redundant requisite
-        if (node.forwards.includes(neighbor)) {
+        if (!node.forwards.includes(neighbor)) {
           continue
         }
 

@@ -67,6 +67,11 @@ const options = {
   shapes: {
     nothing: 'Nothing',
     frequency: 'Number of terms offered per year'
+  },
+  redundantVisibility: {
+    visible: 'Normal line',
+    dashed: 'Dashed line',
+    hidden: 'Hidden'
   }
 } as const
 
@@ -94,9 +99,11 @@ function interpretFrequency (terms: string[]): string {
   }
 }
 
+export type LinkId = `${number}->${number}`
+
 export type AppProps = {
   degreePlan: LinkedCourse[][]
-  reqTypes: Record<`${number}->${number}`, RequisiteType>
+  reqTypes: Record<LinkId, RequisiteType>
   getStats(courseName: string): CourseStats
   realData?: boolean
 }
@@ -122,6 +129,8 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
     useState<keyof typeof options['complexityMode']>('dfwPlus1Bf')
   const [shapes, setShapes] =
     useState<keyof typeof options['shapes']>('frequency')
+  const [redundantVisibility, setRedundantVisibility] =
+    useState<keyof typeof options['redundantVisibility']>('dashed')
 
   const [dfwThreshold, setDfwThreshold] = useState('10')
   const [waitlistThreshold, setWaitlistThreshold] = useState('10')
@@ -170,7 +179,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
       ])
     )
     const redundantReqs = GraphUtils.redundantRequisites(curriculum).map(
-      ([source, target]) => `${source.id}->${target.id}`
+      ([source, target]): LinkId => `${source.id}->${target.id}`
     )
     return {
       blockingFactors,
@@ -308,6 +317,8 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
       },
       styleLink: (path, source, target) => {
         const { dfw, waitlist } = getStats(source.name)
+        const linkId: LinkId = `${source.id}->${target.id}`
+        const redundant = redundantReqs.includes(linkId)
         path.setAttributeNS(
           null,
           'stroke',
@@ -331,11 +342,17 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
         path.setAttributeNS(
           null,
           'stroke-dasharray',
-          dfw !== null && dfw >= threshold && lineDash === 'flagHighDfw'
+          (dfw !== null && dfw >= threshold && lineDash === 'flagHighDfw') ||
+            (redundant && redundantVisibility === 'dashed')
             ? '5 5'
             : ''
         )
-        path.classList.add(classes[reqTypes[`${source.id}->${target.id}`]])
+        path.setAttributeNS(
+          null,
+          'visibility',
+          redundant && redundantVisibility === 'hidden' ? 'hidden' : ''
+        )
+        path.classList.add(classes[reqTypes[linkId]])
       },
       styleLinkedNode: (node, course, link) => {
         if (link === null) {
@@ -436,7 +453,8 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
     shapes,
     dfwThreshold,
     waitlistThreshold,
-    showWaitlistWarning
+    showWaitlistWarning,
+    redundantVisibility
   ])
 
   return (
@@ -516,6 +534,13 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
         >
           Minimum waitlist length for warning
         </TextField>
+        <Dropdown
+          options={options.redundantVisibility}
+          value={redundantVisibility}
+          onChange={setRedundantVisibility}
+        >
+          Show redundant requisites as
+        </Dropdown>
         {realData ? (
           <p>For this demo, DFW rates have been randomized.</p>
         ) : (

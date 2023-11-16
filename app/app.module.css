@@ -68,6 +68,9 @@
   flex-direction: column;
   padding: 20px;
   gap: 10px;
+  overflow-y: auto;
+  flex: none;
+  width: 330px;
 
   & h2,
   & p {
