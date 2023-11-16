@@ -15,8 +15,15 @@ function reachable<T extends GraphNode<T>> (node: T): Set<T> {
   return reachable
 }
 
-export function blockingFactor<T extends GraphNode<T>> (node: T): number {
-  return reachable(node).size
+export function blockingFactor<T extends GraphNode<T>> (
+  node: T,
+  mapBlocking: (blocked: T) => number = () => 1
+): number {
+  let sum = 0
+  for (const blocked of reachable(node)) {
+    sum += mapBlocking(blocked)
+  }
+  return sum
 }
 
 export function allPaths<T extends GraphNode<T>> (nodes: T[]): T[][] {

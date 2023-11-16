@@ -26,6 +26,7 @@ const options = {
   courseBall: {
     none: 'None',
     complexity: 'Complexity',
+    bf: 'Blocking factor',
     units: 'Units',
     dfw: 'DFW rate',
     waitlist: 'Waitlist length'
@@ -60,7 +61,8 @@ const options = {
   complexityMode: {
     default: 'Same as Curricular Analytics',
     dfw: 'Multiply course complexity by DFW rate',
-    dfwPlus1: 'Multiply course complexity by (DFW rate + 1)'
+    dfwPlus1: 'Multiply course complexity by (DFW rate + 1)',
+    dfwPlus1Bf: 'Multiply blocking factors by (DFW rate + 1)'
   },
   shapes: {
     nothing: 'Nothing',
@@ -117,7 +119,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
   const [lineDash, setLineDash] =
     useState<keyof typeof options['lineDash']>('none')
   const [complexityMode, setComplexityMode] =
-    useState<keyof typeof options['complexityMode']>('dfwPlus1')
+    useState<keyof typeof options['complexityMode']>('dfwPlus1Bf')
   const [shapes, setShapes] =
     useState<keyof typeof options['shapes']>('frequency')
 
@@ -135,14 +137,31 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
   } = useMemo(() => {
     const curriculum = degreePlan.flat()
     const blockingFactors = new Map(
-      curriculum.map(course => [course, GraphUtils.blockingFactor(course)])
+      curriculum.map(course => [
+        course,
+        GraphUtils.blockingFactor(course, course => {
+          const { dfw } = getStats(course.name)
+          return complexityMode === 'dfwPlus1Bf' ? (dfw ?? 0) + 1 : 1
+        })
+      ])
     )
     const allPaths = GraphUtils.allPaths(curriculum)
     const delayFactors = GraphUtils.delayFactors(allPaths)
-    const complexities = GraphUtils.complexities(
-      blockingFactors,
-      delayFactors,
-      'semester'
+    const complexities = new Map(
+      Array.from(
+        GraphUtils.complexities(blockingFactors, delayFactors, 'semester'),
+        ([course, complexity]) => {
+          const { dfw } = getStats(course.name)
+          return [
+            course,
+            (complexityMode === 'dfw'
+              ? dfw ?? 0
+              : complexityMode === 'dfwPlus1'
+              ? (dfw ?? 0) + 1
+              : 1) * complexity
+          ]
+        }
+      )
     )
     const centralities = new Map(
       curriculum.map(course => [
@@ -160,7 +179,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
       centralities,
       redundantReqs
     }
-  }, [degreePlan])
+  }, [degreePlan, complexityMode])
 
   useEffect(() => {
     graph.current = new Graph()
@@ -224,8 +243,12 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             complexity === undefined
             ? String(complexity ?? '')
             : complexityMode === 'dfw'
-            ? (complexity * dfw).toFixed(2)
-            : (complexity * (dfw + 1)).toFixed(1)
+            ? complexity.toFixed(2)
+            : complexity.toFixed(1)
+          : courseBall === 'bf'
+          ? complexityMode === 'dfwPlus1Bf'
+            ? blockingFactors.get(course)?.toFixed(1) ?? ''
+            : String(blockingFactors.get(course))
           : courseBall === 'dfw'
           ? dfw !== null
             ? (dfw * 100).toFixed(0)
@@ -260,7 +283,8 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
           }
         }
         node.style.fontSize =
-          courseBall === 'complexity' && complexityMode !== 'default'
+          (courseBall === 'complexity' && complexityMode !== 'default') ||
+          (courseBall === 'bf' && complexityMode === 'dfwPlus1Bf')
             ? '0.8em'
             : ''
         node.style.setProperty(
@@ -360,12 +384,17 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             complexity === undefined
               ? String(complexity ?? '')
               : complexityMode === 'dfw'
-              ? (complexity * dfw).toFixed(2)
-              : (complexity * (dfw + 1)).toFixed(1)
+              ? complexity.toFixed(2)
+              : complexity.toFixed(1)
           ],
           ['Centrality', String(centralities.get(course))],
-          ['Blocking factor', String(blockingFactors.get(course))],
-          ['Delay factor', String(delayFactors.get(course))],
+          [
+            'Blocking factor',
+            complexityMode === 'dfwPlus1Bf'
+              ? blockingFactors.get(course)?.toFixed(2) ?? ''
+              : String(blockingFactors.get(course))
+          ],
+          ['Delay factor', String(delayFactors.get(course) ?? 1)],
           ['DFW rate', dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A'],
           [
             'Offered',

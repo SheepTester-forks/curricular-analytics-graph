@@ -37,11 +37,11 @@ for (const node of nodes) {
 }
 for (const term of nodesByTerm) {
   // Sort by outgoing nodes, then incoming
-  // term.sort(
-  //   (a, b) =>
-  //     b.forwards.length - a.forwards.length ||
-  //     b.backwards.length - a.backwards.length
-  // )
+  term.sort(
+    (a, b) =>
+      b.forwards.length - a.forwards.length ||
+      b.backwards.length - a.backwards.length
+  )
 }
 
 function getStats (courseName: string): CourseStats {
