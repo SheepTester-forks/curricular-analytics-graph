@@ -3,17 +3,19 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats, LinkedCourse } from './App'
 import { RequisiteType, VisualizationCourse, toRequisiteType } from './types'
 
-// import dfwRates from './fake-dfw.json'
-import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
-import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
-import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
+import dfwRates from './data/fake-dfw.json'
+import frequencies from './data/fake-frequency.json'
+import waitlists from './data/fake-waitlist.json'
+// import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
+// import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
+// import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
 
 // https://curricularanalytics.org/degree_plans/11085
-// import example from './example.json'
+// import example from './data/example.json'
 // https://curricularanalytics.org/degree_plans/25144
-import example from './BE27.json'
+import example from './data/BE27.json'
 // https://curricularanalytics.org/degree_plans/25403
-// import example from './EC27.json'
+// import example from './data/EC27.json'
 
 const nodesByTerm = example.curriculum_terms.map(term =>
   term.curriculum_items.map((course): LinkedCourse & VisualizationCourse => ({

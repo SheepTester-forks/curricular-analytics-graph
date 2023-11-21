@@ -247,9 +247,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
         const { dfw, waitlist } = getStats(course.name)
         const complexity = complexities.get(course)
         return courseBall === 'complexity'
-          ? complexityMode === 'default' ||
-            dfw === null ||
-            complexity === undefined
+          ? complexityMode === 'default' || complexity === undefined
             ? String(complexity ?? '')
             : complexityMode === 'dfw'
             ? complexity.toFixed(2)
@@ -396,9 +394,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
           ['Units', String(course.credits)],
           [
             'Complexity',
-            complexityMode === 'default' ||
-            dfw === null ||
-            complexity === undefined
+            complexityMode === 'default' || complexity === undefined
               ? String(complexity ?? '')
               : complexityMode === 'dfw'
               ? complexity.toFixed(2)
@@ -542,11 +538,13 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
           Show redundant requisites as
         </Dropdown>
         {realData ? (
-          <p>For this demo, DFW rates have been randomized.</p>
+          <p>
+            For this demo, protected data have been replaced with randomized
+            values.
+          </p>
         ) : (
           <p>
-            This demo is currently showing <em>real</em> DFW rates, which is
-            protected data.
+            This demo is currently showing <em>real</em> protected data.
           </p>
         )}
         <p>Data were sampled from the 2021–2022 academic year.</p>
