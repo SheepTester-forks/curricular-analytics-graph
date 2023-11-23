@@ -124,9 +124,14 @@ export class Graph<T extends GraphNode<T>> extends Join<
             this.options.termSummary?.(item.term, item.index) ?? ''
         }
       },
-      measure: item => {
-        if (item.type === 'course') {
-          item.course.measurePosition()
+      measure: {
+        getParentRect: () => {
+          return this.wrapper.getBoundingClientRect()
+        },
+        measureChild: (item, _, parentRect) => {
+          if (item.type === 'course') {
+            item.course.measurePosition(parentRect)
+          }
         }
       }
     })

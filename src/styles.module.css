@@ -36,6 +36,7 @@
 }
 .termFooter {
   grid-row: auto / -1;
+  white-space: pre-wrap;
 }
 .termBackground {
   grid-row: 1 / -1;

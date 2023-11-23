@@ -1,4 +1,5 @@
 .graphWrapper {
+  padding: 20px;
   height: 100%;
   flex: auto;
   display: flex;

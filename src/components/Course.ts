@@ -32,11 +32,11 @@ export class Course<T> {
     this.wrapper.append(this.ball, this.name)
   }
 
-  measurePosition (): void {
+  measurePosition (parent: DOMRect): void {
     const { top, left, width, height } = this.ball.getBoundingClientRect()
     this.position = {
-      x: left + width / 2,
-      y: top + height / 2,
+      x: left + width / 2 - parent.left,
+      y: top + height / 2 - parent.top,
       radius: width / 2
     }
   }

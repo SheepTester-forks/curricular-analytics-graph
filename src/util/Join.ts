@@ -1,5 +1,9 @@
 export type Key = string | number | symbol
 
+export type MeasureOptions<T, E> = {
+  getParentRect: () => DOMRect
+  measureChild: (datum: T, element: E, parentRect: DOMRect) => void
+}
 export type JoinOptions<W, T, E> = {
   /**
    * Ignores all existing elements not created by `enter`.
@@ -22,7 +26,7 @@ export type JoinOptions<W, T, E> = {
   /**
    * Optional. This allows measurement of the element (such as its bounding client rect) to store the results in `datum`.
    */
-  measure?: (datum: T, element: E) => void
+  measure?: MeasureOptions<T, E>
 }
 
 type Entry<T, E> = {
@@ -38,7 +42,7 @@ export class Join<T, E extends Element, W extends Element = HTMLElement> {
   #enter: (datum: T) => E
   #update: (newDatum: T, element: E, oldDatum: T | null) => void
   #exit: (datum: T, element: E) => void
-  #measure: (datum: T, element: E) => void
+  #measure?: MeasureOptions<T, E>
 
   constructor ({
     wrapper,
@@ -46,7 +50,7 @@ export class Join<T, E extends Element, W extends Element = HTMLElement> {
     enter,
     update = () => {},
     exit = () => {},
-    measure = () => {}
+    measure
   }: JoinOptions<W, T, E>) {
     this.wrapper = wrapper
     this.#key = key
@@ -96,8 +100,13 @@ export class Join<T, E extends Element, W extends Element = HTMLElement> {
 
   /** Calls `measure` on every datum. */
   measure (): void {
+    if (!this.#measure) {
+      return
+    }
+    const { getParentRect, measureChild } = this.#measure
+    const parentRect = getParentRect()
     for (const { datum, element } of this.#entries) {
-      this.#measure(datum, element)
+      measureChild(datum, element, parentRect)
     }
   }
 }
