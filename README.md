@@ -6,8 +6,8 @@ A CurricularVisualization.jl-compatible graph renderer
 
 ```sh
 # Build and minify the app
-$ npm run build:app
+$ yarn build
 
 # Start a local HTTP server that recompiles on the fly
-$ npm run serve
+$ yarn dev
 ```
