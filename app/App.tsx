@@ -137,13 +137,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
 
   const [showWaitlistWarning, setShowWaitlistWarning] = useState(true)
 
-  const {
-    blockingFactors,
-    delayFactors,
-    complexities,
-    centralities,
-    redundantReqs
-  } = useMemo(() => {
+  const { blockingFactors, delayFactors, complexities } = useMemo(() => {
     const curriculum = degreePlan.flat()
     const blockingFactors = new Map(
       curriculum.map(course => [
@@ -172,21 +166,10 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
         }
       )
     )
-    const centralities = new Map(
-      curriculum.map(course => [
-        course,
-        GraphUtils.centrality(allPaths, course)
-      ])
-    )
-    const redundantReqs = GraphUtils.redundantRequisites(curriculum).map(
-      ([source, target]): LinkId => `${source.id}->${target.id}`
-    )
     return {
       blockingFactors,
       delayFactors,
-      complexities,
-      centralities,
-      redundantReqs
+      complexities
     }
   }, [degreePlan, complexityMode])
 
@@ -210,6 +193,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
   useEffect(() => {
     const threshold = +dfwThreshold / 100
     const options: GraphOptions<LinkedCourse> = {
+      system: 'semester',
       termName: (_, i) =>
         `${['Fall', 'Winter', 'Spring'][i % 3]} ${Math.floor(i / 3) + 1}`,
       termSummary: term => {
@@ -316,10 +300,9 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             ? `${waitlist / 4 + 1}px`
             : ''
       },
-      styleLink: ({ element, source, target }) => {
+      styleLink: ({ element, source, target, redundant }) => {
         const { dfw, waitlist } = getStats(source.course.name)
         const linkId: LinkId = `${source.course.id}->${target.course.id}`
-        const redundant = redundantReqs.includes(linkId)
         element.setAttributeNS(
           null,
           'stroke',
@@ -390,7 +373,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
         }
       },
       tooltipTitle: ({ course }) => course.name,
-      tooltipContent: ({ course }) => {
+      tooltipContent: ({ course, centrality }) => {
         const { dfw, frequency, waitlist } = getStats(course.name)
         const complexity = complexities.get(course)
         return [
@@ -403,7 +386,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
               ? complexity.toFixed(2)
               : complexity.toFixed(1)
           ],
-          ['Centrality', String(centralities.get(course))],
+          ['Centrality', String(centrality)],
           [
             'Blocking factor',
             complexityMode === 'dfwPlus1Bf'

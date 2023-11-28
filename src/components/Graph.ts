@@ -14,6 +14,8 @@ type GridItem<T> =
   | { type: 'term-footer'; index: number; term: CourseNode<T>[] }
 
 export type GraphOptions<T> = {
+  /** Default: semester. Multiplies complexity by 2/3. */
+  system: 'semester' | 'quarter'
   /** Shown at the top of each term column. */
   termName: (term: Course<T>[], index: number) => string
   /** Shown at the bottom of each term column. */
@@ -351,7 +353,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
     const complexities = GraphUtils.complexities(
       blockingFactors,
       delayFactors,
-      'semester'
+      this.options.system ?? 'semester'
     )
     const centralities = new Map(
       curriculum.map(course => [
