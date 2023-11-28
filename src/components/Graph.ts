@@ -357,6 +357,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
     }
 
     this.join(items)
+    this.measure()
     this.#allLinks.join(this.#links)
   }
 
