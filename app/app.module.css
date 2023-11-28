@@ -1,5 +1,6 @@
 .graphWrapper {
   padding: 20px;
+  box-sizing: border-box;
   height: 100%;
   flex: auto;
   display: flex;
