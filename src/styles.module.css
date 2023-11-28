@@ -19,6 +19,9 @@
   transition: opacity 0.2s;
   color: #64748b;
 }
+.link {
+  marker-end: url(#arrow);
+}
 .arrow {
   stroke: none;
   fill: currentColor;

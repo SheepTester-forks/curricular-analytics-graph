@@ -70,10 +70,6 @@ export class Graph<T extends GraphNode<T>> extends Join<
 
   #tooltip: Tooltip<T>
 
-  #blockingFactors = new Map<T, number>()
-  #delayFactors = new Map<T, number>()
-  #complexities = new Map<T, number>()
-  #centralities = new Map<T, number>()
   #redundantReqs = new Map<T, Set<T>>()
 
   #maxTermLength: number = 0
@@ -361,15 +357,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
         GraphUtils.centrality(allPaths, course)
       ])
     )
-    this.#redundantReqs = new Map()
-    for (const [source, target] of GraphUtils.redundantRequisites(curriculum)) {
-      let targets = this.#redundantReqs.get(source)
-      if (!targets) {
-        targets = new Set()
-        this.#redundantReqs.set(source, targets)
-      }
-      targets.add(target)
-    }
+    this.#redundantReqs = GraphUtils.redundantRequisites(curriculum)
 
     this.#maxTermLength = degreePlan.reduce(
       (acc, curr) => Math.max(acc, curr.length),

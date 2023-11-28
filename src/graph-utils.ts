@@ -108,21 +108,18 @@ export function centrality<T> (allPaths: T[][], node: T): number {
 
 export function redundantRequisites<T extends GraphNode<T>> (
   nodes: T[]
-): [T, T][] {
+): Map<T, Set<T>> {
   const redundant = new Map<T, Set<T>>()
   for (const node of nodes) {
-    if (node.backwards.length === 0) {
-      continue
-    }
-    const toVisit = [...node.forwards]
+    const toVisit = [...node.backwards]
     let next: T | undefined
     while ((next = toVisit.pop())) {
-      const neighbors = next.forwards
+      const neighbors = next.backwards
       toVisit.push(...neighbors)
 
       for (const neighbor of neighbors) {
-        // Definitely not redundant requisite
-        if (!node.forwards.includes(neighbor)) {
+        // Not a requisite
+        if (!node.backwards.includes(neighbor)) {
           continue
         }
 
@@ -137,9 +134,7 @@ export function redundantRequisites<T extends GraphNode<T>> (
       }
     }
   }
-  return Array.from(redundant, ([node, reqs]) =>
-    Array.from(reqs, (req): [T, T] => [req, node])
-  ).flat()
+  return redundant
 }
 
 export function longestPathFrom<T extends GraphNode<T>> (

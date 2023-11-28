@@ -49,8 +49,14 @@ export class LinkRenderer<T> extends Join<
     super({
       wrapper: document.createElementNS('http://www.w3.org/2000/svg', 'svg'),
       key: link => `${link.source.id}\0${link.target.id}`,
-      enter: () =>
-        document.createElementNS('http://www.w3.org/2000/svg', 'path'),
+      enter: () => {
+        const path = document.createElementNS(
+          'http://www.w3.org/2000/svg',
+          'path'
+        )
+        path.classList.add(styles.link)
+        return path
+      },
       update: ({ source, target }, element, _old) => {
         element.setAttributeNS(null, 'd', LinkRenderer.linkPath(source, target))
         handleLink(element, source, target)

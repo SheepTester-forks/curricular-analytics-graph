@@ -1,5 +1,5 @@
 .graphWrapper {
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
   height: 100%;
   flex: auto;
@@ -9,11 +9,6 @@
   flex: auto;
 }
 
-.prereqs,
-.coreqs,
-.strictCoreqs {
-  marker-end: url(#arrow);
-}
 .coreqs,
 .strictCoreqs {
   stroke-dasharray: 5 5;
