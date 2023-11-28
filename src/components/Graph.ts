@@ -1,29 +1,31 @@
-import { Course } from './Course'
-import styles from '../styles.module.css'
-import { Link, LinkHandler, LinkRenderer } from './LinkRenderer'
-import { Join } from '../util/Join'
-import { Tooltip, TooltipOptions } from './Tooltip'
+import * as GraphUtils from '../graph-utils'
 import { GraphNode, longestPathFrom } from '../graph-utils'
+import styles from '../styles.module.css'
+import { Course, Link } from '../types'
+import { Join } from '../util/Join'
+import { CourseNode } from './CourseNode'
+import { NodeLink, LinkHandler, LinkRenderer } from './LinkRenderer'
+import { Tooltip, TooltipOptions } from './Tooltip'
 
 type GridItem<T> =
-  | { type: 'course'; course: Course<T>; index: number }
+  | { type: 'course'; node: CourseNode<T>; index: number }
   | { type: 'term-background'; index: number }
-  | { type: 'term-header'; index: number; term: T[] }
-  | { type: 'term-footer'; index: number; term: T[] }
+  | { type: 'term-header'; index: number; term: CourseNode<T>[] }
+  | { type: 'term-footer'; index: number; term: CourseNode<T>[] }
 
-export type GraphOptions<T> = TooltipOptions<T> & {
+export type GraphOptions<T> = {
   /** Shown at the top of each term column. */
-  termName: (term: T[], index: number) => string
+  termName: (term: Course<T>[], index: number) => string
   /** Shown at the bottom of each term column. */
-  termSummary: (term: T[], index: number) => string
+  termSummary: (term: Course<T>[], index: number) => string
   /** Shown under each course node. */
-  courseName: (course: T) => string
+  courseName: (course: Course<T>) => string
   /** Shown inside each course node. */
-  courseNode: (course: T) => string
+  courseNode: (course: Course<T>) => string
   /** Apply styles to a node. */
-  styleNode: (element: HTMLElement, course: T) => void
+  styleNode: (course: Course<T>) => void
   /** Apply styles to a link. */
-  styleLink: LinkHandler<T>
+  styleLink: (link: Link<T>) => void
   /**
    * Apply styles to a node that is highlighted when a course is selected.
    *
@@ -35,12 +37,17 @@ export type GraphOptions<T> = TooltipOptions<T> & {
    *   `course` is directly linked to the selected course.
    */
   styleLinkedNode: (
-    element: HTMLElement,
-    course: T,
+    course: Course<T>,
     relationship:
       | { relation: 'backwards' | 'forwards'; direct: boolean; from: T }
       | { relation: 'selected' }
       | null
+  ) => void
+  tooltipTitle: (course: Course<T>) => string
+  tooltipContent: (course: Course<T>) => [string, string][]
+  tooltipRequisiteInfo: (
+    element: HTMLElement,
+    link: Omit<Link<T>, 'element'>
   ) => void
 }
 
@@ -48,18 +55,24 @@ export class Graph<T extends GraphNode<T>> extends Join<
   GridItem<T>,
   HTMLElement
 > {
-  #courseNodes = new WeakMap<Element, Course<T>>()
-  #courseObjects = new WeakMap<T, Course<T>>()
-  #highlighted: Course<T>[] = []
-  #selected: Course<T> | null = null
+  #courseNodes = new WeakMap<Element, CourseNode<T>>()
+  #courseObjects = new WeakMap<T, CourseNode<T>>()
+  #highlighted: CourseNode<T>[] = []
+  #selected: CourseNode<T> | null = null
 
-  #links: Link<T>[] = []
+  #links: NodeLink<T>[] = []
   #allLinks: LinkRenderer<T>
   #linksHighlighted: LinkRenderer<T>
-  #longestPath: Course<T>[] = []
+  #longestPath: CourseNode<T>[] = []
   #longestPathElement: SVGPathElement
 
   #tooltip: Tooltip<T>
+
+  #blockingFactors = new Map<T, number>()
+  #delayFactors = new Map<T, number>()
+  #complexities = new Map<T, number>()
+  #centralities = new Map<T, number>()
+  #redundantReqs = new Map<T, Set<T>>()
 
   #maxTermLength: number = 0
   options: Partial<GraphOptions<T>>
@@ -71,11 +84,11 @@ export class Graph<T extends GraphNode<T>> extends Join<
       }),
       key: item =>
         item.type === 'course'
-          ? `course\0${item.course.id}`
+          ? `course\0${item.node.id}`
           : `${item.type}\0${item.index}`,
       enter: item => {
         if (item.type === 'course') {
-          return item.course.wrapper
+          return item.node.wrapper
         } else if (item.type === 'term-header') {
           const header = Object.assign(document.createElement('div'), {
             className: styles.termHeading,
@@ -103,12 +116,12 @@ export class Graph<T extends GraphNode<T>> extends Join<
       },
       update: (item, element) => {
         if (item.type === 'course') {
-          const course = item.course
+          const course = item.node
           course.name.title = course.name.textContent =
-            this.options.courseName?.(item.course.raw) ?? ''
+            this.options.courseName?.(item.node) ?? ''
           course.ballLabel.nodeValue =
-            this.options.courseNode?.(item.course.raw) ?? null
-          this.options.styleNode?.(course.ball, item.course.raw)
+            this.options.courseNode?.(item.node) ?? null
+          this.options.styleNode?.(item.node)
           element.style.gridColumn = `${course.term + 1} / ${course.term + 2}`
           element.style.gridRow = `${item.index + 1} / ${item.index + 2}`
           element.setAttribute(
@@ -130,7 +143,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
         },
         measureChild: (item, _, parentRect) => {
           if (item.type === 'course') {
-            item.course.measurePosition(parentRect)
+            item.node.measurePosition(parentRect)
           }
         }
       }
@@ -138,20 +151,34 @@ export class Graph<T extends GraphNode<T>> extends Join<
 
     this.options = options
     this.#tooltip = new Tooltip<T>({
-      tooltipTitle: (...args) => options.tooltipTitle?.(...args) ?? '',
-      tooltipContent: (...args) => options.tooltipContent?.(...args) ?? [],
-      tooltipRequisiteInfo: (...args) => options.tooltipRequisiteInfo?.(...args)
+      tooltipTitle: node => options.tooltipTitle?.(node) ?? '',
+      tooltipContent: node => options.tooltipContent?.(node) ?? [],
+      tooltipRequisiteInfo: (element, source, target) => {
+        options.tooltipRequisiteInfo?.(element, {
+          source,
+          target,
+          redundant:
+            this.#redundantReqs.get(source.course)?.has(target.course) ?? false
+        })
+      }
     })
 
     this.wrapper.addEventListener('pointerover', this.#handlePointerOver)
     this.wrapper.addEventListener('pointerout', this.#handlePointerOut)
     this.wrapper.addEventListener('click', this.#handleClick)
 
-    this.#allLinks = new LinkRenderer((...args) => options.styleLink?.(...args))
+    const styleLink: LinkHandler<T> = (element, source, target) => {
+      options.styleLink?.({
+        source,
+        target,
+        element,
+        redundant:
+          this.#redundantReqs.get(source.course)?.has(target.course) ?? false
+      })
+    }
+    this.#allLinks = new LinkRenderer(styleLink)
     this.#allLinks.wrapper.classList.add(styles.allLinks)
-    this.#linksHighlighted = new LinkRenderer((...args) =>
-      options.styleLink?.(...args)
-    )
+    this.#linksHighlighted = new LinkRenderer(styleLink)
     this.#linksHighlighted.wrapper.classList.add(styles.highlightedLinks)
 
     this.#longestPathElement = document.createElementNS(
@@ -172,7 +199,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
     }).observe(this.wrapper)
   }
 
-  #fromRaw = (raw: T): Course<T> => {
+  #fromRaw = (raw: T): CourseNode<T> => {
     const object = this.#courseObjects.get(raw)
     if (!object) {
       throw new TypeError('Course does not have an associated course object.')
@@ -180,15 +207,15 @@ export class Graph<T extends GraphNode<T>> extends Join<
     return object
   }
 
-  #dfs (course: Course<T>, direction: 'backwards' | 'forwards'): void {
-    this.#highlighted.push(course)
-    course.wrapper.classList.add(styles.highlighted)
-    for (const neighbor of course.raw[direction]) {
+  #dfs (node: CourseNode<T>, direction: 'backwards' | 'forwards'): void {
+    this.#highlighted.push(node)
+    node.wrapper.classList.add(styles.highlighted)
+    for (const neighbor of node.course[direction]) {
       const neighborObj = this.#fromRaw(neighbor)
-      this.options.styleLinkedNode?.(neighborObj.wrapper, neighbor, {
+      this.options.styleLinkedNode?.(neighborObj, {
         relation: direction,
         direct: false,
-        from: course.raw
+        from: node.course
       })
       this.#dfs(neighborObj, direction)
     }
@@ -209,12 +236,12 @@ export class Graph<T extends GraphNode<T>> extends Join<
     )
   }
 
-  #handleHoverCourse (course: Course<T> | null) {
-    for (const course of this.#highlighted) {
-      course.wrapper.classList.remove(styles.highlighted, styles.selected)
-      this.options.styleLinkedNode?.(course.wrapper, course.raw, null)
+  #handleHoverNode (node: CourseNode<T> | null) {
+    for (const node of this.#highlighted) {
+      node.wrapper.classList.remove(styles.highlighted, styles.selected)
+      this.options.styleLinkedNode?.(node, null)
     }
-    if (!course) {
+    if (!node) {
       this.wrapper.classList.remove(styles.courseSelected)
       this.#highlighted = []
       this.#linksHighlighted.join([])
@@ -222,19 +249,17 @@ export class Graph<T extends GraphNode<T>> extends Join<
       return
     }
     this.wrapper.classList.add(styles.courseSelected)
-    course.wrapper.classList.add(styles.highlighted, styles.selected)
-    this.#highlighted = [course]
-    this.options.styleLinkedNode?.(course.wrapper, course.raw, {
-      relation: 'selected'
-    })
+    node.wrapper.classList.add(styles.highlighted, styles.selected)
+    this.#highlighted = [node]
+    this.options.styleLinkedNode?.(node, { relation: 'selected' })
     for (const direction of ['backwards', 'forwards'] as const) {
-      for (const neighbor of course.raw[direction]) {
+      for (const neighbor of node.course[direction]) {
         const neighborObj = this.#fromRaw(neighbor)
         neighborObj.wrapper.classList.add(styles.highlighted)
-        this.options.styleLinkedNode?.(neighborObj.wrapper, neighbor, {
+        this.options.styleLinkedNode?.(neighborObj, {
           relation: direction,
           direct: true,
-          from: course.raw
+          from: node.course
         })
         this.#dfs(neighborObj, direction)
       }
@@ -248,8 +273,8 @@ export class Graph<T extends GraphNode<T>> extends Join<
     )
     try {
       this.#longestPath = [
-        ...longestPathFrom(course.raw, 'backwards').reverse(),
-        ...longestPathFrom(course.raw, 'forwards').slice(1)
+        ...longestPathFrom(node.course, 'backwards').reverse(),
+        ...longestPathFrom(node.course, 'forwards').slice(1)
       ].map(this.#fromRaw)
     } catch {
       // Cycle
@@ -258,7 +283,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
     this.#renderLongestPath()
   }
 
-  #getCourse (event: Event, type: 'ball' | 'wrapper'): Course<T> | null {
+  #getNode (event: Event, type: 'ball' | 'wrapper'): CourseNode<T> | null {
     if (!(event.target instanceof HTMLElement)) {
       return null
     }
@@ -272,16 +297,16 @@ export class Graph<T extends GraphNode<T>> extends Join<
   }
 
   #handlePointerOver = (e: PointerEvent): void => {
-    const course = this.#getCourse(e, 'ball')
+    const course = this.#getNode(e, 'ball')
     if (course && !this.#selected) {
-      this.#handleHoverCourse(course)
+      this.#handleHoverNode(course)
     }
   }
 
   #handlePointerOut = (e: PointerEvent): void => {
-    const course = this.#getCourse(e, 'ball')
+    const course = this.#getNode(e, 'ball')
     if (course && !this.#selected) {
-      this.#handleHoverCourse(null)
+      this.#handleHoverNode(null)
     }
   }
 
@@ -289,14 +314,14 @@ export class Graph<T extends GraphNode<T>> extends Join<
     if (e.target instanceof Node && this.#tooltip.wrapper.contains(e.target)) {
       return
     }
-    const course = this.#getCourse(e, 'ball')
-    this.#selected = course
-    this.#handleHoverCourse(this.#selected)
-    if (course) {
-      if (!course.wrapper.contains(this.#tooltip.wrapper)) {
-        course.wrapper.append(this.#tooltip.wrapper)
+    const node = this.#getNode(e, 'ball')
+    this.#selected = node
+    this.#handleHoverNode(this.#selected)
+    if (node) {
+      if (!node.wrapper.contains(this.#tooltip.wrapper)) {
+        node.wrapper.append(this.#tooltip.wrapper)
       }
-      this.#tooltip.show(course, course.raw.backwards.map(this.#fromRaw))
+      this.#tooltip.show(node, node.course.backwards.map(this.#fromRaw))
     } else {
       this.#tooltip.hide()
     }
@@ -316,14 +341,39 @@ export class Graph<T extends GraphNode<T>> extends Join<
     this.#tooltip.position()
   }
 
-  setCurriculum (curriculum: T[][]): void {
-    // https://stackoverflow.com/a/61240964
-    this.#maxTermLength = curriculum.reduce(
+  setDegreePlan (degreePlan: T[][]): void {
+    const curriculum = degreePlan.flat()
+    const blockingFactors = new Map(
+      curriculum.map(course => [course, GraphUtils.blockingFactor(course)])
+    )
+    const allPaths = GraphUtils.allPaths(curriculum)
+    const delayFactors = GraphUtils.delayFactors(allPaths)
+    const complexities = GraphUtils.complexities(
+      blockingFactors,
+      delayFactors,
+      'semester'
+    )
+    const centralities = new Map(
+      curriculum.map(course => [
+        course,
+        GraphUtils.centrality(allPaths, course)
+      ])
+    )
+    this.#redundantReqs = new Map()
+    for (const [source, target] of GraphUtils.redundantRequisites(curriculum)) {
+      let targets = this.#redundantReqs.get(source)
+      if (!targets) {
+        targets = new Set()
+        this.#redundantReqs.set(source, targets)
+      }
+      targets.add(target)
+    }
+
+    this.#maxTermLength = degreePlan.reduce(
       (acc, curr) => Math.max(acc, curr.length),
       0
     )
-
-    this.wrapper.style.setProperty('--term-count', `${curriculum.length}`)
+    this.wrapper.style.setProperty('--term-count', `${degreePlan.length}`)
     this.wrapper.style.setProperty(
       '--longest-term-length',
       `${this.#maxTermLength}`
@@ -331,26 +381,33 @@ export class Graph<T extends GraphNode<T>> extends Join<
 
     const items: GridItem<T>[] = []
     this.#links = []
-    for (const [index, term] of curriculum.entries()) {
+    for (const [index, courses] of degreePlan.entries()) {
+      const term: CourseNode<T>[] = []
       items.push({ type: 'term-header', index, term })
       items.push({ type: 'term-background', index })
 
-      for (const [j, item] of term.entries()) {
-        const course = new Course<T>(item, index, j)
-        items.push({ type: 'course', course, index: j + 1 })
-        this.#courseNodes.set(course.wrapper, course)
-        this.#courseObjects.set(item, course)
+      for (const [j, course] of courses.entries()) {
+        const node = new CourseNode<T>(course, index, j, {
+          blockingFactor: blockingFactors.get(course) ?? 0,
+          delayFactor: delayFactors.get(course) ?? 1,
+          complexity: complexities.get(course) ?? 0,
+          centrality: centralities.get(course) ?? 0
+        })
+        term.push(node)
+        items.push({ type: 'course', node: node, index: j + 1 })
+        this.#courseNodes.set(node.wrapper, node)
+        this.#courseObjects.set(course, node)
       }
 
       items.push({ type: 'term-footer', index, term })
     }
-    for (const course of items) {
-      if (course.type !== 'course') {
+    for (const node of items) {
+      if (node.type !== 'course') {
         continue
       }
-      for (const target of course.course.raw.forwards) {
+      for (const target of node.node.course.forwards) {
         this.#links.push({
-          source: course.course,
+          source: node.node,
           target: this.#fromRaw(target)
         })
       }

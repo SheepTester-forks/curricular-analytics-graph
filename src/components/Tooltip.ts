@@ -1,16 +1,21 @@
 import styles from '../styles.module.css'
+import { Course } from '../types'
 import { Join } from '../util/Join'
-import { Course } from './Course'
+import { CourseNode } from './CourseNode'
 
 export type TooltipOptions<T> = {
-  tooltipTitle: (course: T) => string
-  tooltipContent: (course: T) => [string, string][]
-  tooltipRequisiteInfo: (element: HTMLElement, source: T, target: T) => void
+  tooltipTitle: (course: CourseNode<T>) => string
+  tooltipContent: (course: CourseNode<T>) => [string, string][]
+  tooltipRequisiteInfo: (
+    element: HTMLElement,
+    source: Course<T>,
+    target: Course<T>
+  ) => void
 }
 
 export class Tooltip<T> {
   #options: TooltipOptions<T>
-  #course: Course<T> | null = null
+  #node: CourseNode<T> | null = null
   #width = 0
   #height = 0
 
@@ -45,7 +50,7 @@ export class Tooltip<T> {
       row.children[1].textContent = value
     }
   })
-  #reqs = new Join<Course<T>, HTMLLIElement>({
+  #reqs = new Join<CourseNode<T>, HTMLLIElement>({
     wrapper: Object.assign(document.createElement('ul'), {
       className: styles.tooltipReqs
     }),
@@ -56,12 +61,8 @@ export class Tooltip<T> {
       })
     },
     update: (source, element) => {
-      if (this.#course) {
-        this.#options.tooltipRequisiteInfo(
-          element,
-          source.raw,
-          this.#course.raw
-        )
+      if (this.#node) {
+        this.#options.tooltipRequisiteInfo(element, source, this.#node)
       }
     }
   })
@@ -87,11 +88,11 @@ export class Tooltip<T> {
     }).observe(this.wrapper)
   }
 
-  show (course: Course<T>, backwards: Course<T>[]): void {
-    this.#course = course
+  show (node: CourseNode<T>, backwards: CourseNode<T>[]): void {
+    this.#node = node
     this.wrapper.classList.remove(styles.tooltipHidden)
-    this.#title.textContent = this.#options.tooltipTitle(course.raw)
-    this.#table.join(this.#options.tooltipContent(course.raw))
+    this.#title.textContent = this.#options.tooltipTitle(node)
+    this.#table.join(this.#options.tooltipContent(node))
     this.#reqs.join(backwards)
     this.position()
   }
@@ -100,10 +101,10 @@ export class Tooltip<T> {
   static #TOOLTIP_PADDING_Y = 25
 
   position (): void {
-    if (!this.#course) {
+    if (!this.#node) {
       return
     }
-    const courseRect = this.#course.ball.getBoundingClientRect()
+    const courseRect = this.#node.ball.getBoundingClientRect()
     const courseX = courseRect.left + courseRect.width / 2
     const courseY = courseRect.top + courseRect.height / 2
     const windowWidth = window.innerWidth
@@ -114,16 +115,16 @@ export class Tooltip<T> {
     )
     this.wrapper.style.left = `${left}px`
     this.wrapper.style.setProperty('--left', `${courseX - left}px`)
-    const bottom = courseY + this.#course.position.radius + this.#height
+    const bottom = courseY + this.#node.position.radius + this.#height
     if (bottom <= windowHeight - Tooltip.#TOOLTIP_PADDING_Y) {
-      this.wrapper.style.top = `${courseY + this.#course.position.radius}px`
+      this.wrapper.style.top = `${courseY + this.#node.position.radius}px`
       this.wrapper.style.bottom = ''
       this.wrapper.classList.add(styles.tooltipTop)
       this.wrapper.classList.remove(styles.tooltipBottom)
     } else {
       this.wrapper.style.top = ''
       this.wrapper.style.bottom = `${
-        windowHeight - (courseY - this.#course.position.radius)
+        windowHeight - (courseY - this.#node.position.radius)
       }px`
       this.wrapper.classList.remove(styles.tooltipTop)
       this.wrapper.classList.add(styles.tooltipBottom)

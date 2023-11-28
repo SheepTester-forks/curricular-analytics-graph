@@ -2,6 +2,7 @@
   --term-count: 1;
   --longest-term-length: 1;
   display: grid;
+  /* https://stackoverflow.com/a/61240964 */
   grid-template-columns: repeat(var(--term-count), minmax(0, 1fr));
   grid-template-rows: auto repeat(var(--longest-term-length), minmax(0, 1fr)) 80px;
   position: relative;

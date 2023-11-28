@@ -1,4 +1,4 @@
-import { Course } from './Course'
+import { CourseNode } from './CourseNode'
 import styles from '../styles.module.css'
 import { Join } from '../util/Join'
 
@@ -29,19 +29,19 @@ function defineArrow (): SVGDefsElement {
   return defs
 }
 
-export type Link<T> = {
-  source: Course<T>
-  target: Course<T>
+export type NodeLink<T> = {
+  source: CourseNode<T>
+  target: CourseNode<T>
 }
 
 export type LinkHandler<T> = (
   element: SVGPathElement,
-  source: T,
-  target: T
+  source: CourseNode<T>,
+  target: CourseNode<T>
 ) => void
 
 export class LinkRenderer<T> extends Join<
-  Link<T>,
+  NodeLink<T>,
   SVGPathElement,
   SVGSVGElement
 > {
@@ -53,7 +53,7 @@ export class LinkRenderer<T> extends Join<
         document.createElementNS('http://www.w3.org/2000/svg', 'path'),
       update: ({ source, target }, element, _old) => {
         element.setAttributeNS(null, 'd', LinkRenderer.linkPath(source, target))
-        handleLink(element, source.raw, target.raw)
+        handleLink(element, source, target)
       }
     })
     this.wrapper.classList.add(styles.links)
@@ -61,7 +61,7 @@ export class LinkRenderer<T> extends Join<
   }
 
   /** Returns the path for a link between two courses. */
-  static linkPath<T> (source: Course<T>, target: Course<T>): string {
+  static linkPath<T> (source: CourseNode<T>, target: CourseNode<T>): string {
     if (source === target) {
       return ''
     }

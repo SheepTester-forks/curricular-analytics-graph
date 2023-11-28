@@ -203,7 +203,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
 
   useEffect(() => {
     if (graph.current) {
-      graph.current.setCurriculum(degreePlan)
+      graph.current.setDegreePlan(degreePlan)
     }
   }, [degreePlan])
 
@@ -213,9 +213,9 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
       termName: (_, i) =>
         `${['Fall', 'Winter', 'Spring'][i % 3]} ${Math.floor(i / 3) + 1}`,
       termSummary: term => {
-        const termComplexity = term.reduce((acc, curr) => {
-          const { dfw } = getStats(curr.name)
-          const complexity = complexities.get(curr)
+        const termComplexity = term.reduce((acc, { course }) => {
+          const { dfw } = getStats(course.name)
+          const complexity = complexities.get(course)
           return (
             acc +
             (complexityMode === 'default' ||
@@ -231,9 +231,12 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
           complexityMode === 'default'
             ? termComplexity
             : termComplexity.toFixed(2)
-        }\nUnits: ${term.reduce((acc, curr) => acc + (curr.credits ?? 0), 0)}`
+        }\nUnits: ${term.reduce(
+          (acc, { course }) => acc + (course.credits ?? 0),
+          0
+        )}`
       },
-      courseName: ({ name }) => {
+      courseName: ({ course: { name } }) => {
         const { waitlist } = getStats(name)
         return (
           (showWaitlistWarning &&
@@ -243,7 +246,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             : '') + name
         )
       },
-      courseNode: course => {
+      courseNode: ({ course }) => {
         const { dfw, waitlist } = getStats(course.name)
         const complexity = complexities.get(course)
         return courseBall === 'complexity'
@@ -268,39 +271,39 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             : ''
           : ''
       },
-      styleNode: (node, course) => {
+      styleNode: ({ element, course }) => {
         const { dfw, waitlist, frequency } = getStats(course.name)
-        node.classList.remove(styles.square, styles.triangle)
+        element.classList.remove(styles.square, styles.triangle)
         const terms = new Set(frequency?.map(term => term.slice(0, 2)))
         terms.delete('S1')
         terms.delete('S2')
         if (shapes === 'frequency') {
           if (terms.size === 2) {
-            node.classList.add(styles.square)
+            element.classList.add(styles.square)
           } else if (terms.size === 1) {
-            if (!node.querySelector(`.${styles.triangleShape}`)) {
+            if (!element.querySelector(`.${styles.triangleShape}`)) {
               const shape = triangleShape?.cloneNode(true)
               if (shape instanceof Element) {
                 shape.id = ''
                 shape.classList.add(styles.triangleShape)
-                node.append(shape)
+                element.append(shape)
               }
             }
-            node.classList.add(styles.triangle)
+            element.classList.add(styles.triangle)
           }
         }
-        node.style.fontSize =
+        element.style.fontSize =
           (courseBall === 'complexity' && complexityMode !== 'default') ||
           (courseBall === 'bf' && complexityMode === 'dfwPlus1Bf')
             ? '0.8em'
             : ''
-        node.style.setProperty(
+        element.style.setProperty(
           '--border-color',
           dfw !== null && dfw >= threshold && courseBallColor === 'flagHighDfw'
             ? '#ef4444'
             : ''
         )
-        node.style.borderWidth =
+        element.style.borderWidth =
           dfw !== null && courseBallWidth === 'dfwThick'
             ? `${dfw * 30 + 1}px`
             : dfw !== null && courseBallWidth === 'dfwThin'
@@ -313,18 +316,18 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             ? `${waitlist / 4 + 1}px`
             : ''
       },
-      styleLink: (path, source, target) => {
-        const { dfw, waitlist } = getStats(source.name)
-        const linkId: LinkId = `${source.id}->${target.id}`
+      styleLink: ({ element, source, target }) => {
+        const { dfw, waitlist } = getStats(source.course.name)
+        const linkId: LinkId = `${source.course.id}->${target.course.id}`
         const redundant = redundantReqs.includes(linkId)
-        path.setAttributeNS(
+        element.setAttributeNS(
           null,
           'stroke',
           dfw !== null && dfw >= threshold && lineColor === 'flagHighDfw'
             ? '#ef4444'
             : ''
         )
-        path.setAttributeNS(
+        element.setAttributeNS(
           null,
           'stroke-width',
           dfw !== null && lineWidth === 'dfwThick'
@@ -337,7 +340,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             ? `${waitlist / 4 + 0.5}`
             : ''
         )
-        path.setAttributeNS(
+        element.setAttributeNS(
           null,
           'stroke-dasharray',
           (dfw !== null && dfw >= threshold && lineDash === 'flagHighDfw') ||
@@ -345,16 +348,16 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             ? '5 5'
             : ''
         )
-        path.setAttributeNS(
+        element.setAttributeNS(
           null,
           'visibility',
           redundant && redundantVisibility === 'hidden' ? 'hidden' : ''
         )
-        path.classList.add(classes[reqTypes[linkId]])
+        element.classList.add(classes[reqTypes[linkId]])
       },
-      styleLinkedNode: (node, course, link) => {
+      styleLinkedNode: ({ element, course }, link) => {
         if (link === null) {
-          node.classList.remove(
+          element.classList.remove(
             styles.selected,
             styles.directPrereq,
             styles.directCoreq,
@@ -365,7 +368,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
           )
         } else if (link.relation === 'backwards') {
           const reqType = reqTypes[`${course.id}->${link.from.id}`]
-          node.classList.add(
+          element.classList.add(
             link.direct
               ? reqType === 'prereq'
                 ? styles.directPrereq
@@ -375,7 +378,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
               : styles.prereq
           )
         } else {
-          node.classList.add(
+          element.classList.add(
             link.relation === 'selected'
               ? styles.selected
               : link.relation === 'forwards'
@@ -386,8 +389,8 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
           )
         }
       },
-      tooltipTitle: course => course.name,
-      tooltipContent: course => {
+      tooltipTitle: ({ course }) => course.name,
+      tooltipContent: ({ course }) => {
         const { dfw, frequency, waitlist } = getStats(course.name)
         const complexity = complexities.get(course)
         return [
@@ -416,7 +419,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
           ['Avg. waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A']
         ]
       },
-      tooltipRequisiteInfo: (element, source) => {
+      tooltipRequisiteInfo: (element, { source }) => {
         if (element.children.length < 2) {
           element.append(
             Object.assign(document.createElement('span'), {
@@ -428,8 +431,8 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             })
           )
         }
-        const { dfw } = getStats(source.name)
-        element.children[0].textContent = source.name
+        const { dfw } = getStats(source.course.name)
+        element.children[0].textContent = source.course.name
         element.children[1].textContent =
           dfw !== null ? `${(dfw * 100).toFixed(1)}% DFW` : ''
       }
