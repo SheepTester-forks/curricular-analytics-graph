@@ -5,7 +5,7 @@ import { Course, Link } from '../types'
 import { Join } from '../util/Join'
 import { CourseNode } from './CourseNode'
 import { NodeLink, LinkHandler, LinkRenderer } from './LinkRenderer'
-import { Tooltip, TooltipOptions } from './Tooltip'
+import { Tooltip } from './Tooltip'
 
 type GridItem<T> =
   | { type: 'course'; node: CourseNode<T>; index: number }
@@ -361,7 +361,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
 
     this.#maxTermLength = degreePlan.reduce(
       (acc, curr) => Math.max(acc, curr.length),
-      0
+      1
     )
     this.wrapper.style.setProperty('--term-count', `${degreePlan.length}`)
     this.wrapper.style.setProperty(

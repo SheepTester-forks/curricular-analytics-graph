@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "description": "Visualize curricula and degree plans. Compatible with CurricularVisualization.jl.",
   "main": "dist/index.js",
+  "type": "module",
   "scripts": {
-    "build": "esbuild --bundle --loader:.svg=file app/index.tsx --outdir=dist --supported:nesting=false --minify --sourcemap",
-    "clean": "rm -f dist/*.js dist/*.css dist/*.map",
+    "build": "esbuild --bundle --loader:.svg=file app/index.tsx --outdir=dist --supported:nesting=false --minify && node scripts/pack-html.js",
+    "clean": "rm -f dist/*.js dist/*.css dist/*.map dist/graph-demo.html",
     "dev": "esbuild --bundle --loader:.svg=file app/index.tsx --outdir=dist --servedir=dist --sourcemap",
     "test": "echo \"Error: no test specified\" && exit 1"
   },

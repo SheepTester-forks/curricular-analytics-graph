@@ -5,3 +5,4 @@ yarn.lock
 dist/*.js
 dist/*.css
 dist/*.map
+dist/graph-demo.html
