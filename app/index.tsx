@@ -3,7 +3,7 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats, LinkedCourse } from './App'
 import { RequisiteType, VisualizationCourse, toRequisiteType } from './types'
 
-//*
+/*
 import dfwRates from './data/fake-dfw.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
@@ -20,9 +20,11 @@ import example from './data/BE27.json'
 // https://curricularanalytics.org/degree_plans/25403
 // import example from './data/EC27.json'
 
-const nodesByTerm = example.curriculum_terms.map(term =>
+const quarters = ['FA', 'WI', 'SP'] as const
+const nodesByTerm = example.curriculum_terms.map((term, i) =>
   term.curriculum_items.map((course): LinkedCourse & VisualizationCourse => ({
     ...course,
+    quarter: quarters[i % 3],
     backwards: [],
     forwards: []
   }))

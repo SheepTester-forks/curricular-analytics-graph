@@ -7,6 +7,7 @@ import { RequisiteType } from './types'
 import * as GraphUtils from '../src/graph-utils'
 
 export type LinkedCourse = {
+  quarter: 'FA' | 'WI' | 'SP'
   id: number
   name: string
   credits: number
@@ -136,6 +137,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
   const [waitlistThreshold, setWaitlistThreshold] = useState('10')
 
   const [showWaitlistWarning, setShowWaitlistWarning] = useState(true)
+  const [showNotOfferedWarning, setShowNotOfferedWarning] = useState(true)
 
   const { blockingFactors, delayFactors, complexities } = useMemo(() => {
     const curriculum = degreePlan.flat()
@@ -287,7 +289,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             ? '#ef4444'
             : ''
         )
-        element.style.borderWidth =
+        element.style.borderWidth = element.style.strokeWidth =
           dfw !== null && courseBallWidth === 'dfwThick'
             ? `${dfw * 30 + 1}px`
             : dfw !== null && courseBallWidth === 'dfwThin'
@@ -298,6 +300,10 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
             ? `${course.credits}px`
             : waitlist !== null && courseBallWidth === 'waitlistThick'
             ? `${waitlist / 4 + 1}px`
+            : ''
+        element.style.backgroundColor = element.style.fill =
+          showNotOfferedWarning && frequency && !terms.has(course.quarter)
+            ? 'yellow'
             : ''
       },
       styleLink: ({ element, source, target, redundant }) => {
@@ -436,6 +442,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
     dfwThreshold,
     waitlistThreshold,
     showWaitlistWarning,
+    showNotOfferedWarning,
     redundantVisibility
   ])
 
@@ -523,10 +530,20 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
         >
           Show redundant requisites as
         </Dropdown>
+        <p>
+          <label>
+            <input
+              type='checkbox'
+              checked={showNotOfferedWarning}
+              onChange={e => setShowNotOfferedWarning(e.currentTarget.checked)}
+            />{' '}
+            Highlight the courses in quarters that they are not offered in
+          </label>
+        </p>
         {realData ? (
           <p>
-            For this demo, protected data have been replaced with randomized
-            values.
+            For this demo, protected data have been replaced with{' '}
+            <strong>randomized</strong> values.
           </p>
         ) : (
           <p>
