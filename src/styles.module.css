@@ -12,8 +12,6 @@
 }
 .links {
   position: absolute;
-  z-index: -1;
-  /* grid-area: 2 / 1 / -2 / -1; */
   stroke: currentColor;
   fill: none;
   transition: opacity 0.2s;
@@ -135,8 +133,7 @@
 }
 .longestPath {
   stroke: #3b82f6;
-  stroke-width: 3;
-  stroke-dasharray: 10 10;
+  stroke-width: 5;
   stroke-linecap: round;
 }
 

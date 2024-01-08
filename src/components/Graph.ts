@@ -184,7 +184,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
       'path'
     )
     this.#longestPathElement.setAttributeNS(null, 'class', styles.longestPath)
-    this.#linksHighlighted.wrapper.append(this.#longestPathElement)
+    this.#linksHighlighted.wrapper.prepend(this.#longestPathElement)
     this.wrapper.append(
       this.#allLinks.wrapper,
       this.#linksHighlighted.wrapper,

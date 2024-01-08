@@ -3,12 +3,15 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats, LinkedCourse } from './App'
 import { RequisiteType, VisualizationCourse, toRequisiteType } from './types'
 
-// import dfwRates from './data/fake-dfw.json'
-// import frequencies from './data/fake-frequency.json'
-// import waitlists from './data/fake-waitlist.json'
+//*
+import dfwRates from './data/fake-dfw.json'
+import frequencies from './data/fake-frequency.json'
+import waitlists from './data/fake-waitlist.json'
+/*/
 import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
 import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
+//*/
 
 // https://curricularanalytics.org/degree_plans/11085
 // import example from './data/example.json'
