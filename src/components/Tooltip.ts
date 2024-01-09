@@ -98,7 +98,7 @@ export class Tooltip<T> {
   }
 
   static #TOOLTIP_PADDING_X = 10
-  static #TOOLTIP_PADDING_Y = 25
+  static #TOOLTIP_PADDING_Y = 35
 
   position (): void {
     if (!this.#node) {

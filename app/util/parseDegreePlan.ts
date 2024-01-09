@@ -23,6 +23,7 @@ export async function parseDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
       continue
     }
     if (row[0] === 'Additional Courses') {
+      skipping = 'header'
       continue
     }
     const [
@@ -56,6 +57,9 @@ export async function parseDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
       [strictCoreqs, 'strict-coreq']
     ]
     for (const [reqs, type] of reqsWithTypes) {
+      if (!reqs) {
+        continue
+      }
       for (const req of reqs.split(';')) {
         coursesById[req] ??= {
           id: +req,
