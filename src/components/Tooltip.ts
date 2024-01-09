@@ -104,27 +104,30 @@ export class Tooltip<T> {
     if (!this.#node) {
       return
     }
-    const courseRect = this.#node.ball.getBoundingClientRect()
-    const courseX = courseRect.left + courseRect.width / 2
-    const courseY = courseRect.top + courseRect.height / 2
+    const courseRect = this.#node.wrapper.getBoundingClientRect()
+    const courseBallRect = this.#node.ball.getBoundingClientRect()
+    const courseX = courseBallRect.left + courseBallRect.width / 2
+    const courseY = courseBallRect.top + courseBallRect.height / 2
     const windowWidth = window.innerWidth
     const windowHeight = window.innerHeight
     const left = Math.min(
       Math.max(courseX - this.#width / 2, Tooltip.#TOOLTIP_PADDING_X),
       windowWidth - this.#width - Tooltip.#TOOLTIP_PADDING_X
     )
-    this.wrapper.style.left = `${left}px`
+    this.wrapper.style.left = `${left - courseRect.left}px`
     this.wrapper.style.setProperty('--left', `${courseX - left}px`)
     const bottom = courseY + this.#node.position.radius + this.#height
     if (bottom <= windowHeight - Tooltip.#TOOLTIP_PADDING_Y) {
-      this.wrapper.style.top = `${courseY + this.#node.position.radius}px`
+      this.wrapper.style.top = `${
+        courseY + this.#node.position.radius - courseRect.top
+      }px`
       this.wrapper.style.bottom = ''
       this.wrapper.classList.add(styles.tooltipTop)
       this.wrapper.classList.remove(styles.tooltipBottom)
     } else {
       this.wrapper.style.top = ''
       this.wrapper.style.bottom = `${
-        windowHeight - (courseY - this.#node.position.radius)
+        courseRect.bottom - courseY + this.#node.position.radius
       }px`
       this.wrapper.classList.remove(styles.tooltipTop)
       this.wrapper.classList.add(styles.tooltipBottom)
