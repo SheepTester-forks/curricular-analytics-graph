@@ -8,7 +8,8 @@
   position: relative;
   z-index: 0;
   color: #0f172a;
-  gap: 10px;
+  column-gap: 10px;
+  row-gap: 20px;
 }
 .links {
   position: absolute;

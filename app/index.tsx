@@ -71,8 +71,8 @@ function getStats (courseName: string): CourseStats {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App
-      degreePlan={nodesByTerm}
-      reqTypes={reqTypes}
+      initDegreePlan={nodesByTerm}
+      initReqTypes={reqTypes}
       getStats={getStats}
       realData={dfwRates['MATH18'] < 0.001}
     />

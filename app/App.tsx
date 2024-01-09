@@ -5,6 +5,7 @@ import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
 import { RequisiteType } from './types'
 import * as GraphUtils from '../src/graph-utils'
+import { parseDegreePlan } from './util/parseDegreePlan'
 
 export type LinkedCourse = {
   quarter: 'FA' | 'WI' | 'SP'
@@ -103,15 +104,21 @@ function interpretFrequency (terms: string[]): string {
 export type LinkId = `${number}->${number}`
 
 export type AppProps = {
-  degreePlan: LinkedCourse[][]
-  reqTypes: Record<LinkId, RequisiteType>
+  initDegreePlan: LinkedCourse[][]
+  initReqTypes: Record<LinkId, RequisiteType>
   getStats(courseName: string): CourseStats
   realData?: boolean
 }
+export function App ({
+  initDegreePlan,
+  initReqTypes,
+  getStats,
+  realData
+}: AppProps) {
+  const [degreePlan, setDegreePlan] = useState(initDegreePlan)
+  const [reqTypes, setReqTypes] = useState(initReqTypes)
 
-export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
   const ref = useRef<HTMLDivElement>(null)
-
   const graph = useRef<Graph<LinkedCourse> | null>(null)
 
   const [courseBall, setCourseBall] =
@@ -431,6 +438,7 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
       graph.current?.forceUpdate()
     }
   }, [
+    reqTypes,
     courseBall,
     courseBallColor,
     courseBallWidth,
@@ -451,6 +459,23 @@ export function App ({ degreePlan, reqTypes, getStats, realData }: AppProps) {
       <div className={styles.graphWrapper} ref={ref} />
       <aside className={styles.options}>
         <h2>Options</h2>
+        <label>
+          Upload degree plan:{' '}
+          <input
+            type='file'
+            accept='.csv'
+            onChange={async e => {
+              const input = e.currentTarget
+              const file = input.files?.[0]
+              if (file) {
+                const { degreePlan, reqTypes } = await parseDegreePlan(file)
+                setDegreePlan(degreePlan)
+                setReqTypes(reqTypes)
+              }
+              input.value = ''
+            }}
+          />
+        </label>
         <Dropdown
           options={options.courseBall}
           value={courseBall}
