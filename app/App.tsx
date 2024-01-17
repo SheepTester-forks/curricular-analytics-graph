@@ -472,134 +472,143 @@ export function App ({
   return (
     <>
       <div className={styles.graphWrapper} ref={ref} />
-      {showOptions && (
-        <aside className={styles.options}>
-          <h2>Options</h2>
-          <label>
-            Upload degree plan:{' '}
-            <input
-              type='file'
-              accept='.csv'
-              onChange={async e => {
-                const input = e.currentTarget
-                const file = input.files?.[0]
-                if (file) {
-                  const { degreePlan, reqTypes } = await blobToDegreePlan(file)
-                  setDegreePlan(degreePlan)
-                  setReqTypes(reqTypes)
-                }
-                input.value = ''
-              }}
-            />
-          </label>
-          <Dropdown
-            options={options.courseBall}
-            value={courseBall}
-            onChange={setCourseBall}
-          >
-            Course node number
-          </Dropdown>
-          <TextField value={dfwThreshold} onChange={setDfwThreshold} numeric>
-            Minimum DFW considered "high" (%)
-          </TextField>
-          <Dropdown
-            options={options.courseBallColor}
-            value={courseBallColor}
-            onChange={setCourseBallColor}
-          >
-            Course node outline color
-          </Dropdown>
-          <Dropdown
-            options={options.courseBallWidth}
-            value={courseBallWidth}
-            onChange={setCourseBallWidth}
-          >
-            Course node outline thickness
-          </Dropdown>
-          <Dropdown
-            options={options.lineWidth}
-            value={lineWidth}
-            onChange={setLineWidth}
-          >
-            Prereq line thickness
-          </Dropdown>
-          <Dropdown
-            options={options.lineColor}
-            value={lineColor}
-            onChange={setLineColor}
-          >
-            Prereq line color
-          </Dropdown>
-          <Dropdown
-            options={options.lineDash}
-            value={lineDash}
-            onChange={setLineDash}
-          >
-            Prereq line pattern
-          </Dropdown>
-          <Dropdown
-            options={options.complexityMode}
-            value={complexityMode}
-            onChange={setComplexityMode}
-          >
-            Complexity formula
-          </Dropdown>
-          <Dropdown
-            options={options.shapes}
-            value={shapes}
-            onChange={setShapes}
-          >
-            Course node shape
-          </Dropdown>
-          <p>
+      <aside className={styles.options}>
+        {showOptions && (
+          <>
+            <h2>Options</h2>
             <label>
+              Upload degree plan:{' '}
               <input
-                type='checkbox'
-                checked={showWaitlistWarning}
-                onChange={e => setShowWaitlistWarning(e.currentTarget.checked)}
-              />{' '}
-              Show a warning icon on courses with a long waitlist.
+                type='file'
+                accept='.csv'
+                onChange={async e => {
+                  const input = e.currentTarget
+                  const file = input.files?.[0]
+                  if (file) {
+                    const { degreePlan, reqTypes } = await blobToDegreePlan(
+                      file
+                    )
+                    setDegreePlan(degreePlan)
+                    setReqTypes(reqTypes)
+                  }
+                  input.value = ''
+                }}
+              />
             </label>
-          </p>
-          <TextField
-            value={waitlistThreshold}
-            onChange={setWaitlistThreshold}
-            numeric
-          >
-            Minimum waitlist length for warning
-          </TextField>
-          <Dropdown
-            options={options.redundantVisibility}
-            value={redundantVisibility}
-            onChange={setRedundantVisibility}
-          >
-            Show redundant requisites as
-          </Dropdown>
+            <Dropdown
+              options={options.courseBall}
+              value={courseBall}
+              onChange={setCourseBall}
+            >
+              Course node number
+            </Dropdown>
+            <TextField value={dfwThreshold} onChange={setDfwThreshold} numeric>
+              Minimum DFW considered "high" (%)
+            </TextField>
+            <Dropdown
+              options={options.courseBallColor}
+              value={courseBallColor}
+              onChange={setCourseBallColor}
+            >
+              Course node outline color
+            </Dropdown>
+            <Dropdown
+              options={options.courseBallWidth}
+              value={courseBallWidth}
+              onChange={setCourseBallWidth}
+            >
+              Course node outline thickness
+            </Dropdown>
+            <Dropdown
+              options={options.lineWidth}
+              value={lineWidth}
+              onChange={setLineWidth}
+            >
+              Prereq line thickness
+            </Dropdown>
+            <Dropdown
+              options={options.lineColor}
+              value={lineColor}
+              onChange={setLineColor}
+            >
+              Prereq line color
+            </Dropdown>
+            <Dropdown
+              options={options.lineDash}
+              value={lineDash}
+              onChange={setLineDash}
+            >
+              Prereq line pattern
+            </Dropdown>
+            <Dropdown
+              options={options.complexityMode}
+              value={complexityMode}
+              onChange={setComplexityMode}
+            >
+              Complexity formula
+            </Dropdown>
+            <Dropdown
+              options={options.shapes}
+              value={shapes}
+              onChange={setShapes}
+            >
+              Course node shape
+            </Dropdown>
+            <p>
+              <label>
+                <input
+                  type='checkbox'
+                  checked={showWaitlistWarning}
+                  onChange={e =>
+                    setShowWaitlistWarning(e.currentTarget.checked)
+                  }
+                />{' '}
+                Show a warning icon on courses with a long waitlist.
+              </label>
+            </p>
+            <TextField
+              value={waitlistThreshold}
+              onChange={setWaitlistThreshold}
+              numeric
+            >
+              Minimum waitlist length for warning
+            </TextField>
+            <Dropdown
+              options={options.redundantVisibility}
+              value={redundantVisibility}
+              onChange={setRedundantVisibility}
+            >
+              Show redundant requisites as
+            </Dropdown>
+            <p>
+              <label>
+                <input
+                  type='checkbox'
+                  checked={showNotOfferedWarning}
+                  onChange={e =>
+                    setShowNotOfferedWarning(e.currentTarget.checked)
+                  }
+                />{' '}
+                Highlight the courses in quarters that they are not offered in
+              </label>
+            </p>
+          </>
+        )}
+        <h2>Key</h2>
+        <p>TODO</p>
+        <h2>Disclaimer</h2>
+        {realData ? (
           <p>
-            <label>
-              <input
-                type='checkbox'
-                checked={showNotOfferedWarning}
-                onChange={e =>
-                  setShowNotOfferedWarning(e.currentTarget.checked)
-                }
-              />{' '}
-              Highlight the courses in quarters that they are not offered in
-            </label>
+            For this demo, protected data have been replaced with{' '}
+            <strong>randomized</strong> values.
           </p>
-          {realData ? (
-            <p>
-              For this demo, protected data have been replaced with{' '}
-              <strong>randomized</strong> values.
-            </p>
-          ) : (
-            <p>
-              This demo is currently showing <em>real</em> protected data.
-            </p>
-          )}
-          <p>Data were sampled from the 2021–2022 academic year.</p>
-        </aside>
-      )}
+        ) : (
+          <p>
+            This demo is currently showing <em>real</em> protected data.
+          </p>
+        )}
+        <p>Data were sampled from the 2021–2022 academic year.</p>
+      </aside>
     </>
   )
 }
