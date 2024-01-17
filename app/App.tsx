@@ -5,7 +5,7 @@ import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
 import { RequisiteType } from './types'
 import * as GraphUtils from '../src/graph-utils'
-import { parseDegreePlan } from './util/parseDegreePlan'
+import { blobToDegreePlan } from './util/parse-degree-plan'
 
 export type LinkedCourse = {
   quarter: 'FA' | 'WI' | 'SP'
@@ -107,12 +107,16 @@ export type AppProps = {
   initDegreePlan: LinkedCourse[][]
   initReqTypes: Record<LinkId, RequisiteType>
   getStats(courseName: string): CourseStats
+  defaults?: string
+  showOptions?: boolean
   realData?: boolean
 }
 export function App ({
   initDegreePlan,
   initReqTypes,
   getStats,
+  defaults,
+  showOptions,
   realData
 }: AppProps) {
   const [degreePlan, setDegreePlan] = useState(initDegreePlan)
@@ -123,28 +127,39 @@ export function App ({
 
   const [courseBall, setCourseBall] =
     useState<keyof typeof options['courseBall']>('complexity')
-  const [courseBallColor, setCourseBallColor] =
-    useState<keyof typeof options['courseBallColor']>('flagHighDfw')
-  const [courseBallWidth, setCourseBallWidth] =
-    useState<keyof typeof options['courseBallWidth']>('dfwFlag')
-  const [lineWidth, setLineWidth] =
-    useState<keyof typeof options['lineWidth']>('dfwFlag')
-  const [lineColor, setLineColor] =
-    useState<keyof typeof options['lineColor']>('flagHighDfw')
+  const [courseBallColor, setCourseBallColor] = useState<
+    keyof typeof options['courseBallColor']
+  >(defaults === 'ca' ? 'none' : 'flagHighDfw')
+  const [courseBallWidth, setCourseBallWidth] = useState<
+    keyof typeof options['courseBallWidth']
+  >(defaults === 'ca' ? 'none' : 'dfwFlag')
+  const [lineWidth, setLineWidth] = useState<keyof typeof options['lineWidth']>(
+    defaults === 'ca' ? 'none' : 'dfwFlag'
+  )
+  const [lineColor, setLineColor] = useState<keyof typeof options['lineColor']>(
+    defaults === 'ca' ? 'none' : 'flagHighDfw'
+  )
   const [lineDash, setLineDash] =
     useState<keyof typeof options['lineDash']>('none')
-  const [complexityMode, setComplexityMode] =
-    useState<keyof typeof options['complexityMode']>('dfwPlus1Bf')
-  const [shapes, setShapes] =
-    useState<keyof typeof options['shapes']>('frequency')
-  const [redundantVisibility, setRedundantVisibility] =
-    useState<keyof typeof options['redundantVisibility']>('dashed')
+  const [complexityMode, setComplexityMode] = useState<
+    keyof typeof options['complexityMode']
+  >(defaults === 'ca' ? 'default' : 'dfwPlus1Bf')
+  const [shapes, setShapes] = useState<keyof typeof options['shapes']>(
+    defaults === 'ca' ? 'nothing' : 'frequency'
+  )
+  const [redundantVisibility, setRedundantVisibility] = useState<
+    keyof typeof options['redundantVisibility']
+  >(defaults === 'ca' ? 'visible' : 'dashed')
 
   const [dfwThreshold, setDfwThreshold] = useState('10')
   const [waitlistThreshold, setWaitlistThreshold] = useState('10')
 
-  const [showWaitlistWarning, setShowWaitlistWarning] = useState(true)
-  const [showNotOfferedWarning, setShowNotOfferedWarning] = useState(true)
+  const [showWaitlistWarning, setShowWaitlistWarning] = useState(
+    defaults !== 'ca'
+  )
+  const [showNotOfferedWarning, setShowNotOfferedWarning] = useState(
+    defaults !== 'ca'
+  )
 
   const { blockingFactors, delayFactors, complexities } = useMemo(() => {
     const curriculum = degreePlan.flat()
@@ -457,126 +472,134 @@ export function App ({
   return (
     <>
       <div className={styles.graphWrapper} ref={ref} />
-      <aside className={styles.options}>
-        <h2>Options</h2>
-        <label>
-          Upload degree plan:{' '}
-          <input
-            type='file'
-            accept='.csv'
-            onChange={async e => {
-              const input = e.currentTarget
-              const file = input.files?.[0]
-              if (file) {
-                const { degreePlan, reqTypes } = await parseDegreePlan(file)
-                setDegreePlan(degreePlan)
-                setReqTypes(reqTypes)
-              }
-              input.value = ''
-            }}
-          />
-        </label>
-        <Dropdown
-          options={options.courseBall}
-          value={courseBall}
-          onChange={setCourseBall}
-        >
-          Course node number
-        </Dropdown>
-        <TextField value={dfwThreshold} onChange={setDfwThreshold} numeric>
-          Minimum DFW considered "high" (%)
-        </TextField>
-        <Dropdown
-          options={options.courseBallColor}
-          value={courseBallColor}
-          onChange={setCourseBallColor}
-        >
-          Course node outline color
-        </Dropdown>
-        <Dropdown
-          options={options.courseBallWidth}
-          value={courseBallWidth}
-          onChange={setCourseBallWidth}
-        >
-          Course node outline thickness
-        </Dropdown>
-        <Dropdown
-          options={options.lineWidth}
-          value={lineWidth}
-          onChange={setLineWidth}
-        >
-          Prereq line thickness
-        </Dropdown>
-        <Dropdown
-          options={options.lineColor}
-          value={lineColor}
-          onChange={setLineColor}
-        >
-          Prereq line color
-        </Dropdown>
-        <Dropdown
-          options={options.lineDash}
-          value={lineDash}
-          onChange={setLineDash}
-        >
-          Prereq line pattern
-        </Dropdown>
-        <Dropdown
-          options={options.complexityMode}
-          value={complexityMode}
-          onChange={setComplexityMode}
-        >
-          Complexity formula
-        </Dropdown>
-        <Dropdown options={options.shapes} value={shapes} onChange={setShapes}>
-          Course node shape
-        </Dropdown>
-        <p>
+      {showOptions && (
+        <aside className={styles.options}>
+          <h2>Options</h2>
           <label>
+            Upload degree plan:{' '}
             <input
-              type='checkbox'
-              checked={showWaitlistWarning}
-              onChange={e => setShowWaitlistWarning(e.currentTarget.checked)}
-            />{' '}
-            Show a warning icon on courses with a long waitlist.
+              type='file'
+              accept='.csv'
+              onChange={async e => {
+                const input = e.currentTarget
+                const file = input.files?.[0]
+                if (file) {
+                  const { degreePlan, reqTypes } = await blobToDegreePlan(file)
+                  setDegreePlan(degreePlan)
+                  setReqTypes(reqTypes)
+                }
+                input.value = ''
+              }}
+            />
           </label>
-        </p>
-        <TextField
-          value={waitlistThreshold}
-          onChange={setWaitlistThreshold}
-          numeric
-        >
-          Minimum waitlist length for warning
-        </TextField>
-        <Dropdown
-          options={options.redundantVisibility}
-          value={redundantVisibility}
-          onChange={setRedundantVisibility}
-        >
-          Show redundant requisites as
-        </Dropdown>
-        <p>
-          <label>
-            <input
-              type='checkbox'
-              checked={showNotOfferedWarning}
-              onChange={e => setShowNotOfferedWarning(e.currentTarget.checked)}
-            />{' '}
-            Highlight the courses in quarters that they are not offered in
-          </label>
-        </p>
-        {realData ? (
+          <Dropdown
+            options={options.courseBall}
+            value={courseBall}
+            onChange={setCourseBall}
+          >
+            Course node number
+          </Dropdown>
+          <TextField value={dfwThreshold} onChange={setDfwThreshold} numeric>
+            Minimum DFW considered "high" (%)
+          </TextField>
+          <Dropdown
+            options={options.courseBallColor}
+            value={courseBallColor}
+            onChange={setCourseBallColor}
+          >
+            Course node outline color
+          </Dropdown>
+          <Dropdown
+            options={options.courseBallWidth}
+            value={courseBallWidth}
+            onChange={setCourseBallWidth}
+          >
+            Course node outline thickness
+          </Dropdown>
+          <Dropdown
+            options={options.lineWidth}
+            value={lineWidth}
+            onChange={setLineWidth}
+          >
+            Prereq line thickness
+          </Dropdown>
+          <Dropdown
+            options={options.lineColor}
+            value={lineColor}
+            onChange={setLineColor}
+          >
+            Prereq line color
+          </Dropdown>
+          <Dropdown
+            options={options.lineDash}
+            value={lineDash}
+            onChange={setLineDash}
+          >
+            Prereq line pattern
+          </Dropdown>
+          <Dropdown
+            options={options.complexityMode}
+            value={complexityMode}
+            onChange={setComplexityMode}
+          >
+            Complexity formula
+          </Dropdown>
+          <Dropdown
+            options={options.shapes}
+            value={shapes}
+            onChange={setShapes}
+          >
+            Course node shape
+          </Dropdown>
           <p>
-            For this demo, protected data have been replaced with{' '}
-            <strong>randomized</strong> values.
+            <label>
+              <input
+                type='checkbox'
+                checked={showWaitlistWarning}
+                onChange={e => setShowWaitlistWarning(e.currentTarget.checked)}
+              />{' '}
+              Show a warning icon on courses with a long waitlist.
+            </label>
           </p>
-        ) : (
+          <TextField
+            value={waitlistThreshold}
+            onChange={setWaitlistThreshold}
+            numeric
+          >
+            Minimum waitlist length for warning
+          </TextField>
+          <Dropdown
+            options={options.redundantVisibility}
+            value={redundantVisibility}
+            onChange={setRedundantVisibility}
+          >
+            Show redundant requisites as
+          </Dropdown>
           <p>
-            This demo is currently showing <em>real</em> protected data.
+            <label>
+              <input
+                type='checkbox'
+                checked={showNotOfferedWarning}
+                onChange={e =>
+                  setShowNotOfferedWarning(e.currentTarget.checked)
+                }
+              />{' '}
+              Highlight the courses in quarters that they are not offered in
+            </label>
           </p>
-        )}
-        <p>Data were sampled from the 2021–2022 academic year.</p>
-      </aside>
+          {realData ? (
+            <p>
+              For this demo, protected data have been replaced with{' '}
+              <strong>randomized</strong> values.
+            </p>
+          ) : (
+            <p>
+              This demo is currently showing <em>real</em> protected data.
+            </p>
+          )}
+          <p>Data were sampled from the 2021–2022 academic year.</p>
+        </aside>
+      )}
     </>
   )
 }

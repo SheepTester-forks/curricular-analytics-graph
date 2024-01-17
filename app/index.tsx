@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App, CourseStats, LinkedCourse } from './App'
-import { RequisiteType, VisualizationCourse, toRequisiteType } from './types'
+import { jsonToDegreePlan } from './util/parse-degree-plan'
 
 /*
 import dfwRates from './data/fake-dfw.json'
@@ -20,36 +20,12 @@ import example from './data/BE27.json'
 // https://curricularanalytics.org/degree_plans/25403
 // import example from './data/EC27.json'
 
-const quarters = ['FA', 'WI', 'SP'] as const
-const nodesByTerm = example.curriculum_terms.map((term, i) =>
-  term.curriculum_items.map((course): LinkedCourse & VisualizationCourse => ({
-    ...course,
-    quarter: quarters[i % 3],
-    backwards: [],
-    forwards: []
-  }))
+const { degreePlan, reqTypes } = jsonToDegreePlan(
+  window.location.hash.length > 1
+    ? JSON.parse(decodeURIComponent(window.location.hash.slice(1)))
+    : example
 )
-const nodes = nodesByTerm.flat()
-const nodesById: Record<number, LinkedCourse> = {}
-for (const node of nodes) {
-  nodesById[node.id] ??= node
-}
-const reqTypes: Record<string, RequisiteType> = {}
-for (const node of nodes) {
-  for (const { source_id, type } of node.curriculum_requisites) {
-    nodesById[source_id].forwards.push(node)
-    node.backwards.push(nodesById[source_id])
-    reqTypes[`${source_id}->${node.id}`] = toRequisiteType(type)
-  }
-}
-for (const term of nodesByTerm) {
-  // Sort by outgoing nodes, then incoming
-  term.sort(
-    (a, b) =>
-      b.forwards.length - a.forwards.length ||
-      b.backwards.length - a.backwards.length
-  )
-}
+const params = new URL(window.location.href).searchParams
 
 function getStats (courseName: string): CourseStats {
   const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
@@ -71,9 +47,11 @@ function getStats (courseName: string): CourseStats {
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App
-      initDegreePlan={nodesByTerm}
+      initDegreePlan={degreePlan}
       initReqTypes={reqTypes}
       getStats={getStats}
+      defaults={params.get('defaults') ?? ''}
+      showOptions={!params.has('defaults')}
       realData={dfwRates['MATH18'] < 0.001}
     />
   </StrictMode>

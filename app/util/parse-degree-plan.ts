@@ -1,14 +1,20 @@
 import { LinkedCourse } from '../App'
-import { RequisiteType } from '../types'
+import {
+  RequisiteType,
+  VisualizationCourse,
+  VisualizationCurriculum,
+  toRequisiteType
+} from '../types'
 import { parseCsv } from './csv'
+
+const quarters = ['FA', 'WI', 'SP'] as const
 
 export type ParsedDegreePlan = {
   degreePlan: LinkedCourse[][]
   reqTypes: Record<string, RequisiteType>
 }
 
-const quarters = ['FA', 'WI', 'SP'] as const
-export async function parseDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
+export async function blobToDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
   const coursesById: Record<string, LinkedCourse> = {}
   const degreePlan: LinkedCourse[][] = []
   const reqTypes: Record<string, RequisiteType> = {}
@@ -73,6 +79,41 @@ export async function parseDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
         coursesById[id].backwards.push(coursesById[req])
         reqTypes[`${req}->${id}`] = type
       }
+    }
+  }
+  for (const term of degreePlan) {
+    // Sort by outgoing nodes, then incoming
+    term.sort(
+      (a, b) =>
+        b.forwards.length - a.forwards.length ||
+        b.backwards.length - a.backwards.length
+    )
+  }
+  return { degreePlan, reqTypes }
+}
+
+export function jsonToDegreePlan (
+  plan: VisualizationCurriculum
+): ParsedDegreePlan {
+  const degreePlan = plan.curriculum_terms.map((term, i) =>
+    term.curriculum_items.map((course): LinkedCourse & VisualizationCourse => ({
+      ...course,
+      quarter: quarters[i % 3],
+      backwards: [],
+      forwards: []
+    }))
+  )
+  const courses = degreePlan.flat()
+  const coursesById: Record<number, LinkedCourse> = {}
+  for (const node of courses) {
+    coursesById[node.id] ??= node
+  }
+  const reqTypes: Record<string, RequisiteType> = {}
+  for (const course of courses) {
+    for (const { source_id, type } of course.curriculum_requisites) {
+      coursesById[source_id].forwards.push(course)
+      course.backwards.push(coursesById[source_id])
+      reqTypes[`${source_id}->${course.id}`] = toRequisiteType(type)
     }
   }
   for (const term of degreePlan) {
