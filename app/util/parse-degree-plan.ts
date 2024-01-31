@@ -5,7 +5,7 @@ import {
   VisualizationCurriculum,
   toRequisiteType
 } from '../types'
-import { parseCsv } from './csv'
+import { CsvParser } from './csv'
 
 const quarters = ['FA', 'WI', 'SP'] as const
 
@@ -14,23 +14,25 @@ export type ParsedDegreePlan = {
   reqTypes: Record<string, RequisiteType>
 }
 
-export async function blobToDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
-  const coursesById: Record<string, LinkedCourse> = {}
-  const degreePlan: LinkedCourse[][] = []
-  const reqTypes: Record<string, RequisiteType> = {}
-  let skipping: 'metadata' | 'header' | null = 'metadata'
-  for await (const row of parseCsv(file.stream())) {
-    if (skipping) {
-      if (skipping === 'header') {
-        skipping = null
+export class DegreePlanParser {
+  #parser = new CsvParser()
+  #coursesById: Record<string, LinkedCourse> = {}
+  #degreePlan: LinkedCourse[][] = []
+  #reqTypes: Record<string, RequisiteType> = {}
+  #skipping: 'metadata' | 'header' | null = 'metadata'
+
+  #handleRow (row: string[]): void {
+    if (this.#skipping) {
+      if (this.#skipping === 'header') {
+        this.#skipping = null
       } else if (row[0] === 'Courses') {
-        skipping = 'header'
+        this.#skipping = 'header'
       }
-      continue
+      return
     }
     if (row[0] === 'Additional Courses') {
-      skipping = 'header'
-      continue
+      this.#skipping = 'header'
+      return
     }
     const [
       id,
@@ -50,13 +52,18 @@ export async function blobToDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
       credits: +units,
       quarter: quarters[(+term - 1) % 3]
     }
-    if (coursesById[id]) {
-      Object.assign(coursesById[id], courseData)
+    if (this.#coursesById[id]) {
+      Object.assign(this.#coursesById[id], courseData)
     } else {
-      coursesById[id] = { id: +id, ...courseData, backwards: [], forwards: [] }
+      this.#coursesById[id] = {
+        id: +id,
+        ...courseData,
+        backwards: [],
+        forwards: []
+      }
     }
-    degreePlan[+term - 1] ??= []
-    degreePlan[+term - 1].push(coursesById[id])
+    this.#degreePlan[+term - 1] ??= []
+    this.#degreePlan[+term - 1].push(this.#coursesById[id])
     const reqsWithTypes: [string, RequisiteType][] = [
       [prereqs, 'prereq'],
       [coreqs, 'coreq'],
@@ -67,7 +74,7 @@ export async function blobToDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
         continue
       }
       for (const req of reqs.split(';')) {
-        coursesById[req] ??= {
+        this.#coursesById[req] ??= {
           id: +req,
           name: '',
           credits: 0,
@@ -75,21 +82,52 @@ export async function blobToDegreePlan (file: Blob): Promise<ParsedDegreePlan> {
           backwards: [],
           forwards: []
         }
-        coursesById[req].forwards.push(coursesById[id])
-        coursesById[id].backwards.push(coursesById[req])
-        reqTypes[`${req}->${id}`] = type
+        this.#coursesById[req].forwards.push(this.#coursesById[id])
+        this.#coursesById[id].backwards.push(this.#coursesById[req])
+        this.#reqTypes[`${req}->${id}`] = type
       }
     }
   }
-  for (const term of degreePlan) {
-    // Sort by outgoing nodes, then incoming
-    term.sort(
-      (a, b) =>
-        b.forwards.length - a.forwards.length ||
-        b.backwards.length - a.backwards.length
-    )
+
+  accept (chunk: string): void {
+    for (const row of this.#parser.accept(chunk)) {
+      this.#handleRow(row)
+    }
   }
-  return { degreePlan, reqTypes }
+
+  finish (): ParsedDegreePlan {
+    for (const row of this.#parser.finish()) {
+      this.#handleRow(row)
+    }
+    for (const term of this.#degreePlan) {
+      // Sort by outgoing nodes, then incoming
+      term.sort(
+        (a, b) =>
+          b.forwards.length - a.forwards.length ||
+          b.backwards.length - a.backwards.length
+      )
+    }
+    return { degreePlan: this.#degreePlan, reqTypes: this.#reqTypes }
+  }
+}
+
+export function csvStringToDegreePlan (csv: string): ParsedDegreePlan {
+  const parser = new DegreePlanParser()
+  parser.accept(csv)
+  return parser.finish()
+}
+
+export async function csvBlobToDegreePlan (
+  file: Blob
+): Promise<ParsedDegreePlan> {
+  const reader = file.stream().pipeThrough(new TextDecoderStream()).getReader()
+  const parser = new DegreePlanParser()
+  let result
+  while (!(result = await reader.read()).done) {
+    const { value } = result
+    parser.accept(value)
+  }
+  return parser.finish()
 }
 
 export function jsonToDegreePlan (

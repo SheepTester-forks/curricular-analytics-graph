@@ -5,7 +5,7 @@ import { Dropdown, TextField } from './components/Dropdown'
 import './index.css'
 import { RequisiteType } from './types'
 import * as GraphUtils from '../src/graph-utils'
-import { blobToDegreePlan } from './util/parse-degree-plan'
+import { csvBlobToDegreePlan } from './util/parse-degree-plan'
 
 export type LinkedCourse = {
   quarter: 'FA' | 'WI' | 'SP'
@@ -485,7 +485,7 @@ export function App ({
                   const input = e.currentTarget
                   const file = input.files?.[0]
                   if (file) {
-                    const { degreePlan, reqTypes } = await blobToDegreePlan(
+                    const { degreePlan, reqTypes } = await csvBlobToDegreePlan(
                       file
                     )
                     setDegreePlan(degreePlan)

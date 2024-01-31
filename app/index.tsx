@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App, CourseStats, LinkedCourse } from './App'
-import { jsonToDegreePlan } from './util/parse-degree-plan'
+import { App, CourseStats } from './App'
+import { csvStringToDegreePlan } from './util/parse-degree-plan'
 
 /*
 import dfwRates from './data/fake-dfw.json'
@@ -16,13 +16,13 @@ import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summ
 // https://curricularanalytics.org/degree_plans/11085
 // import example from './data/example.json'
 // https://curricularanalytics.org/degree_plans/25144
-import example from './data/BE27.json'
+import example from './data/SY-Degree Plan-Eighth-EC27.csv'
 // https://curricularanalytics.org/degree_plans/25403
 // import example from './data/EC27.json'
 
-const { degreePlan, reqTypes } = jsonToDegreePlan(
+const { degreePlan, reqTypes } = csvStringToDegreePlan(
   window.location.hash.length > 1
-    ? JSON.parse(decodeURIComponent(window.location.hash.slice(1)))
+    ? decodeURIComponent(window.location.hash.slice(1))
     : example
 )
 const params = new URL(window.location.href).searchParams

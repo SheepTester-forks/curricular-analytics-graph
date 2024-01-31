@@ -1,48 +1,47 @@
-/**
- * Simple and dumb CSV parser. Probably overengineered since it's dealing with
- * streams, but whatever.
- */
-export async function * parseCsv (
-  csv: ReadableStream<Uint8Array>,
-  separator = ','
-): AsyncGenerator<string[]> {
-  const reader = csv.pipeThrough(new TextDecoderStream()).getReader()
-  let row: string[] = ['']
-  let quoted = false
-  let lastCharWasQuote = false
-  let result
-  while (!(result = await reader.read()).done) {
-    const { value } = result
-    for (const char of value) {
-      if (quoted) {
+export class CsvParser {
+  separator: string
+  #row: string[] = ['']
+  #quoted = false
+  #lastCharWasQuote = false
+
+  constructor (separator = ',') {
+    this.separator = separator
+  }
+
+  * accept (chunk: string): Generator<string[]> {
+    for (const char of chunk) {
+      if (this.#quoted) {
         if (char === '"') {
-          quoted = false
-          lastCharWasQuote = true
+          this.#quoted = false
+          this.#lastCharWasQuote = true
         } else {
-          row[row.length - 1] += char
+          this.#row[this.#row.length - 1] += char
         }
       } else if (char === '"') {
-        quoted = true
+        this.#quoted = true
         // Escaped quote
-        if (lastCharWasQuote) {
-          lastCharWasQuote = false
-          row[row.length - 1] += '"'
+        if (this.#lastCharWasQuote) {
+          this.#lastCharWasQuote = false
+          this.#row[this.#row.length - 1] += '"'
         }
-      } else if (char === separator) {
-        row.push('')
+      } else if (char === this.separator) {
+        this.#row.push('')
       } else if (char === '\r' || char === '\n') {
         // CR is considered a line ending. CR LF is considered a double line
-        // break, so the empty row is skipped.
-        if (row.length > 1 || row[0] !== '') {
-          yield row
+        // break, so the empty this.#row is skipped.
+        if (this.#row.length > 1 || this.#row[0] !== '') {
+          yield this.#row
         }
-        row = ['']
+        this.#row = ['']
       } else {
-        row[row.length - 1] += char
+        this.#row[this.#row.length - 1] += char
       }
     }
   }
-  if (row.length > 1 || row[0] !== '') {
-    yield row
+
+  * finish (): Generator<string[]> {
+    if (this.#row.length > 1 || this.#row[0] !== '') {
+      yield this.#row
+    }
   }
 }
