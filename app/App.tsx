@@ -250,7 +250,7 @@ export function App ({
           (showWaitlistWarning &&
           waitlist !== null &&
           waitlist > +waitlistThreshold
-            ? '⚠️'
+            ? '⚠️\u{fe0f}'
             : '') + name
         )
       },
