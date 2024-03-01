@@ -18,17 +18,25 @@ To create a graph, you need to
 
 1. Provide an options object to the `Graph` constructor. A list of options is documented in [`GraphOptions`](./src/components/Graph.ts#L16). All options are optional, and by default, the graph will only have circles and arrows.
 
-1. Provide a degree plan, in the form of a list of list of course objects, to `graph.setDegreePlan`.
+   To update the options object, directly modify `Graph.options`, then force a re-render using `Graph.forceUpdate()`.
+
+1. Provide a degree plan, in the form of a list of list of course objects, to `Graph.setDegreePlan`.
 
    Each course object must contain `backwards` and `forwards`, which are arrays of references to other course objects, representing the prerequisite relationships between courses. Course objects can contain other information, such as course IDs or names, which will be passed directly to the callbacks in the options object in the `Graph` constructor.
 
    These links don't store any metadata, so if you want to keep track of the type of prerequisite (e.g. prereq vs coreq vs strict coreq), you should maintain a separate object or `Map` mapping from pairs of course IDs to any metadata you wish to keep.
 
-1. Add `graph.wrapper` to the document.
+   To change the degree plan again later on, simply call `setDegreePlan` again with the new degree plan.
+
+1. Add `Graph.wrapper` to the document.
 
 ```ts
 import { Graph } from 'curricular-analytics-graph/src'
 
+// Define the properties of the object used to store course data (if using
+// TypeScript). The only required fields used by `Graph` are `backwards` and
+// `forwards`, which are arrays of references to other course objects in the
+// plan.
 type Course = {
   name: string
   backwards: Course[]
@@ -36,9 +44,13 @@ type Course = {
 }
 
 const graph = new Graph<Course>({
+  // The `courseName` option determines the text that displays underneath each
+  // course node.
   courseName: ({ course }) => course.name
 })
 
+// In practice, these links would be attached automatically rather than
+// manually.
 const plan = [
   [
     { name: 'MATH 1', backwards: [], forwards: [] },
