@@ -8,9 +8,10 @@ import dfwRates from './data/fake-dfw.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
 /*/
-import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
+// Fuzzed files produced by scripts/fuzz-data.js
+import dfwRates from './data/fuzzed-dfw.json'
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
-import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
+import waitlists from './data/fuzzed-waitlist.json'
 //*/
 
 // https://curricularanalytics.org/degree_plans/11085
@@ -52,7 +53,7 @@ createRoot(document.getElementById('root')!).render(
       getStats={getStats}
       defaults={params.get('defaults') ?? ''}
       showOptions={!params.has('defaults')}
-      realData={dfwRates['MATH18'] < 0.001}
+      realData={false}
     />
   </StrictMode>
 )
