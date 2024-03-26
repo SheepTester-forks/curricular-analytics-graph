@@ -603,12 +603,12 @@ export function App ({
           <h2>Disclaimer</h2>
           {realData ? (
             <p>
-              For this demo, protected data have been replaced with{' '}
-              <strong>randomized</strong> values.
+              This demo is currently showing <em>real</em> protected data.
             </p>
           ) : (
             <p>
-              This demo is currently showing <em>real</em> protected data.
+              For this demo, protected data have been replaced with{' '}
+              <strong>randomized</strong> values.
             </p>
           )}
           <p>Data were sampled from the 2021–2022 academic year.</p>
