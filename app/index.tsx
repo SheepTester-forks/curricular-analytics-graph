@@ -52,7 +52,13 @@ createRoot(document.getElementById('root')!).render(
       initReqTypes={reqTypes}
       getStats={getStats}
       defaults={params.get('defaults') ?? ''}
-      showOptions={!params.has('defaults')}
+      panelMode={
+        params.has('hide-panel')
+          ? 'hidden'
+          : params.has('defaults')
+          ? 'key'
+          : 'options'
+      }
       realData={false}
     />
   </StrictMode>
