@@ -74,3 +74,23 @@
     margin: 0;
   }
 }
+
+.keyEntry {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.keyCourse {
+  border: 1px solid #64748b;
+  background-color: var(--ball-color, #e2e8f0);
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+.line {
+  width: 95px;
+  flex: none;
+  height: 1px;
+  background-color: #64748b;
+}

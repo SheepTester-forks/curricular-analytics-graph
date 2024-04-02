@@ -599,7 +599,101 @@ export function App ({
             </>
           )}
           <h2>Key</h2>
-          <p>TODO</p>
+          {courseBall !== 'none' && (
+            <p>
+              The number indicates the course's{' '}
+              {courseBall === 'bf'
+                ? 'blocking factor'
+                : courseBall === 'dfw'
+                ? 'DFW rate'
+                : courseBall === 'waitlist'
+                ? 'waitlist length'
+                : courseBall}
+              .
+            </p>
+          )}
+          <p className={styles.keyEntry}>
+            <div className={`${styles.keyCourse} ${styles.directPrereq}`} />
+            Prerequisite
+          </p>
+          <p className={styles.keyEntry}>
+            <div className={`${styles.keyCourse} ${styles.prereq}`} />
+            All prerequisites
+          </p>
+          <p className={styles.keyEntry}>
+            <div className={`${styles.keyCourse} ${styles.directBlocking}`} />
+            Directly blocked
+          </p>
+          <p className={styles.keyEntry}>
+            <div className={`${styles.keyCourse} ${styles.blocking}`} />
+            All blocked
+          </p>
+          {defaults === 'ucsd' && (
+            <>
+              <p className={styles.keyEntry}>
+                <div
+                  className={styles.keyCourse}
+                  style={{ backgroundColor: 'yellow' }}
+                />
+                Course not offered in quarter
+              </p>
+              <p>Ignoring summer offerings,</p>
+              <p className={styles.keyEntry}>
+                <div className={styles.keyCourse} />
+                Offered year-round
+              </p>
+              <p className={styles.keyEntry}>
+                <div
+                  className={styles.keyCourse}
+                  style={{ borderRadius: '5px' }}
+                />
+                Offered twice a year
+              </p>
+              <p className={styles.keyEntry}>
+                <svg
+                  width={20}
+                  height={20}
+                  viewBox='0 0 40 40'
+                  xmlns='http://www.w3.org/2000/svg'
+                  style={{ flex: 'none' }}
+                >
+                  <path
+                    d='M18.2679 3C19.0377 1.66667 20.9623 1.66667 21.7321 3L36.4545 28.5C37.2243 29.8333 36.262 31.5 34.7224 31.5H5.27757C3.73797 31.5 2.77572 29.8333 3.54552 28.5L18.2679 3Z'
+                    fill='#e2e8f0'
+                    stroke='#64748b'
+                    vectorEffect='non-scaling-stroke'
+                  />
+                </svg>
+                Offered once a year
+              </p>
+              <p className={styles.keyEntry}>
+                <div
+                  className={styles.line}
+                  style={{
+                    background:
+                      'linear-gradient(to right, #64748b 50%, transparent 50%)',
+                    backgroundSize: '10px'
+                  }}
+                />
+                Redundant prerequisite
+              </p>
+              <p className={styles.keyEntry}>
+                <div
+                  className={styles.line}
+                  style={{ backgroundColor: '#3b82f6', height: '5px' }}
+                />
+                Longest path
+              </p>
+              <p className={styles.keyEntry}>
+                <div
+                  className={styles.line}
+                  style={{ backgroundColor: 'red', height: '3px' }}
+                />
+                Prerequisite has high DFW
+              </p>
+              <p>⚠️ Long waitlist</p>
+            </>
+          )}
           <h2>Disclaimer</h2>
           {realData ? (
             <p>
