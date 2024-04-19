@@ -3,10 +3,18 @@ body,
 #root {
   height: 100%;
 }
+/* system-ui overrides the Apple color warning emoji on MacOS Chrome */
+@font-face {
+  font-family: 'warning emoji';
+  src: local('Apple Color Emoji'), local('Segoe UI Emoji'),
+    local('Noto Color Emoji'), local('Segoe UI Symbol'), system-ui, sans-serif;
+  unicode-range: U+26A0; /* ⚠ */
+}
 body {
   margin: 0;
-  font-family: system-ui, 'Apple Color Emoji', -apple-system, BlinkMacSystemFont,
-    'Segoe UI', 'Segoe UI Emoji', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-family: 'warning emoji', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji', 'Segoe UI Symbol';
   background-color: white;
 }
 
