@@ -101,6 +101,13 @@ function interpretFrequency (terms: string[]): string {
   }
 }
 
+/** Whether a course is upper-division (course number >= 100) */
+function isUd (courseName: string) {
+  courseName = courseName.toUpperCase()
+  const match = courseName.match(/[A-Z]+ *(\d+)[A-Z]*/)
+  return match ? +match[1] >= 100 : courseName.includes('UD ELECTIVE')
+}
+
 export type LinkId = `${number}->${number}`
 
 export type AppProps = {
@@ -151,7 +158,8 @@ export function App ({
     keyof typeof options['redundantVisibility']
   >(defaults === 'ca' ? 'visible' : 'dashed')
 
-  const [dfwThreshold, setDfwThreshold] = useState('10')
+  const [dfwLdThreshold, setDfwLdThreshold] = useState('10')
+  const [dfwUdThreshold, setDfwUdThreshold] = useState('10')
   const [waitlistThreshold, setWaitlistThreshold] = useState('10')
 
   const [showWaitlistWarning, setShowWaitlistWarning] = useState(
@@ -215,7 +223,8 @@ export function App ({
   }, [degreePlan])
 
   useEffect(() => {
-    const threshold = +dfwThreshold / 100
+    const ldThreshold = +dfwLdThreshold / 100
+    const udThreshold = +dfwUdThreshold / 100
     const options: GraphOptions<LinkedCourse> = {
       system: 'semester',
       termName: (_, i) =>
@@ -281,6 +290,7 @@ export function App ({
       },
       styleNode: ({ element, course }) => {
         const { dfw, waitlist, frequency } = getStats(course.name)
+        const threshold = isUd(course.name) ? udThreshold : ldThreshold
         element.classList.remove(styles.square, styles.triangle)
         const terms = new Set(frequency?.map(term => term.slice(0, 2)))
         terms.delete('S1')
@@ -330,6 +340,7 @@ export function App ({
       },
       styleLink: ({ element, source, target, redundant }) => {
         const { dfw, waitlist } = getStats(source.course.name)
+        const threshold = isUd(source.course.name) ? udThreshold : ldThreshold
         const linkId: LinkId = `${source.course.id}->${target.course.id}`
         element.setAttributeNS(
           null,
@@ -462,7 +473,8 @@ export function App ({
     lineDash,
     complexityMode,
     shapes,
-    dfwThreshold,
+    dfwLdThreshold,
+    dfwUdThreshold,
     waitlistThreshold,
     showWaitlistWarning,
     showNotOfferedWarning,
@@ -503,11 +515,18 @@ export function App ({
                 Course node number
               </Dropdown>
               <TextField
-                value={dfwThreshold}
-                onChange={setDfwThreshold}
+                value={dfwLdThreshold}
+                onChange={setDfwLdThreshold}
                 numeric
               >
-                Minimum DFW considered "high" (%)
+                Minimum DFW considered "high" for LD courses (%)
+              </TextField>
+              <TextField
+                value={dfwUdThreshold}
+                onChange={setDfwUdThreshold}
+                numeric
+              >
+                Minimum DFW considered "high" for UD courses (%)
               </TextField>
               <Dropdown
                 options={options.courseBallColor}

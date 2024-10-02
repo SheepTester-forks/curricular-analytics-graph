@@ -1,6 +1,11 @@
 # curricular-analytics-graph
 
-A CurricularVisualization.jl-compatible graph renderer
+A CurricularVisualization.jl-compatible graph renderer.
+
+This repo is set up in two parts:
+
+- `src/`, which defines a generic graph renderer as a library.
+- `app/`, a React app that uses the library to make a [kitchen-sink demo](https://educationalinnovation.ucsd.edu/_files/graph-demo.html).
 
 ## Usage
 
