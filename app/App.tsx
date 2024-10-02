@@ -114,8 +114,11 @@ export type AppProps = {
   initDegreePlan: LinkedCourse[][]
   initReqTypes: Record<LinkId, RequisiteType>
   getStats(courseName: string): CourseStats
-  defaults?: string
-  panelMode?: 'hidden' | 'key' | 'options'
+  defaults?: 'ca' | 'ucsd' | (string & {})
+  panelMode?: {
+    key?: boolean
+    options?: boolean
+  }
   realData?: boolean
 }
 export function App ({
@@ -123,7 +126,7 @@ export function App ({
   initReqTypes,
   getStats,
   defaults,
-  panelMode = 'key',
+  panelMode = { key: true },
   realData
 }: AppProps) {
   const [degreePlan, setDegreePlan] = useState(initDegreePlan)
@@ -484,11 +487,127 @@ export function App ({
   return (
     <>
       <div className={styles.graphWrapper} ref={ref} />
-      {panelMode !== 'hidden' && (
+      {(panelMode.key || panelMode.options) && (
         <aside className={styles.options}>
-          {panelMode === 'options' && (
+          {panelMode.key ? (
             <>
-              <h2>Options</h2>
+              <h2>Key</h2>
+              {courseBall !== 'none' && (
+                <p>
+                  The number indicates the course's{' '}
+                  {courseBall === 'bf'
+                    ? 'blocking factor'
+                    : courseBall === 'dfw'
+                    ? 'DFW rate'
+                    : courseBall === 'waitlist'
+                    ? 'waitlist length'
+                    : courseBall}
+                  .
+                </p>
+              )}
+              <p className={styles.keyEntry}>
+                <div className={`${styles.keyCourse} ${styles.directPrereq}`} />
+                Prerequisite
+              </p>
+              <p className={styles.keyEntry}>
+                <div className={`${styles.keyCourse} ${styles.prereq}`} />
+                All prerequisites
+              </p>
+              <p className={styles.keyEntry}>
+                <div
+                  className={`${styles.keyCourse} ${styles.directBlocking}`}
+                />
+                Directly blocked
+              </p>
+              <p className={styles.keyEntry}>
+                <div className={`${styles.keyCourse} ${styles.blocking}`} />
+                All blocked
+              </p>
+              {defaults === 'ucsd' && (
+                <>
+                  <p className={styles.keyEntry}>
+                    <div
+                      className={styles.keyCourse}
+                      style={{ backgroundColor: 'yellow' }}
+                    />
+                    Course not offered in quarter
+                  </p>
+                  <p>Ignoring summer offerings,</p>
+                  <p className={styles.keyEntry}>
+                    <div className={styles.keyCourse} />
+                    Offered year-round
+                  </p>
+                  <p className={styles.keyEntry}>
+                    <div
+                      className={styles.keyCourse}
+                      style={{ borderRadius: '5px' }}
+                    />
+                    Offered twice a year
+                  </p>
+                  <p className={styles.keyEntry}>
+                    <svg
+                      width={20}
+                      height={20}
+                      viewBox='0 0 40 40'
+                      xmlns='http://www.w3.org/2000/svg'
+                      style={{ flex: 'none' }}
+                    >
+                      <path
+                        d='M18.2679 3C19.0377 1.66667 20.9623 1.66667 21.7321 3L36.4545 28.5C37.2243 29.8333 36.262 31.5 34.7224 31.5H5.27757C3.73797 31.5 2.77572 29.8333 3.54552 28.5L18.2679 3Z'
+                        fill='#e2e8f0'
+                        stroke='#64748b'
+                        vectorEffect='non-scaling-stroke'
+                      />
+                    </svg>
+                    Offered once a year
+                  </p>
+                  <p className={styles.keyEntry}>
+                    <div
+                      className={styles.line}
+                      style={{
+                        background:
+                          'linear-gradient(to right, #64748b 50%, transparent 50%)',
+                        backgroundSize: '10px'
+                      }}
+                    />
+                    Redundant prerequisite
+                  </p>
+                  <p className={styles.keyEntry}>
+                    <div
+                      className={styles.line}
+                      style={{ backgroundColor: '#3b82f6', height: '5px' }}
+                    />
+                    Longest path
+                  </p>
+                  <p className={styles.keyEntry}>
+                    <div
+                      className={styles.line}
+                      style={{ backgroundColor: 'red', height: '3px' }}
+                    />
+                    Prerequisite has high DFW
+                  </p>
+                  <p>⚠️ Long waitlist</p>
+                </>
+              )}
+            </>
+          ) : null}
+          <h2>Disclaimer</h2>
+          {realData ? (
+            <p>
+              This demo is currently showing <em>real</em> protected data.
+            </p>
+          ) : (
+            <p>
+              For this demo, protected data have been replaced with{' '}
+              <strong>randomized</strong> values.
+            </p>
+          )}
+          <p>Data were sampled from the 2021–2022 academic year.</p>
+          {panelMode.options && (
+            <details open={!panelMode.key}>
+              <summary>
+                <h2>Options</h2>
+              </summary>
               <label>
                 Upload degree plan:{' '}
                 <input
@@ -615,116 +734,8 @@ export function App ({
                   Highlight the courses in quarters that they are not offered in
                 </label>
               </p>
-            </>
+            </details>
           )}
-          <h2>Key</h2>
-          {courseBall !== 'none' && (
-            <p>
-              The number indicates the course's{' '}
-              {courseBall === 'bf'
-                ? 'blocking factor'
-                : courseBall === 'dfw'
-                ? 'DFW rate'
-                : courseBall === 'waitlist'
-                ? 'waitlist length'
-                : courseBall}
-              .
-            </p>
-          )}
-          <p className={styles.keyEntry}>
-            <div className={`${styles.keyCourse} ${styles.directPrereq}`} />
-            Prerequisite
-          </p>
-          <p className={styles.keyEntry}>
-            <div className={`${styles.keyCourse} ${styles.prereq}`} />
-            All prerequisites
-          </p>
-          <p className={styles.keyEntry}>
-            <div className={`${styles.keyCourse} ${styles.directBlocking}`} />
-            Directly blocked
-          </p>
-          <p className={styles.keyEntry}>
-            <div className={`${styles.keyCourse} ${styles.blocking}`} />
-            All blocked
-          </p>
-          {defaults === 'ucsd' && (
-            <>
-              <p className={styles.keyEntry}>
-                <div
-                  className={styles.keyCourse}
-                  style={{ backgroundColor: 'yellow' }}
-                />
-                Course not offered in quarter
-              </p>
-              <p>Ignoring summer offerings,</p>
-              <p className={styles.keyEntry}>
-                <div className={styles.keyCourse} />
-                Offered year-round
-              </p>
-              <p className={styles.keyEntry}>
-                <div
-                  className={styles.keyCourse}
-                  style={{ borderRadius: '5px' }}
-                />
-                Offered twice a year
-              </p>
-              <p className={styles.keyEntry}>
-                <svg
-                  width={20}
-                  height={20}
-                  viewBox='0 0 40 40'
-                  xmlns='http://www.w3.org/2000/svg'
-                  style={{ flex: 'none' }}
-                >
-                  <path
-                    d='M18.2679 3C19.0377 1.66667 20.9623 1.66667 21.7321 3L36.4545 28.5C37.2243 29.8333 36.262 31.5 34.7224 31.5H5.27757C3.73797 31.5 2.77572 29.8333 3.54552 28.5L18.2679 3Z'
-                    fill='#e2e8f0'
-                    stroke='#64748b'
-                    vectorEffect='non-scaling-stroke'
-                  />
-                </svg>
-                Offered once a year
-              </p>
-              <p className={styles.keyEntry}>
-                <div
-                  className={styles.line}
-                  style={{
-                    background:
-                      'linear-gradient(to right, #64748b 50%, transparent 50%)',
-                    backgroundSize: '10px'
-                  }}
-                />
-                Redundant prerequisite
-              </p>
-              <p className={styles.keyEntry}>
-                <div
-                  className={styles.line}
-                  style={{ backgroundColor: '#3b82f6', height: '5px' }}
-                />
-                Longest path
-              </p>
-              <p className={styles.keyEntry}>
-                <div
-                  className={styles.line}
-                  style={{ backgroundColor: 'red', height: '3px' }}
-                />
-                Prerequisite has high DFW
-              </p>
-              <p>⚠️ Long waitlist</p>
-            </>
-          )}
-          <h2>Disclaimer</h2>
-          {realData ? (
-            <p>
-              This demo is currently showing <em>real</em> protected data.
-            </p>
-          ) : (
-            <p>
-              For this demo, protected data have been replaced with{' '}
-              <strong>randomized</strong> values.
-            </p>
-          )}
-          <p>Data were sampled from the 2021–2022 academic year.</p>
         </aside>
       )}
     </>

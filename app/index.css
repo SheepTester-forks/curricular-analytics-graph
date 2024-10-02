@@ -35,3 +35,10 @@ button:not(:disabled) {
 #triangle {
   display: none;
 }
+
+summary {
+  cursor: pointer;
+}
+summary h2 {
+  display: inline-block;
+}

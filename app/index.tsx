@@ -54,10 +54,11 @@ createRoot(document.getElementById('root')!).render(
       defaults={params.get('defaults') ?? ''}
       panelMode={
         params.has('hide-panel')
-          ? 'hidden'
-          : params.has('defaults')
-          ? 'key'
-          : 'options'
+          ? {}
+          : {
+              key: params.has('defaults'),
+              options: true
+            }
       }
       realData={false}
     />
