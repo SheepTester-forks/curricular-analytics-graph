@@ -11,7 +11,8 @@ import waitlists from './data/fake-waitlist.json'
 // Fuzzed files produced by scripts/fuzz-data.js
 // import dfwRates from './data/fuzzed-dfw.json'
 // import waitlists from './data/fuzzed-waitlist.json'
-import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
+// import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
+import dfwRatesByMajor from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw_by_major.json'
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
 import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
 
@@ -30,17 +31,23 @@ const { degreePlan, reqTypes } = csvStringToDegreePlan(
     : example
 )
 const params = new URL(window.location.href).searchParams
+const majorSubject = params.get('major')?.slice(0, 2) ?? ''
+
+type CourseDfwRates = {
+  [majorSubject: string]: number | undefined
+  allMajors: number
+}
 
 function getStats (courseName: string): CourseStats {
   const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
+  const courseCode = match ? match[1] + match[2] : ''
+  const dfwRates = (dfwRatesByMajor as Record<string, CourseDfwRates>)[
+    courseCode
+  ]
   return {
-    dfw:
-      (match && (dfwRates as Record<string, number>)[match[1] + match[2]]) ??
-      null,
-    frequency:
-      (match &&
-        (frequencies as Record<string, string[]>)[match[1] + match[2]]) ??
-      null,
+    dfw: dfwRates?.[majorSubject] ?? dfwRates?.allMajors ?? null,
+    dfwForDepartment: dfwRates?.[majorSubject] !== undefined,
+    frequency: (frequencies as Record<string, string[]>)[courseCode] ?? null,
     waitlist:
       (match &&
         (waitlists as Record<string, number>)[match[1] + ' ' + match[2]]) ??
@@ -60,7 +67,8 @@ createRoot(document.getElementById('root')!).render(
           ? {}
           : {
               key: params.has('defaults'),
-              options: true
+              options: true,
+              majorDfwNote: majorSubject !== ''
             }
       }
       realData={true}

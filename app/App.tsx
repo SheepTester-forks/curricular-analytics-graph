@@ -18,6 +18,7 @@ export type LinkedCourse = {
 
 export type CourseStats = {
   dfw: number | null
+  dfwForDepartment: boolean
   frequency: string[] | null
   waitlist: number | null
 }
@@ -118,6 +119,7 @@ export type AppProps = {
   panelMode?: {
     key?: boolean
     options?: boolean
+    majorDfwNote?: boolean
   }
   realData?: boolean
 }
@@ -416,7 +418,9 @@ export function App ({
       },
       tooltipTitle: ({ course }) => course.name,
       tooltipContent: ({ course, centrality }) => {
-        const { dfw, frequency, waitlist } = getStats(course.name)
+        const { dfw, dfwForDepartment, frequency, waitlist } = getStats(
+          course.name
+        )
         const complexity = complexities.get(course)
         return [
           ['Units', String(course.credits)],
@@ -436,7 +440,12 @@ export function App ({
               : String(blockingFactors.get(course))
           ],
           ['Delay factor', String(delayFactors.get(course) ?? 1)],
-          ['DFW rate', dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A'],
+          [
+            'DFW rate',
+            dfw !== null
+              ? `${(dfw * 100).toFixed(1)}%${dfwForDepartment ? '*' : ''}`
+              : 'N/A'
+          ],
           [
             'Offered',
             frequency !== null ? interpretFrequency(frequency) : 'N/A'
@@ -456,10 +465,12 @@ export function App ({
             })
           )
         }
-        const { dfw } = getStats(source.course.name)
+        const { dfw, dfwForDepartment } = getStats(source.course.name)
         element.children[0].textContent = source.course.name
         element.children[1].textContent =
-          dfw !== null ? `${(dfw * 100).toFixed(1)}% DFW` : ''
+          dfw !== null
+            ? `${dfwForDepartment ? '*' : ''}${(dfw * 100).toFixed(1)}% DFW`
+            : ''
       }
     }
     if (graph.current) {
@@ -603,6 +614,9 @@ export function App ({
             </p>
           )}
           <p>Data were sampled between fall 2021 and spring 2024.</p>
+          {panelMode.majorDfwNote ? (
+            <p>*DFW rate is specific to majors in this department.</p>
+          ) : null}
           {panelMode.options && (
             <details open={!panelMode.key}>
               <summary>
