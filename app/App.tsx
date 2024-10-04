@@ -602,7 +602,7 @@ export function App ({
               <strong>randomized</strong> values.
             </p>
           )}
-          <p>Data were sampled from the 2021–2022 academic year.</p>
+          <p>Data were sampled between fall 2021 and spring 2024.</p>
           {panelMode.options && (
             <details open={!panelMode.key}>
               <summary>
