@@ -48,10 +48,7 @@ function getStats (courseName: string): CourseStats {
     dfw: dfwRates?.[majorSubject] ?? dfwRates?.allMajors ?? null,
     dfwForDepartment: dfwRates?.[majorSubject] !== undefined,
     frequency: (frequencies as Record<string, string[]>)[courseCode] ?? null,
-    waitlist:
-      (match &&
-        (waitlists as Record<string, number>)[match[1] + ' ' + match[2]]) ??
-      null
+    waitlist: (waitlists as Record<string, number>)[courseCode] ?? null
   }
 }
 
