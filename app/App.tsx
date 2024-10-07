@@ -138,7 +138,7 @@ export function App ({
   const graph = useRef<Graph<LinkedCourse> | null>(null)
 
   const [courseBall, setCourseBall] =
-    useState<keyof typeof options['courseBall']>('complexity')
+    useState<keyof typeof options['courseBall']>('units')
   const [courseBallColor, setCourseBallColor] = useState<
     keyof typeof options['courseBallColor']
   >(defaults === 'ca' ? 'none' : 'flagHighDfw')
@@ -146,7 +146,7 @@ export function App ({
     keyof typeof options['courseBallWidth']
   >(defaults === 'ca' ? 'none' : 'dfwFlag')
   const [lineWidth, setLineWidth] = useState<keyof typeof options['lineWidth']>(
-    defaults === 'ca' ? 'none' : 'dfwFlag'
+    defaults === 'ca' ? 'none' : 'waitlistThick'
   )
   const [lineColor, setLineColor] = useState<keyof typeof options['lineColor']>(
     defaults === 'ca' ? 'none' : 'flagHighDfw'
@@ -358,13 +358,13 @@ export function App ({
           null,
           'stroke-width',
           dfw !== null && lineWidth === 'dfwThick'
-            ? `${dfw * 15 + 0.5}`
+            ? `${dfw * 15 + 1}`
             : dfw !== null && lineWidth === 'dfwThin'
             ? `${(1 - dfw) * 3}`
             : dfw !== null && lineWidth === 'dfwFlag' && dfw >= threshold
             ? '3'
             : waitlist !== null && lineWidth === 'waitlistThick'
-            ? `${waitlist / 4 + 0.5}`
+            ? `${waitlist / 4 + 1}`
             : ''
         )
         element.setAttributeNS(
@@ -577,7 +577,7 @@ export function App ({
                       className={styles.line}
                       style={{
                         background:
-                          'linear-gradient(to right, #64748b 50%, transparent 50%)',
+                          'linear-gradient(to right, #64748b 0%, #64748b 50%, transparent 50%, transparent 100%)',
                         backgroundSize: '10px'
                       }}
                     />

@@ -63,7 +63,7 @@ createRoot(document.getElementById('root')!).render(
         params.has('hide-panel')
           ? {}
           : {
-              key: params.has('defaults'),
+              key: true,
               options: true,
               majorDfwNote: majorSubject !== ''
             }
