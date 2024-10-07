@@ -1,3 +1,16 @@
+/**
+ * URL parameter documentation
+ *
+ * - `major`: The first two characters are used to look up major-specific DFW
+ *   rates in `dfwRatesByMajor`.
+ * - `defaults`: Either `ca` (for Curricular Analytics, which should match their
+ *   original visualization) or `ucsd` (Carlos' preferred defaults).
+ * - `hide-panel`: Whether to hide the side panel.
+ * - `title`: A title to show at the top of the side panel.
+ *
+ * The URL fragment is used to store the degree plan to render.
+ */
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App, CourseStats } from './App'
@@ -63,6 +76,7 @@ createRoot(document.getElementById('root')!).render(
         params.has('hide-panel')
           ? {}
           : {
+              title: params.get('title') ?? undefined,
               key: true,
               options: true,
               majorDfwNote: majorSubject !== ''

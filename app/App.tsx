@@ -117,6 +117,7 @@ export type AppProps = {
   getStats(courseName: string): CourseStats
   defaults?: 'ca' | 'ucsd' | (string & {})
   panelMode?: {
+    title?: string
     key?: boolean
     options?: boolean
     majorDfwNote?: boolean
@@ -500,6 +501,7 @@ export function App ({
       <div className={styles.graphWrapper} ref={ref} />
       {(panelMode.key || panelMode.options) && (
         <aside className={styles.options}>
+          {panelMode.title ? <h1>{panelMode.title}</h1> : null}
           {panelMode.key ? (
             <>
               <h2>Key</h2>

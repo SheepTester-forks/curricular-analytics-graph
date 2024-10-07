@@ -36,6 +36,12 @@ button:not(:disabled) {
   display: none;
 }
 
+h1 {
+  font-weight: normal;
+  margin: 0;
+  font-size: 2em;
+}
+
 summary {
   cursor: pointer;
 }
