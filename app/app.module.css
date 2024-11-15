@@ -81,6 +81,7 @@
   gap: 10px;
 }
 .keyCourse {
+  display: flex;
   border: 1px solid #64748b;
   background-color: var(--ball-color, #e2e8f0);
   width: 20px;
@@ -89,6 +90,7 @@
   box-sizing: border-box;
 }
 .line {
+  display: flex;
   width: 95px;
   flex: none;
   height: 1px;

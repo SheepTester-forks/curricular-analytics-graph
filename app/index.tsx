@@ -76,13 +76,14 @@ createRoot(document.getElementById('root')!).render(
         params.has('hide-panel')
           ? {}
           : {
-              title: params.get('title') ?? undefined,
-              key: true,
-              options: true,
-              majorDfwNote: majorSubject !== ''
-            }
+            title: params.get('title') ?? undefined,
+            key: true,
+            options: true,
+            majorDfwNote: majorSubject !== ''
+          }
       }
-      realData={true}
+      realData
+      year={+(params.get('year') ?? new Date().getFullYear())}
     />
   </StrictMode>
 )

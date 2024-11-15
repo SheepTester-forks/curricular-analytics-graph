@@ -50,6 +50,7 @@ export class DegreePlanParser {
     const courseData = {
       name,
       credits: +units,
+      year: Math.floor((+term - 1) / 3),
       quarter: quarters[(+term - 1) % 3]
     }
     if (this.#coursesById[id]) {
@@ -78,6 +79,7 @@ export class DegreePlanParser {
           id: +req,
           name: '',
           credits: 0,
+          year: 0,
           quarter: 'FA',
           backwards: [],
           forwards: []
@@ -136,6 +138,7 @@ export function jsonToDegreePlan (
   const degreePlan = plan.curriculum_terms.map((term, i) =>
     term.curriculum_items.map((course): LinkedCourse & VisualizationCourse => ({
       ...course,
+      year: Math.floor(i / 3),
       quarter: quarters[i % 3],
       backwards: [],
       forwards: []

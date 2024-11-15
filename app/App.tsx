@@ -6,8 +6,12 @@ import './index.css'
 import { RequisiteType } from './types'
 import * as GraphUtils from '../src/graph-utils'
 import { csvBlobToDegreePlan } from './util/parse-degree-plan'
+import { compareTerm, Term } from './util/terms'
+import { CourseDatalist } from './components/CourseDatalist'
 
 export type LinkedCourse = {
+  /** 0-indexed */
+  year: number
   quarter: 'FA' | 'WI' | 'SP'
   id: number
   name: string
@@ -109,6 +113,15 @@ function isUd (courseName: string) {
   return match ? +match[1] >= 100 : courseName.includes('UD ELECTIVE')
 }
 
+const DATA_SOURCE_URL =
+  'https://raw.githubusercontent.com/SheepTester-forks/ucsd-degree-plans/main'
+
+// https://github.com/SheepTester-forks/ucsd-degree-plans/blob/main/metadata.json
+type Metadata = {
+  min_prereq_term: Term
+  max_prereq_term: Term
+}
+
 export type LinkId = `${number}->${number}`
 
 export type AppProps = {
@@ -123,6 +136,7 @@ export type AppProps = {
     majorDfwNote?: boolean
   }
   realData?: boolean
+  year: number
 }
 export function App ({
   initDegreePlan,
@@ -130,7 +144,8 @@ export function App ({
   getStats,
   defaults,
   panelMode = { key: true },
-  realData
+  realData,
+  year
 }: AppProps) {
   const [degreePlan, setDegreePlan] = useState(initDegreePlan)
   const [reqTypes, setReqTypes] = useState(initReqTypes)
@@ -174,6 +189,20 @@ export function App ({
   const [showNotOfferedWarning, setShowNotOfferedWarning] = useState(
     defaults !== 'ca'
   )
+
+  const [prereqCache, setPrereqCache] = useState<Record<Term, string[][]>>({})
+  const metadataRef = useRef<Metadata>({
+    min_prereq_term: 'FA24',
+    max_prereq_term: 'FA24'
+  })
+
+  useEffect(() => {
+    fetch(`${DATA_SOURCE_URL}/metadata.json`)
+      .then(r => r.json())
+      .then(metadata => {
+        metadataRef.current = metadata
+      })
+  }, [])
 
   const { blockingFactors, delayFactors, complexities } = useMemo(() => {
     const curriculum = degreePlan.flat()
@@ -234,7 +263,9 @@ export function App ({
     const options: GraphOptions<LinkedCourse> = {
       system: 'semester',
       termName: (_, i) =>
-        `${['Fall', 'Winter', 'Spring'][i % 3]} ${Math.floor(i / 3) + 1}`,
+        `${['Fall', 'Winter', 'Spring'][i % 3]} '${String(
+          (year + Math.floor((i + 2) / 3)) % 100
+        ).padStart(2, '0')}`,
       termSummary: term => {
         const termComplexity = term.reduce((acc, { course }) => {
           const { dfw } = getStats(course.name)
@@ -420,9 +451,36 @@ export function App ({
         }
       },
       tooltipTitle: ({ course }) => {
+        const courseTerm =
+          course.quarter +
+          String(
+            (year + course.year + (course.quarter === 'FA' ? 0 : 1)) % 100
+          ).padStart(2, '0')
+        const { min_prereq_term, max_prereq_term } = metadataRef.current
+        const term =
+          compareTerm(courseTerm, min_prereq_term) < 0
+            ? min_prereq_term
+            : compareTerm(courseTerm, max_prereq_term) > 0
+              ? max_prereq_term
+              : courseTerm
+        if (!prereqCache[term]) {
+          fetch(`${DATA_SOURCE_URL}/prereqs/${term}.json`)
+            .then(r => r.json())
+            .then(prereqs =>
+              setPrereqCache(prereqCache =>
+                prereqCache[term]
+                  ? prereqCache
+                  : {
+                    ...prereqCache,
+                    [term]: prereqs
+                  }
+              )
+            )
+        }
         return {
           content: course.name,
-          editable: true
+          editable: true,
+          dataListId: 'courses'
         }
       },
       tooltipContent: ({ course, centrality }) => {
@@ -526,27 +584,29 @@ export function App ({
                 </p>
               )}
               <p className={styles.keyEntry}>
-                <div className={`${styles.keyCourse} ${styles.directPrereq}`} />
+                <span
+                  className={`${styles.keyCourse} ${styles.directPrereq}`}
+                />
                 Prerequisite
               </p>
               <p className={styles.keyEntry}>
-                <div className={`${styles.keyCourse} ${styles.prereq}`} />
+                <span className={`${styles.keyCourse} ${styles.prereq}`} />
                 All prerequisites
               </p>
               <p className={styles.keyEntry}>
-                <div
+                <span
                   className={`${styles.keyCourse} ${styles.directBlocking}`}
                 />
                 Directly blocked
               </p>
               <p className={styles.keyEntry}>
-                <div className={`${styles.keyCourse} ${styles.blocking}`} />
+                <span className={`${styles.keyCourse} ${styles.blocking}`} />
                 All blocked
               </p>
               {defaults === 'ucsd' && (
                 <>
                   <p className={styles.keyEntry}>
-                    <div
+                    <span
                       className={styles.keyCourse}
                       style={{ backgroundColor: 'yellow' }}
                     />
@@ -554,11 +614,11 @@ export function App ({
                   </p>
                   <p>Ignoring summer offerings,</p>
                   <p className={styles.keyEntry}>
-                    <div className={styles.keyCourse} />
+                    <span className={styles.keyCourse} />
                     Offered year-round
                   </p>
                   <p className={styles.keyEntry}>
-                    <div
+                    <span
                       className={styles.keyCourse}
                       style={{ borderRadius: '5px' }}
                     />
@@ -582,7 +642,7 @@ export function App ({
                     Offered once a year
                   </p>
                   <p className={styles.keyEntry}>
-                    <div
+                    <span
                       className={styles.line}
                       style={{
                         background:
@@ -593,14 +653,14 @@ export function App ({
                     Redundant prerequisite
                   </p>
                   <p className={styles.keyEntry}>
-                    <div
+                    <span
                       className={styles.line}
                       style={{ backgroundColor: '#3b82f6', height: '5px' }}
                     />
                     Longest path
                   </p>
                   <p className={styles.keyEntry}>
-                    <div
+                    <span
                       className={styles.line}
                       style={{ backgroundColor: 'red', height: '3px' }}
                     />
@@ -761,6 +821,7 @@ export function App ({
           )}
         </aside>
       )}
+      <CourseDatalist id='courses' prereqCache={prereqCache} />
     </>
   )
 }
