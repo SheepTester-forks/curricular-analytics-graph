@@ -46,6 +46,7 @@ export type GraphOptions<T> = {
       | null
   ) => void
   tooltipTitle: (course: Course<T>) => string | TooltipTitleInput
+  onTooltipTitleChange: (course: Course<T>, content: string) => void
   tooltipContent: (course: Course<T>) => [string, string][]
   tooltipRequisiteInfo: (
     element: HTMLElement,
@@ -150,6 +151,8 @@ export class Graph<T extends GraphNode<T>> extends Join<
     this.options = options
     this.#tooltip = new Tooltip<T>({
       tooltipTitle: node => options.tooltipTitle?.(node) ?? '',
+      onTooltipTitleChange: (node, content) =>
+        options.onTooltipTitleChange?.(node, content),
       tooltipContent: node => options.tooltipContent?.(node) ?? [],
       tooltipRequisiteInfo: (element, source, target) => {
         options.tooltipRequisiteInfo?.(element, {

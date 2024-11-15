@@ -10,6 +10,7 @@ export type TooltipTitleInput = {
 }
 export type TooltipOptions<T> = {
   tooltipTitle: (course: CourseNode<T>) => string | TooltipTitleInput
+  onTooltipTitleChange: (course: CourseNode<T>, content: string) => void
   tooltipContent: (course: CourseNode<T>) => [string, string][]
   tooltipRequisiteInfo: (
     element: HTMLElement,
@@ -96,6 +97,13 @@ export class Tooltip<T> {
       this.#height = blockSize
       this.position()
     }).observe(this.wrapper)
+
+    this.#titleInput.addEventListener('change', () => {
+      if (!this.#node) {
+        return
+      }
+      this.#options.onTooltipTitleChange(this.#node, this.#titleInput.value)
+    })
   }
 
   show (node: CourseNode<T>, backwards: CourseNode<T>[]): void {

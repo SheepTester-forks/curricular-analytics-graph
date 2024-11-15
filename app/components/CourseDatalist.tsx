@@ -1,11 +1,11 @@
 import { memo } from 'react'
-import { Term } from '../util/terms'
+import { PrereqCache } from '../App'
 
 const { compare } = new Intl.Collator('en-US', { numeric: true })
 
 export type CourseDatalistProps = {
   id: string
-  prereqCache: Record<Term, string[][]>
+  prereqCache: PrereqCache
 }
 export const CourseDatalist = memo(function CourseDatalist ({
   id,
@@ -13,10 +13,9 @@ export const CourseDatalist = memo(function CourseDatalist ({
 }: CourseDatalistProps) {
   const courseCodes = new Set(
     Object.values(prereqCache).flatMap(prereqs =>
-      Object.entries(prereqs).flatMap(([course, reqs]) => [
-        course,
-        ...reqs.flat()
-      ])
+      Object.entries(prereqs)
+        .flatMap(([course, reqs]) => [course, ...reqs.flat()])
+        .map(courseCode => courseCode.replace('*', ''))
     )
   )
 

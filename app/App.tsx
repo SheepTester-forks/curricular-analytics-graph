@@ -6,8 +6,15 @@ import './index.css'
 import { RequisiteType } from './types'
 import * as GraphUtils from '../src/graph-utils'
 import { csvBlobToDegreePlan } from './util/parse-degree-plan'
-import { compareTerm, Term } from './util/terms'
+import {
+  getTermClamped,
+  compareTerm,
+  getTerm,
+  PrereqTermBounds,
+  Term
+} from './util/terms'
 import { CourseDatalist } from './components/CourseDatalist'
+import { updatePrereqs } from './util/updatePrereqs'
 
 export type LinkedCourse = {
   /** 0-indexed */
@@ -19,6 +26,8 @@ export type LinkedCourse = {
   backwards: LinkedCourse[]
   forwards: LinkedCourse[]
 }
+
+export type PrereqCache = Record<Term, Record<string, string[][]>>
 
 export type CourseStats = {
   dfw: number | null
@@ -116,12 +125,6 @@ function isUd (courseName: string) {
 const DATA_SOURCE_URL =
   'https://raw.githubusercontent.com/SheepTester-forks/ucsd-degree-plans/main'
 
-// https://github.com/SheepTester-forks/ucsd-degree-plans/blob/main/metadata.json
-type Metadata = {
-  min_prereq_term: Term
-  max_prereq_term: Term
-}
-
 export type LinkId = `${number}->${number}`
 
 export type AppProps = {
@@ -190,8 +193,8 @@ export function App ({
     defaults !== 'ca'
   )
 
-  const [prereqCache, setPrereqCache] = useState<Record<Term, string[][]>>({})
-  const metadataRef = useRef<Metadata>({
+  const [prereqCache, setPrereqCache] = useState<PrereqCache>({})
+  const metadataRef = useRef<PrereqTermBounds>({
     min_prereq_term: 'FA24',
     max_prereq_term: 'FA24'
   })
@@ -451,18 +454,7 @@ export function App ({
         }
       },
       tooltipTitle: ({ course }) => {
-        const courseTerm =
-          course.quarter +
-          String(
-            (year + course.year + (course.quarter === 'FA' ? 0 : 1)) % 100
-          ).padStart(2, '0')
-        const { min_prereq_term, max_prereq_term } = metadataRef.current
-        const term =
-          compareTerm(courseTerm, min_prereq_term) < 0
-            ? min_prereq_term
-            : compareTerm(courseTerm, max_prereq_term) > 0
-              ? max_prereq_term
-              : courseTerm
+        const term = getTermClamped(year, course, metadataRef.current)
         if (!prereqCache[term]) {
           fetch(`${DATA_SOURCE_URL}/prereqs/${term}.json`)
             .then(r => r.json())
@@ -482,6 +474,18 @@ export function App ({
           editable: true,
           dataListId: 'courses'
         }
+      },
+      onTooltipTitleChange: ({ course }, courseName) => {
+        const updated = updatePrereqs(
+          degreePlan.map(term =>
+            term.map(c => (c.id === course.id ? { ...c, name: courseName } : c))
+          ),
+          prereqCache,
+          year,
+          metadataRef.current
+        )
+        setDegreePlan(updated.degreePlan)
+        setReqTypes(updated.reqTypes)
       },
       tooltipContent: ({ course, centrality }) => {
         const { dfw, dfwForDepartment, frequency, waitlist } = getStats(
