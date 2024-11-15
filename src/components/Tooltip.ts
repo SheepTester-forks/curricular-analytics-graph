@@ -3,8 +3,13 @@ import { Course } from '../types'
 import { Join } from '../util/Join'
 import { CourseNode } from './CourseNode'
 
+export type TooltipTitleInput = {
+  content: string
+  editable?: boolean
+  dataListId?: string
+}
 export type TooltipOptions<T> = {
-  tooltipTitle: (course: CourseNode<T>) => string
+  tooltipTitle: (course: CourseNode<T>) => string | TooltipTitleInput
   tooltipContent: (course: CourseNode<T>) => [string, string][]
   tooltipRequisiteInfo: (
     element: HTMLElement,
@@ -24,6 +29,10 @@ export class Tooltip<T> {
   })
   #title = Object.assign(document.createElement('h1'), {
     className: styles.tooltipTitle
+  })
+  #titleInput = Object.assign(document.createElement('input'), {
+    className: styles.tooltipTitleInput,
+    type: 'text'
   })
   #table = new Join<[string, string], HTMLTableRowElement>({
     wrapper: Object.assign(document.createElement('table'), {
@@ -71,6 +80,7 @@ export class Tooltip<T> {
     this.#options = options
     this.wrapper.append(
       this.#title,
+      this.#titleInput,
       this.#table.wrapper,
       Object.assign(document.createElement('h2'), {
         className: styles.tooltipReqHeading,
@@ -91,7 +101,18 @@ export class Tooltip<T> {
   show (node: CourseNode<T>, backwards: CourseNode<T>[]): void {
     this.#node = node
     this.wrapper.classList.remove(styles.tooltipHidden)
-    this.#title.textContent = this.#options.tooltipTitle(node)
+    const title = this.#options.tooltipTitle(node)
+    if (typeof title === 'string' || !title.editable) {
+      this.#title.textContent =
+        typeof title === 'string' ? title : title.content
+      this.#title.style.display = ''
+      this.#titleInput.style.display = 'none'
+    } else {
+      this.#titleInput.value = title.content
+      this.#titleInput.setAttribute('list', title.dataListId ?? '')
+      this.#title.style.display = 'none'
+      this.#titleInput.style.display = ''
+    }
     this.#table.join(this.#options.tooltipContent(node))
     this.#reqs.join(backwards)
     this.position()

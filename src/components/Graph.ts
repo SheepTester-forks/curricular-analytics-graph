@@ -5,7 +5,7 @@ import { Course, Link } from '../types'
 import { Join } from '../util/Join'
 import { CourseNode } from './CourseNode'
 import { NodeLink, LinkHandler, LinkRenderer } from './LinkRenderer'
-import { Tooltip } from './Tooltip'
+import { Tooltip, TooltipTitleInput } from './Tooltip'
 
 type GridItem<T> =
   | { type: 'course'; node: CourseNode<T>; index: number }
@@ -45,7 +45,7 @@ export type GraphOptions<T> = {
       | { relation: 'selected' }
       | null
   ) => void
-  tooltipTitle: (course: Course<T>) => string
+  tooltipTitle: (course: Course<T>) => string | TooltipTitleInput
   tooltipContent: (course: Course<T>) => [string, string][]
   tooltipRequisiteInfo: (
     element: HTMLElement,
@@ -225,11 +225,11 @@ export class Graph<T extends GraphNode<T>> extends Join<
       'd',
       this.#longestPath.length > 0
         ? this.#longestPath
-            .slice(0, -1)
-            .map((course, i) =>
-              LinkRenderer.linkPath(course, this.#longestPath[i + 1])
-            )
-            .join('')
+          .slice(0, -1)
+          .map((course, i) =>
+            LinkRenderer.linkPath(course, this.#longestPath[i + 1])
+          )
+          .join('')
         : ''
     )
   }

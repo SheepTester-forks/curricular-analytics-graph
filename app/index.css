@@ -18,7 +18,8 @@ body {
   background-color: white;
 }
 
-button {
+button,
+input {
   border: none;
   background: none;
   color: inherit;

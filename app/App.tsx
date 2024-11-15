@@ -198,8 +198,8 @@ export function App ({
             (complexityMode === 'dfw'
               ? dfw ?? 0
               : complexityMode === 'dfwPlus1'
-              ? (dfw ?? 0) + 1
-              : 1) * complexity
+                ? (dfw ?? 0) + 1
+                : 1) * complexity
           ]
         }
       )
@@ -246,8 +246,8 @@ export function App ({
             complexity === undefined
               ? complexity ?? 0
               : complexityMode === 'dfw'
-              ? complexity * dfw
-              : complexity * (dfw + 1))
+                ? complexity * dfw
+                : complexity * (dfw + 1))
           )
         }, 0)
         return `Complex.: ${
@@ -276,23 +276,23 @@ export function App ({
           ? complexityMode === 'default' || complexity === undefined
             ? String(complexity ?? '')
             : complexityMode === 'dfw'
-            ? complexity.toFixed(2)
-            : complexity.toFixed(1)
+              ? complexity.toFixed(2)
+              : complexity.toFixed(1)
           : courseBall === 'bf'
-          ? complexityMode === 'dfwPlus1Bf'
-            ? blockingFactors.get(course)?.toFixed(1) ?? ''
-            : String(blockingFactors.get(course))
-          : courseBall === 'dfw'
-          ? dfw !== null
-            ? (dfw * 100).toFixed(0)
-            : ''
-          : courseBall === 'units'
-          ? String(course.credits)
-          : courseBall === 'waitlist'
-          ? waitlist !== null
-            ? waitlist.toFixed(0)
-            : ''
-          : ''
+            ? complexityMode === 'dfwPlus1Bf'
+              ? blockingFactors.get(course)?.toFixed(1) ?? ''
+              : String(blockingFactors.get(course))
+            : courseBall === 'dfw'
+              ? dfw !== null
+                ? (dfw * 100).toFixed(0)
+                : ''
+              : courseBall === 'units'
+                ? String(course.credits)
+                : courseBall === 'waitlist'
+                  ? waitlist !== null
+                    ? waitlist.toFixed(0)
+                    : ''
+                  : ''
       },
       styleNode: ({ element, course }) => {
         const { dfw, waitlist, frequency } = getStats(course.name)
@@ -331,14 +331,16 @@ export function App ({
           dfw !== null && courseBallWidth === 'dfwThick'
             ? `${dfw * 30 + 1}px`
             : dfw !== null && courseBallWidth === 'dfwThin'
-            ? `${(1 - dfw) * 5}px`
-            : dfw !== null && courseBallWidth === 'dfwFlag' && dfw >= threshold
-            ? '3px'
-            : courseBallWidth === 'unitsThick'
-            ? `${course.credits}px`
-            : waitlist !== null && courseBallWidth === 'waitlistThick'
-            ? `${waitlist / 4 + 1}px`
-            : ''
+              ? `${(1 - dfw) * 5}px`
+              : dfw !== null &&
+                courseBallWidth === 'dfwFlag' &&
+                dfw >= threshold
+                ? '3px'
+                : courseBallWidth === 'unitsThick'
+                  ? `${course.credits}px`
+                  : waitlist !== null && courseBallWidth === 'waitlistThick'
+                    ? `${waitlist / 4 + 1}px`
+                    : ''
         element.style.backgroundColor = element.style.fill =
           showNotOfferedWarning && frequency && !terms.has(course.quarter)
             ? 'yellow'
@@ -361,12 +363,12 @@ export function App ({
           dfw !== null && lineWidth === 'dfwThick'
             ? `${dfw * 15 + 1}`
             : dfw !== null && lineWidth === 'dfwThin'
-            ? `${(1 - dfw) * 3}`
-            : dfw !== null && lineWidth === 'dfwFlag' && dfw >= threshold
-            ? '3'
-            : waitlist !== null && lineWidth === 'waitlistThick'
-            ? `${waitlist / 4 + 1}`
-            : ''
+              ? `${(1 - dfw) * 3}`
+              : dfw !== null && lineWidth === 'dfwFlag' && dfw >= threshold
+                ? '3'
+                : waitlist !== null && lineWidth === 'waitlistThick'
+                  ? `${waitlist / 4 + 1}`
+                  : ''
         )
         element.setAttributeNS(
           null,
@@ -401,8 +403,8 @@ export function App ({
               ? reqType === 'prereq'
                 ? styles.directPrereq
                 : reqType === 'coreq'
-                ? styles.directCoreq
-                : styles.directStrictCoreq
+                  ? styles.directCoreq
+                  : styles.directStrictCoreq
               : styles.prereq
           )
         } else {
@@ -410,14 +412,19 @@ export function App ({
             link.relation === 'selected'
               ? styles.selected
               : link.relation === 'forwards'
-              ? link.direct
-                ? styles.directBlocking
-                : styles.blocking
-              : link.relation // never
+                ? link.direct
+                  ? styles.directBlocking
+                  : styles.blocking
+                : link.relation // never
           )
         }
       },
-      tooltipTitle: ({ course }) => course.name,
+      tooltipTitle: ({ course }) => {
+        return {
+          content: course.name,
+          editable: true
+        }
+      },
       tooltipContent: ({ course, centrality }) => {
         const { dfw, dfwForDepartment, frequency, waitlist } = getStats(
           course.name
@@ -430,8 +437,8 @@ export function App ({
             complexityMode === 'default' || complexity === undefined
               ? String(complexity ?? '')
               : complexityMode === 'dfw'
-              ? complexity.toFixed(2)
-              : complexity.toFixed(1)
+                ? complexity.toFixed(2)
+                : complexity.toFixed(1)
           ],
           ['Centrality', String(centrality)],
           [
@@ -511,10 +518,10 @@ export function App ({
                   {courseBall === 'bf'
                     ? 'blocking factor'
                     : courseBall === 'dfw'
-                    ? 'DFW rate'
-                    : courseBall === 'waitlist'
-                    ? 'waitlist length'
-                    : courseBall}
+                      ? 'DFW rate'
+                      : courseBall === 'waitlist'
+                        ? 'waitlist length'
+                        : courseBall}
                   .
                 </p>
               )}
