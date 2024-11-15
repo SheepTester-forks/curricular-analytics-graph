@@ -194,6 +194,21 @@ export function App ({
   )
 
   const [prereqCache, setPrereqCache] = useState<PrereqCache>({})
+  const prereqCacheRef = useRef(prereqCache)
+  /** This function may have multiple executions in parallel. */
+  async function requireTerm (term: Term): Promise<void> {
+    if (!prereqCacheRef.current[term]) {
+      const prereqs = await fetch(
+        `${DATA_SOURCE_URL}/prereqs/${term}.json`
+      ).then(r => r.json())
+      prereqCacheRef.current = {
+        ...prereqCacheRef.current,
+        [term]: prereqs
+      }
+      setPrereqCache(prereqCacheRef.current)
+    }
+  }
+
   const metadataRef = useRef<PrereqTermBounds>({
     min_prereq_term: 'FA24',
     max_prereq_term: 'FA24'
@@ -455,32 +470,25 @@ export function App ({
       },
       tooltipTitle: ({ course }) => {
         const term = getTermClamped(year, course, metadataRef.current)
-        if (!prereqCache[term]) {
-          fetch(`${DATA_SOURCE_URL}/prereqs/${term}.json`)
-            .then(r => r.json())
-            .then(prereqs =>
-              setPrereqCache(prereqCache =>
-                prereqCache[term]
-                  ? prereqCache
-                  : {
-                    ...prereqCache,
-                    [term]: prereqs
-                  }
-              )
-            )
-        }
+        requireTerm(term)
         return {
           content: course.name,
           editable: true,
           dataListId: 'courses'
         }
       },
-      onTooltipTitleChange: ({ course }, courseName) => {
+      onTooltipTitleChange: async ({ course }, courseName) => {
+        const allTerms = new Set(
+          degreePlan
+            .flat()
+            .map(course => getTermClamped(year, course, metadataRef.current))
+        )
+        await Promise.all(Array.from(allTerms).map(requireTerm))
         const updated = updatePrereqs(
           degreePlan.map(term =>
             term.map(c => (c.id === course.id ? { ...c, name: courseName } : c))
           ),
-          prereqCache,
+          prereqCacheRef.current,
           year,
           metadataRef.current
         )

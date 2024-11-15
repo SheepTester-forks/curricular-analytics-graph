@@ -3,6 +3,8 @@ import { RequisiteType } from '../types'
 import { ParsedDegreePlan } from './parse-degree-plan'
 import { getTermClamped, PrereqTermBounds } from './terms'
 
+const courseCodeRegex = /\b([A-Z]+)\s*(\d+[A-Z]*)\b/
+
 export function updatePrereqs (
   originalPlan: LinkedCourse[][],
   prereqCache: PrereqCache,
@@ -15,19 +17,30 @@ export function updatePrereqs (
     )
   )
   const reqTypes: Record<string, RequisiteType> = {}
+  const courseCodes = new Map<LinkedCourse, string>()
 
   const courseMap: Record<string, LinkedCourse> = {}
   for (const term of plan) {
     for (const course of term) {
-      if (!courseMap[course.name]) {
-        courseMap[course.name] = course
+      const match = course.name.toUpperCase().match(courseCodeRegex)
+      if (!match) {
+        continue
+      }
+      const courseCode = `${match[1]} ${match[2]}`
+      courseCodes.set(course, courseCode)
+      if (!courseMap[courseCode]) {
+        courseMap[courseCode] = course
       }
     }
   }
   for (const term of plan) {
     for (const course of term) {
+      const courseCode = courseCodes.get(course)
+      if (!courseCode) {
+        continue
+      }
       const term = getTermClamped(startYear, course, bounds)
-      for (const req of prereqCache[term]?.[course.name] ?? []) {
+      for (const req of prereqCache[term]?.[courseCode] ?? []) {
         for (const alt of req) {
           const reqCourse = courseMap[alt.replace('*', '')]
           if (!reqCourse) {
