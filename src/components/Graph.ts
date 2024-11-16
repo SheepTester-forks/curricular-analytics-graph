@@ -343,6 +343,7 @@ export class Graph<T extends GraphNode<T>> extends Join<
   }
 
   setDegreePlan (degreePlan: T[][]): void {
+    this.#selected = null
     this.#handleHoverNode(null)
 
     const curriculum = degreePlan.flat()
