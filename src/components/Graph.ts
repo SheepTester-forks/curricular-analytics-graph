@@ -343,6 +343,8 @@ export class Graph<T extends GraphNode<T>> extends Join<
   }
 
   setDegreePlan (degreePlan: T[][]): void {
+    this.#handleHoverNode(null)
+
     const curriculum = degreePlan.flat()
     const blockingFactors = new Map(
       curriculum.map(course => [course, GraphUtils.blockingFactor(course)])
