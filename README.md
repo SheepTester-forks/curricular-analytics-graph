@@ -93,6 +93,8 @@ $ yarn build
 $ yarn dev
 ```
 
+The app also relies on UCSD-specific prerequisite data. This isn't protected data, but it's good to keep in mind when adapting this for other universities. Prereqs are only used when editing course names to determine how to update the prereqs in the plan. The prereqs are automatically fetched from the URL defined in the constant `DATA_SOURCE_URL` in [app/App.tsx](./app/App.tsx).
+
 ### Getting protected data (UCSD only)
 
 To get the protected DFW, waitlist, and course frequency data, you also need to clone [ExploratoryCurricularAnalytics](https://github.com/SheepTester-forks/ExploratoryCurricularAnalytics) in the same parent folder as this repository. Refer to the setup steps in that repo's README, but what's essential is that you run `make protected` (which means you need the protected data files).
