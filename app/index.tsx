@@ -20,15 +20,12 @@ import { csvStringToDegreePlan } from './util/parse-degree-plan'
 import dfwRatesByMajor from './data/fake-dfw-by-major.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
+const realData = false
 /*/
-// Fuzzed files produced by scripts/fuzz-data.js
-// import dfwRates from './data/fuzzed-dfw.json'
-// import waitlists from './data/fuzzed-waitlist.json'
-// import dfwRates from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json'
 import dfwRatesByMajor from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw_by_major.json'
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
 import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
-
+const realData = true
 //*/
 
 // https://curricularanalytics.org/degree_plans/11085
@@ -82,7 +79,7 @@ createRoot(document.getElementById('root')!).render(
             majorDfwNote: majorSubject !== ''
           }
       }
-      realData
+      realData={realData}
       year={+(params.get('year') ?? new Date().getFullYear())}
     />
   </StrictMode>
