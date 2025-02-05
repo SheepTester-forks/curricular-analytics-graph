@@ -16,8 +16,8 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats } from './App'
 import { csvStringToDegreePlan } from './util/parse-degree-plan'
 
-/*
-import dfwRates from './data/fake-dfw.json'
+//*
+import dfwRatesByMajor from './data/fake-dfw-by-major.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
 /*/

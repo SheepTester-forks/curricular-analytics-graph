@@ -36,40 +36,40 @@ To create a graph, you need to
 1. Add `Graph.wrapper` to the document.
 
 ```ts
-import { Graph } from "curricular-analytics-graph/src";
+import { Graph } from 'curricular-analytics-graph/src'
 
 // Define the properties of the object used to store course data (if using
 // TypeScript). The only required fields used by `Graph` are `backwards` and
 // `forwards`, which are arrays of references to other course objects in the
 // plan.
 type Course = {
-  name: string;
-  backwards: Course[];
-  forwards: Course[];
-};
+  name: string
+  backwards: Course[]
+  forwards: Course[]
+}
 
 const graph = new Graph<Course>({
   // The `courseName` option determines the text that displays underneath each
   // course node.
-  courseName: ({ course }) => course.name,
-});
+  courseName: ({ course }) => course.name
+})
 
 // In practice, these links would be attached automatically rather than
 // manually.
 const plan = [
   [
-    { name: "MATH 1", backwards: [], forwards: [] },
-    { name: "MATH 2", backwards: [], forwards: [] },
+    { name: 'MATH 1', backwards: [], forwards: [] },
+    { name: 'MATH 2', backwards: [], forwards: [] }
   ],
-  { name: "PHYS 10", backwards: [], forwards: [] },
-];
-plan[0][0].forwards.push(plan[1][0]);
-plan[1][0].backwards.push(plan[0][0]);
-plan[0][1].forwards.push(plan[1][0]);
-plan[1][0].backwards.push(plan[0][1]);
-graph.setDegreePlan(plan);
+  { name: 'PHYS 10', backwards: [], forwards: [] }
+]
+plan[0][0].forwards.push(plan[1][0])
+plan[1][0].backwards.push(plan[0][0])
+plan[0][1].forwards.push(plan[1][0])
+plan[1][0].backwards.push(plan[0][1])
+graph.setDegreePlan(plan)
 
-document.body.append(graph.wrapper);
+document.body.append(graph.wrapper)
 ```
 
 For more examples about customizing the graph renderer, you can refer to these examples:
@@ -81,7 +81,21 @@ For more examples about customizing the graph renderer, you can refer to these e
 
 Requires [Node 22+](https://nodejs.org/) (on Mac/Linux, I recommend nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash` then `nvm install node`) and Yarn (`npm install -g yarn`).
 
-First, you also need to clone [ExploratoryCurricularAnalytics](https://github.com/SheepTester-forks/ExploratoryCurricularAnalytics) in the same parent folder as this repository. Refer to the setup steps in that repo's README, but what's essential is that you run `make protected` (which means you need the protected data files).
+The app relies on DFW, waitlist, and course offering frequency data. You can see fuzzed data in [app/data/](./app/data/) to see what the expected format is. To use the fuzzed data (used for public-facing demos), uncomment the first batch of `import` statements in [app/index.tsx](./app/index.tsx). If you have access to real UCSD data, continue on to the next section.
+
+After setting up the required datasets, you can run `yarn dev` to start a development server.
+
+```shell
+# Build and minify the app
+$ yarn build
+
+# Start a local HTTP server that recompiles on the fly
+$ yarn dev
+```
+
+### Getting protected data (UCSD only)
+
+To get the protected DFW, waitlist, and course frequency data, you also need to clone [ExploratoryCurricularAnalytics](https://github.com/SheepTester-forks/ExploratoryCurricularAnalytics) in the same parent folder as this repository. Refer to the setup steps in that repo's README, but what's essential is that you run `make protected` (which means you need the protected data files).
 
 ```shell
 $ cd ..
@@ -91,14 +105,4 @@ $ cd ExploratoryCurricularAnalytics/
 $ make
 $ make protected
 $ cd ../curricular-analytics-graph/
-```
-
-Then, you can run `yarn dev` to start a development server.
-
-```shell
-# Build and minify the app
-$ yarn build
-
-# Start a local HTTP server that recompiles on the fly
-$ yarn dev
 ```
