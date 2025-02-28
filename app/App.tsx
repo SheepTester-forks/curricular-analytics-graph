@@ -6,13 +6,7 @@ import './index.css'
 import { RequisiteType } from './types'
 import * as GraphUtils from '../src/graph-utils'
 import { csvBlobToDegreePlan } from './util/parse-degree-plan'
-import {
-  getTermClamped,
-  compareTerm,
-  getTerm,
-  PrereqTermBounds,
-  Term
-} from './util/terms'
+import { getTermClamped, PrereqTermBounds, Term } from './util/terms'
 import { CourseDatalist } from './components/CourseDatalist'
 import { updatePrereqs } from './util/updatePrereqs'
 
@@ -32,6 +26,8 @@ export type PrereqCache = Record<Term, Record<string, string[][]>>
 export type CourseStats = {
   dfw: number | null
   dfwForDepartment: boolean
+  equityGaps: string[]
+  equityGapsForDepartment: boolean
   frequency: string[] | null
   waitlist: number | null
 }
@@ -95,6 +91,13 @@ const classes: Record<RequisiteType, string> = {
   prereq: styles.prereqs,
   coreq: styles.coreqs,
   'strict-coreq': styles.strictCoreqs
+}
+
+const equityGapNames: Record<string, string> = {
+  firstGen: 'First-gen',
+  gender: 'Gender',
+  major: 'Major',
+  urm: 'URM'
 }
 
 function interpretFrequency (terms: string[]): string {
@@ -189,6 +192,7 @@ export function App ({
   const [showWaitlistWarning, setShowWaitlistWarning] = useState(
     defaults !== 'ca'
   )
+  const [showEquityGaps, setShowEquityGaps] = useState(defaults !== 'ca')
   const [showNotOfferedWarning, setShowNotOfferedWarning] = useState(
     defaults !== 'ca'
   )
@@ -309,13 +313,15 @@ export function App ({
         )}`
       },
       courseName: ({ course: { name } }) => {
-        const { waitlist } = getStats(name)
+        const { equityGaps, waitlist } = getStats(name)
         return (
+          (showEquityGaps && equityGaps.length > 0 ? '⚠️' : '') +
           (showWaitlistWarning &&
           waitlist !== null &&
           waitlist > +waitlistThreshold
-            ? '⚠️'
-            : '') + name
+            ? '⌚'
+            : '') +
+          name
         )
       },
       courseNode: ({ course }) => {
@@ -496,9 +502,14 @@ export function App ({
         setReqTypes(updated.reqTypes)
       },
       tooltipContent: ({ course, centrality }) => {
-        const { dfw, dfwForDepartment, frequency, waitlist } = getStats(
-          course.name
-        )
+        const {
+          dfw,
+          dfwForDepartment,
+          equityGaps,
+          equityGapsForDepartment,
+          frequency,
+          waitlist
+        } = getStats(course.name)
         const complexity = complexities.get(course)
         return [
           ['Units', String(course.credits)],
@@ -519,16 +530,19 @@ export function App ({
           ],
           ['Delay factor', String(delayFactors.get(course) ?? 1)],
           [
-            'DFW rate',
-            dfw !== null
-              ? `${(dfw * 100).toFixed(1)}%${dfwForDepartment ? '*' : ''}`
-              : 'N/A'
+            'DFW rate' + (dfwForDepartment ? '*' : ''),
+            dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A'
           ],
           [
             'Offered',
             frequency !== null ? interpretFrequency(frequency) : 'N/A'
           ],
-          ['Avg. waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A']
+          ['Avg. waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A'],
+          [
+            'Equity gaps' + (equityGapsForDepartment ? '*' : ''),
+            equityGaps.map(category => equityGapNames[category]).join(', ') ||
+              'None'
+          ]
         ]
       },
       tooltipRequisiteInfo: (element, { source }) => {
@@ -569,6 +583,7 @@ export function App ({
     dfwUdThreshold,
     waitlistThreshold,
     showWaitlistWarning,
+    showEquityGaps,
     showNotOfferedWarning,
     redundantVisibility
   ])
@@ -678,7 +693,8 @@ export function App ({
                     />
                     Prerequisite has high DFW
                   </p>
-                  <p>⚠️ Long waitlist</p>
+                  <p>⌚ Long waitlist</p>
+                  <p>⚠️ Equity gap</p>
                 </>
               )}
             </>
@@ -801,7 +817,17 @@ export function App ({
                         setShowWaitlistWarning(e.currentTarget.checked)
                       }
                     />{' '}
-                    Show a warning icon on courses with a long waitlist.
+                    Show an icon on courses with a long waitlist.
+                  </label>
+                </p>
+                <p>
+                  <label>
+                    <input
+                      type='checkbox'
+                      checked={showEquityGaps}
+                      onChange={e => setShowEquityGaps(e.currentTarget.checked)}
+                    />{' '}
+                    Show a warning icon on courses with equity gaps.
                   </label>
                 </p>
                 <TextField

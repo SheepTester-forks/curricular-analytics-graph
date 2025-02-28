@@ -20,11 +20,13 @@ import { csvStringToDegreePlan } from './util/parse-degree-plan'
 import dfwRatesByMajor from './data/fake-dfw-by-major.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
+const equityGapsByMajor = { PHYS2CL: { allMajors: 'firstGen urm' } }
 const realData = false
 /*/
 import dfwRatesByMajor from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw_by_major.json'
 import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
 import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
+import equityGapsByMajor from '../../ExploratoryCurricularAnalytics/files/protected/summarize_equity_by_major.json'
 const realData = true
 //*/
 
@@ -54,9 +56,21 @@ function getStats (courseName: string): CourseStats {
   const dfwRates = (dfwRatesByMajor as Record<string, CourseDfwRates>)[
     courseCode
   ]
+  const equityGaps = (
+    equityGapsByMajor as Record<string, Record<string, string>>
+  )[courseCode]
   return {
     dfw: dfwRates?.[majorSubject] ?? dfwRates?.allMajors ?? null,
     dfwForDepartment: dfwRates?.[majorSubject] !== undefined,
+    equityGaps:
+      equityGaps?.[majorSubject] !== undefined
+        ? equityGaps[majorSubject]
+          ? equityGaps[majorSubject].split(' ')
+          : []
+        : equityGaps?.allMajors
+          ? equityGaps.allMajors.split(' ')
+          : [],
+    equityGapsForDepartment: equityGaps?.[majorSubject] !== undefined,
     frequency: (frequencies as Record<string, string[]>)[courseCode] ?? null,
     waitlist: (waitlists as Record<string, number>)[courseCode] ?? null
   }
