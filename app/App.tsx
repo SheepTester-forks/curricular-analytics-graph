@@ -703,132 +703,135 @@ export function App ({
               <summary>
                 <h2>Options</h2>
               </summary>
-              <label>
-                Upload degree plan:{' '}
-                <input
-                  type='file'
-                  accept='.csv'
-                  onChange={async e => {
-                    const input = e.currentTarget
-                    const file = input.files?.[0]
-                    if (file) {
-                      const { degreePlan, reqTypes } =
-                        await csvBlobToDegreePlan(file)
-                      setDegreePlan(degreePlan)
-                      setReqTypes(reqTypes)
-                    }
-                    input.value = ''
-                  }}
-                />
-              </label>
-              <Dropdown
-                options={options.courseBall}
-                value={courseBall}
-                onChange={setCourseBall}
-              >
-                Course node number
-              </Dropdown>
-              <TextField
-                value={dfwLdThreshold}
-                onChange={setDfwLdThreshold}
-                numeric
-              >
-                Minimum DFW considered "high" for LD courses (%)
-              </TextField>
-              <TextField
-                value={dfwUdThreshold}
-                onChange={setDfwUdThreshold}
-                numeric
-              >
-                Minimum DFW considered "high" for UD courses (%)
-              </TextField>
-              <Dropdown
-                options={options.courseBallColor}
-                value={courseBallColor}
-                onChange={setCourseBallColor}
-              >
-                Course node outline color
-              </Dropdown>
-              <Dropdown
-                options={options.courseBallWidth}
-                value={courseBallWidth}
-                onChange={setCourseBallWidth}
-              >
-                Course node outline thickness
-              </Dropdown>
-              <Dropdown
-                options={options.lineWidth}
-                value={lineWidth}
-                onChange={setLineWidth}
-              >
-                Prereq line thickness
-              </Dropdown>
-              <Dropdown
-                options={options.lineColor}
-                value={lineColor}
-                onChange={setLineColor}
-              >
-                Prereq line color
-              </Dropdown>
-              <Dropdown
-                options={options.lineDash}
-                value={lineDash}
-                onChange={setLineDash}
-              >
-                Prereq line pattern
-              </Dropdown>
-              <Dropdown
-                options={options.complexityMode}
-                value={complexityMode}
-                onChange={setComplexityMode}
-              >
-                Complexity formula
-              </Dropdown>
-              <Dropdown
-                options={options.shapes}
-                value={shapes}
-                onChange={setShapes}
-              >
-                Course node shape
-              </Dropdown>
-              <p>
+              <div className={styles.optionsBody}>
                 <label>
+                  Upload degree plan:{' '}
                   <input
-                    type='checkbox'
-                    checked={showWaitlistWarning}
-                    onChange={e =>
-                      setShowWaitlistWarning(e.currentTarget.checked)
-                    }
-                  />{' '}
-                  Show a warning icon on courses with a long waitlist.
+                    type='file'
+                    accept='.csv'
+                    onChange={async e => {
+                      const input = e.currentTarget
+                      const file = input.files?.[0]
+                      if (file) {
+                        const { degreePlan, reqTypes } =
+                          await csvBlobToDegreePlan(file)
+                        setDegreePlan(degreePlan)
+                        setReqTypes(reqTypes)
+                      }
+                      input.value = ''
+                    }}
+                  />
                 </label>
-              </p>
-              <TextField
-                value={waitlistThreshold}
-                onChange={setWaitlistThreshold}
-                numeric
-              >
-                Minimum waitlist length for warning
-              </TextField>
-              <Dropdown
-                options={options.redundantVisibility}
-                value={redundantVisibility}
-                onChange={setRedundantVisibility}
-              >
-                Show redundant requisites as
-              </Dropdown>
-              <p>
-                <label>
-                  <input
-                    type='checkbox'
-                    checked={showNotOfferedWarning}
-                    onChange={e =>
-                      setShowNotOfferedWarning(e.currentTarget.checked)
-                    }
-                  />{' '}
-                  Highlight the courses in quarters that they are not offered in
-                </label>
-              </p>
+                <Dropdown
+                  options={options.courseBall}
+                  value={courseBall}
+                  onChange={setCourseBall}
+                >
+                  Course node number
+                </Dropdown>
+                <TextField
+                  value={dfwLdThreshold}
+                  onChange={setDfwLdThreshold}
+                  numeric
+                >
+                  Minimum DFW considered "high" for LD courses (%)
+                </TextField>
+                <TextField
+                  value={dfwUdThreshold}
+                  onChange={setDfwUdThreshold}
+                  numeric
+                >
+                  Minimum DFW considered "high" for UD courses (%)
+                </TextField>
+                <Dropdown
+                  options={options.courseBallColor}
+                  value={courseBallColor}
+                  onChange={setCourseBallColor}
+                >
+                  Course node outline color
+                </Dropdown>
+                <Dropdown
+                  options={options.courseBallWidth}
+                  value={courseBallWidth}
+                  onChange={setCourseBallWidth}
+                >
+                  Course node outline thickness
+                </Dropdown>
+                <Dropdown
+                  options={options.lineWidth}
+                  value={lineWidth}
+                  onChange={setLineWidth}
+                >
+                  Prereq line thickness
+                </Dropdown>
+                <Dropdown
+                  options={options.lineColor}
+                  value={lineColor}
+                  onChange={setLineColor}
+                >
+                  Prereq line color
+                </Dropdown>
+                <Dropdown
+                  options={options.lineDash}
+                  value={lineDash}
+                  onChange={setLineDash}
+                >
+                  Prereq line pattern
+                </Dropdown>
+                <Dropdown
+                  options={options.complexityMode}
+                  value={complexityMode}
+                  onChange={setComplexityMode}
+                >
+                  Complexity formula
+                </Dropdown>
+                <Dropdown
+                  options={options.shapes}
+                  value={shapes}
+                  onChange={setShapes}
+                >
+                  Course node shape
+                </Dropdown>
+                <p>
+                  <label>
+                    <input
+                      type='checkbox'
+                      checked={showWaitlistWarning}
+                      onChange={e =>
+                        setShowWaitlistWarning(e.currentTarget.checked)
+                      }
+                    />{' '}
+                    Show a warning icon on courses with a long waitlist.
+                  </label>
+                </p>
+                <TextField
+                  value={waitlistThreshold}
+                  onChange={setWaitlistThreshold}
+                  numeric
+                >
+                  Minimum waitlist length for warning
+                </TextField>
+                <Dropdown
+                  options={options.redundantVisibility}
+                  value={redundantVisibility}
+                  onChange={setRedundantVisibility}
+                >
+                  Show redundant requisites as
+                </Dropdown>
+                <p>
+                  <label>
+                    <input
+                      type='checkbox'
+                      checked={showNotOfferedWarning}
+                      onChange={e =>
+                        setShowNotOfferedWarning(e.currentTarget.checked)
+                      }
+                    />{' '}
+                    Highlight the courses in quarters that they are not offered
+                    in
+                  </label>
+                </p>
+              </div>
             </details>
           )}
         </aside>
