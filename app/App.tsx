@@ -319,7 +319,7 @@ export function App ({
           (showWaitlistWarning &&
           waitlist !== null &&
           waitlist > +waitlistThreshold
-            ? '⌚'
+            ? '⏳'
             : '') +
           name
         )
@@ -534,15 +534,15 @@ export function App ({
             dfw !== null ? `${(dfw * 100).toFixed(1)}%` : 'N/A'
           ],
           [
-            'Offered',
-            frequency !== null ? interpretFrequency(frequency) : 'N/A'
-          ],
-          ['Avg. waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A'],
-          [
             'Equity gaps' + (equityGapsForDepartment ? '*' : ''),
             equityGaps.map(category => equityGapNames[category]).join(', ') ||
               'None'
-          ]
+          ],
+          [
+            'Offered',
+            frequency !== null ? interpretFrequency(frequency) : 'N/A'
+          ],
+          ['Avg. waitlist', waitlist !== null ? waitlist.toFixed(0) : 'N/A']
         ]
       },
       tooltipRequisiteInfo: (element, { source }) => {
@@ -693,7 +693,7 @@ export function App ({
                     />
                     Prerequisite has high DFW
                   </p>
-                  <p>⌚ Long waitlist</p>
+                  <p>⏳ Long waitlist</p>
                   <p>⚠️ Equity gap</p>
                 </>
               )}
