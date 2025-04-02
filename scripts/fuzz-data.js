@@ -18,7 +18,7 @@ await writeFile(
     fuzz(
       JSON.parse(
         await readFile(
-          '../ExploratoryCurricularAnalytics/files/protected/summarize_dfw.json',
+          '../curricular-analytics-exploration/files/protected/summarize_dfw.json',
           'utf-8'
         )
       )
@@ -31,7 +31,7 @@ await writeFile(
     fuzz(
       JSON.parse(
         await readFile(
-          '../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json',
+          '../curricular-analytics-exploration/files/protected/summarize_waitlist.json',
           'utf-8'
         )
       ),

@@ -23,10 +23,10 @@ import waitlists from './data/fake-waitlist.json'
 const equityGapsByMajor = { PHYS2CL: { allMajors: 'firstGen urm' } }
 const realData = false
 /*/
-import dfwRatesByMajor from '../../ExploratoryCurricularAnalytics/files/protected/summarize_dfw_by_major.json'
-import frequencies from '../../ExploratoryCurricularAnalytics/files/protected/summarize_frequency.json'
-import waitlists from '../../ExploratoryCurricularAnalytics/files/protected/summarize_waitlist.json'
-import equityGapsByMajor from '../../ExploratoryCurricularAnalytics/files/protected/summarize_equity_by_major.json'
+import dfwRatesByMajor from '../../curricular-analytics-exploration/files/protected/summarize_dfw_by_major.json'
+import frequencies from '../../curricular-analytics-exploration/files/protected/summarize_frequency.json'
+import waitlists from '../../curricular-analytics-exploration/files/protected/summarize_waitlist.json'
+import equityGapsByMajor from '../../curricular-analytics-exploration/files/protected/summarize_equity_by_major.json'
 const realData = true
 //*/
 

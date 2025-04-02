@@ -97,12 +97,12 @@ The app also relies on UCSD-specific prerequisite data. This isn't protected dat
 
 ### Getting protected data (UCSD only)
 
-To get the protected DFW, waitlist, and course frequency data, you also need to clone [ExploratoryCurricularAnalytics](https://github.com/SheepTester-forks/ExploratoryCurricularAnalytics) in the same parent folder as this repository. Refer to the setup steps in that repo's README, but what's essential is that you run `make protected` (which means you need the protected data files).
+To get the protected DFW, waitlist, and course frequency data, you also need to clone [curricular-analytics-exploration](https://github.com/SheepTester-forks/curricular-analytics-exploration) in the same parent folder as this repository. Refer to the setup steps in that repo's README, but what's essential is that you run `make protected` (which means you need the protected data files).
 
 ```shell
 $ cd ..
-$ git clone https://github.com/SheepTester-forks/ExploratoryCurricularAnalytics.git
-$ cd ExploratoryCurricularAnalytics/
+$ git clone https://github.com/SheepTester-forks/curricular-analytics-exploration.git
+$ cd curricular-analytics-exploration/
 # (Download the required data files)
 $ make
 $ make protected
