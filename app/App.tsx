@@ -710,7 +710,11 @@ export function App ({
               <strong>randomized</strong> values.
             </p>
           )}
-          <p>Data were sampled between fall 2021 and spring 2024.</p>
+          <p>
+            Data were sampled between fall 2021 and spring 2024. Academic plans
+            were pulled from{' '}
+            <a href='https://plans.ucsd.edu/'>plans.ucsd.edu</a>.
+          </p>
           {panelMode.majorDfwNote ? (
             <p>*DFW rate is specific to majors in this department.</p>
           ) : null}
