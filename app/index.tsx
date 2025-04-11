@@ -37,7 +37,7 @@ import example from './data/SY-Degree Plan-Eighth-EC27.csv'
 // https://curricularanalytics.org/degree_plans/25403
 // import example from './data/EC27.json'
 
-const { degreePlan, reqTypes } = csvStringToDegreePlan(
+const { degreePlan, reqTypes, planType } = csvStringToDegreePlan(
   window.location.hash.length > 1
     ? decodeURIComponent(window.location.hash.slice(1))
     : example
@@ -95,6 +95,7 @@ createRoot(document.getElementById('root')!).render(
       }
       realData={realData}
       year={+(params.get('year') ?? new Date().getFullYear())}
+      isCurriculum={planType === 'curriculum'}
     />
   </StrictMode>
 )

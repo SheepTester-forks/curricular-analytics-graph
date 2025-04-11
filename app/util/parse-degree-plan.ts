@@ -12,6 +12,7 @@ const quarters = ['FA', 'WI', 'SP'] as const
 export type ParsedDegreePlan = {
   degreePlan: LinkedCourse[][]
   reqTypes: Record<string, RequisiteType>
+  planType: 'degree-plan' | 'curriculum'
 }
 
 export class DegreePlanParser {
@@ -19,19 +20,22 @@ export class DegreePlanParser {
   #coursesById: Record<string, LinkedCourse> = {}
   #degreePlan: LinkedCourse[][] = []
   #reqTypes: Record<string, RequisiteType> = {}
-  #skipping: 'metadata' | 'header' | null = 'metadata'
+  #skipping: 'metadata' | 'courses-header' | null = 'metadata'
+  #parsingCurriculum = true
 
   #handleRow (row: string[]): void {
     if (this.#skipping) {
-      if (this.#skipping === 'header') {
+      if (this.#skipping === 'courses-header') {
         this.#skipping = null
       } else if (row[0] === 'Courses') {
-        this.#skipping = 'header'
+        this.#skipping = 'courses-header'
+      } else if (row[0] === 'Degree Plan') {
+        this.#parsingCurriculum = false
       }
       return
     }
     if (row[0] === 'Additional Courses') {
-      this.#skipping = 'header'
+      this.#skipping = 'courses-header'
       return
     }
     const [
@@ -45,13 +49,13 @@ export class DegreePlanParser {
       units,
       _institution,
       _canonicalName,
-      term
+      term = '1'
     ] = row
     const courseData = {
       name,
       credits: +units,
-      year: Math.floor((+term - 1) / 3),
-      quarter: quarters[(+term - 1) % 3]
+      year: this.#parsingCurriculum ? 0 : Math.floor((+term - 1) / 3),
+      quarter: this.#parsingCurriculum ? 'FA' : quarters[(+term - 1) % 3]
     }
     if (this.#coursesById[id]) {
       Object.assign(this.#coursesById[id], courseData)
@@ -63,8 +67,9 @@ export class DegreePlanParser {
         forwards: []
       }
     }
-    this.#degreePlan[+term - 1] ??= []
-    this.#degreePlan[+term - 1].push(this.#coursesById[id])
+    const termIndex = this.#parsingCurriculum ? 0 : +term - 1
+    this.#degreePlan[termIndex] ??= []
+    this.#degreePlan[termIndex].push(this.#coursesById[id])
     const reqsWithTypes: [string, RequisiteType][] = [
       [prereqs, 'prereq'],
       [coreqs, 'coreq'],
@@ -101,6 +106,31 @@ export class DegreePlanParser {
     for (const row of this.#parser.finish()) {
       this.#handleRow(row)
     }
+    if (this.#parsingCurriculum) {
+      const courses = new Set(this.#degreePlan[0])
+      // Put all solo courses at end
+      this.#degreePlan[0] = this.#degreePlan[0].filter(
+        course => course.forwards.length === 0 && course.backwards.length === 0
+      )
+      for (const prereqLessCourse of this.#degreePlan[0]) {
+        courses.delete(prereqLessCourse)
+      }
+      // Go term by term, adding courses that are satisfied
+      const satisfied = new Set<LinkedCourse>()
+      while (courses.size > 0) {
+        const newTerm: LinkedCourse[] = []
+        for (const course of courses) {
+          if (course.backwards.every(prereq => satisfied.has(prereq))) {
+            newTerm.push(course)
+            courses.delete(course)
+          }
+        }
+        this.#degreePlan.splice(-1, 0, newTerm)
+        for (const course of newTerm) {
+          satisfied.add(course)
+        }
+      }
+    }
     for (const term of this.#degreePlan) {
       // Sort by outgoing nodes, then incoming
       term.sort(
@@ -109,7 +139,11 @@ export class DegreePlanParser {
           b.backwards.length - a.backwards.length
       )
     }
-    return { degreePlan: this.#degreePlan, reqTypes: this.#reqTypes }
+    return {
+      degreePlan: this.#degreePlan,
+      reqTypes: this.#reqTypes,
+      planType: this.#parsingCurriculum ? 'curriculum' : 'degree-plan'
+    }
   }
 }
 
@@ -165,5 +199,5 @@ export function jsonToDegreePlan (
         b.backwards.length - a.backwards.length
     )
   }
-  return { degreePlan, reqTypes }
+  return { degreePlan, reqTypes, planType: 'degree-plan' }
 }

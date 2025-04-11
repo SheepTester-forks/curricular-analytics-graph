@@ -13,6 +13,7 @@ import { updatePrereqs } from './util/updatePrereqs'
 export type LinkedCourse = {
   /** 0-indexed */
   year: number
+  /** Used for getting prereqs for course's term */
   quarter: 'FA' | 'WI' | 'SP'
   id: number
   name: string
@@ -143,6 +144,7 @@ export type AppProps = {
   }
   realData?: boolean
   year: number
+  isCurriculum?: boolean
 }
 export function App ({
   initDegreePlan,
@@ -151,7 +153,8 @@ export function App ({
   defaults,
   panelMode = { key: true },
   realData,
-  year
+  year,
+  isCurriculum = false
 }: AppProps) {
   const [degreePlan, setDegreePlan] = useState(initDegreePlan)
   const [reqTypes, setReqTypes] = useState(initReqTypes)
@@ -285,9 +288,11 @@ export function App ({
     const options: GraphOptions<LinkedCourse> = {
       system: 'semester',
       termName: (_, i) =>
-        `${['Fall', 'Winter', 'Spring'][i % 3]} '${String(
-          (year + Math.floor((i + 2) / 3)) % 100
-        ).padStart(2, '0')}`,
+        isCurriculum
+          ? ''
+          : `${['Fall', 'Winter', 'Spring'][i % 3]} '${String(
+            (year + Math.floor((i + 2) / 3)) % 100
+          ).padStart(2, '0')}`,
       termSummary: term => {
         const termComplexity = term.reduce((acc, { course }) => {
           const { dfw } = getStats(course.name)
