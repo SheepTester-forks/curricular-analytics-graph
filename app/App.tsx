@@ -403,7 +403,7 @@ export function App ({
                     : ''
         element.style.backgroundColor = element.style.fill =
           showNotOfferedWarning && frequency && !terms.has(course.quarter)
-            ? 'yellow'
+            ? '#ffdf20'
             : ''
       },
       styleLink: ({ element, source, target, redundant }) => {
@@ -640,7 +640,7 @@ export function App ({
                   <p className={styles.keyEntry}>
                     <span
                       className={styles.keyCourse}
-                      style={{ backgroundColor: 'yellow' }}
+                      style={{ backgroundColor: '#ffdf20' }}
                     />
                     Course not offered in quarter
                   </p>
@@ -694,7 +694,7 @@ export function App ({
                   <p className={styles.keyEntry}>
                     <span
                       className={styles.line}
-                      style={{ backgroundColor: 'red', height: '3px' }}
+                      style={{ backgroundColor: '#ef4444', height: '3px' }}
                     />
                     Prerequisite has high DFW
                   </p>
