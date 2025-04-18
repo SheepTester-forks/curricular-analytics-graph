@@ -128,9 +128,11 @@ export class Graph<T extends GraphNode<T>> extends Join<
             `term-heading-${course.index}`
           )
         } else if (item.type === 'term-header') {
-          element.textContent =
+          const content =
             this.options.termName?.(item.term, item.index) ??
             `Term ${item.index + 1}`
+          element.textContent = content
+          element.style.display = content ? '' : 'none'
         } else if (item.type === 'term-footer') {
           element.textContent =
             this.options.termSummary?.(item.term, item.index) ?? ''

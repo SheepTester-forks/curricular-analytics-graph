@@ -107,6 +107,7 @@ export class DegreePlanParser {
       this.#handleRow(row)
     }
     if (this.#parsingCurriculum) {
+      // TODO: use https://github.com/CurricularAnalytics/CurricularVisualization.jl/blob/master/src/CurricularVisualization.jl#L162
       const courses = new Set(this.#degreePlan[0])
       // Put all solo courses at end
       this.#degreePlan[0] = this.#degreePlan[0].filter(
