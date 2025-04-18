@@ -4,7 +4,7 @@
   display: grid;
   /* https://stackoverflow.com/a/61240964 */
   grid-template-columns: repeat(var(--term-count), minmax(0, 1fr));
-  grid-template-rows: auto repeat(var(--longest-term-length), minmax(0, 1fr)) auto;
+  grid-template-rows: auto repeat(var(--longest-term-length), minmax(auto, 1fr)) auto;
   position: relative;
   z-index: 0;
   color: #0f172a;
