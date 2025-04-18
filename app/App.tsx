@@ -604,15 +604,21 @@ export function App ({
               <h2>Key</h2>
               {courseBall !== 'none' && (
                 <p>
-                  The number indicates the course's{' '}
+                  The number in each shape indicates the course's{' '}
                   {courseBall === 'bf'
                     ? 'blocking factor'
                     : courseBall === 'dfw'
                       ? 'DFW rate'
                       : courseBall === 'waitlist'
                         ? 'waitlist length'
-                        : courseBall}
-                  .
+                        : courseBall === 'units'
+                          ? 'unit count'
+                          : courseBall}
+                  . Complexity and centrality are explained on the{' '}
+                  <a href='https://educationalinnovation.ucsd.edu/curricular-analytics/index.html#terminology'>
+                    Curricular Analytics
+                  </a>{' '}
+                  page.
                 </p>
               )}
               <p className={styles.keyEntry}>
