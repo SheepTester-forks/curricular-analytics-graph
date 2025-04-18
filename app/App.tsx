@@ -308,14 +308,14 @@ export function App ({
                 : complexity * (dfw + 1))
           )
         }, 0)
-        return `Complex.: ${
+        return `Units: ${term.reduce(
+          (acc, { course }) => acc + (course.credits ?? 0),
+          0
+        )}\nComplex.: ${
           complexityMode === 'default'
             ? termComplexity
             : termComplexity.toFixed(2)
-        }\nUnits: ${term.reduce(
-          (acc, { course }) => acc + (course.credits ?? 0),
-          0
-        )}`
+        }`
       },
       courseName: ({ course: { name } }) => {
         const { equityGaps, waitlist } = getStats(name)
