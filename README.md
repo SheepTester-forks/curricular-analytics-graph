@@ -108,3 +108,18 @@ $ make
 $ make protected
 $ cd ../curricular-analytics-graph/
 ```
+
+### URL documentation
+
+Query parameters:
+
+- `from`: URL of Curricular Analytics CSV file. Relative URLs are supported, based on `https://raw.githubusercontent.com/SheepTester-forks/ucsd-degree-plans/main/` (this allows the source repo to be swapped out without having to update existing URLs).
+- `defaults`: Default settings for the options panel. `ca` for options mimicking the original Curricular Analytics, and `ucsd` for Carlos' preferred options.
+- `hide-panel=true`: Whether to hide the side panel.
+- `title`: Title text to show in the side panel.
+- `major`: Major code, used to get major-specific DFW data.
+- `year`: Starting year of the degree plan, used for determining the term to use for prereqs when editing courses.
+
+Fragment: contains URL-encoded contents of a Curricular Analytics CSV.
+
+To load a degree plan or curriculum in Curricular Analytics' CSV format, pass it in the URL fragment (i.e. after a `#`) or upload the file online then use `?from=<url>`.

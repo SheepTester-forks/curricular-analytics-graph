@@ -37,12 +37,34 @@ import example from './data/SY-Degree Plan-Eighth-EC27.csv'
 // https://curricularanalytics.org/degree_plans/25403
 // import example from './data/EC27.json'
 
+const params = new URL(window.location.href).searchParams
+const sourceUrl = params.get('from')
 const { degreePlan, reqTypes, planType } = csvStringToDegreePlan(
   window.location.hash.length > 1
     ? decodeURIComponent(window.location.hash.slice(1))
-    : example
+    : sourceUrl
+      ? await fetch(
+        new URL(
+          sourceUrl,
+          'https://raw.githubusercontent.com/SheepTester-forks/ucsd-degree-plans/main/'
+        )
+      )
+        .then(r =>
+          r.ok
+            ? r.text()
+            : Promise.reject(new Error(`HTTP ${r.status} error: ${r.url}`))
+        )
+        .catch(error => {
+          alert(
+            `There was an issue loading the selected plan.\n\n${
+              error.stack ?? error.message ?? error
+            }`
+          )
+          console.error(error)
+          return example
+        })
+      : example
 )
-const params = new URL(window.location.href).searchParams
 const majorSubject = params.get('major')?.slice(0, 2) ?? ''
 
 type CourseDfwRates = {
