@@ -1,4 +1,4 @@
-import { LinkedCourse } from '../App'
+import { LinkedCourse, RequisiteTypeMap } from '../App'
 import {
   RequisiteType,
   VisualizationCourse,
@@ -12,15 +12,23 @@ const quarters = ['FA', 'WI', 'SP'] as const
 export type ParsedDegreePlan = {
   name?: string
   degreePlan: LinkedCourse[][]
-  reqTypes: Record<string, RequisiteType>
+  reqTypes: RequisiteTypeMap
   planType: 'degree-plan' | 'curriculum'
+}
+
+type CsvCourse = LinkedCourse & {
+  /**
+   * Used solely to sort courses when converting curriculum to degree plan
+   * https://github.com/CurricularAnalytics/CurricularAnalytics.jl/blob/88bfa3cb7a09b9707862bae185003dfd6ecb6b83/src/DegreePlanCreation.jl#L18
+   */
+  number: string
 }
 
 export class DegreePlanParser {
   #parser = new CsvParser()
-  #coursesById: Record<string, LinkedCourse> = {}
-  #degreePlan: LinkedCourse[][] = []
-  #reqTypes: Record<string, RequisiteType> = {}
+  #coursesById: Record<number, CsvCourse> = {}
+  #degreePlan: CsvCourse[][] = []
+  #reqTypes: RequisiteTypeMap = {}
   #skipping: 'metadata' | 'courses-header' | null = 'metadata'
   #parsingCurriculum = true
   #name: string | undefined = undefined
@@ -44,10 +52,10 @@ export class DegreePlanParser {
       return
     }
     const [
-      id,
+      idStr,
       name,
       _prefix,
-      _number,
+      number,
       prereqs,
       coreqs,
       strictCoreqs,
@@ -56,8 +64,10 @@ export class DegreePlanParser {
       _canonicalName,
       term = '1'
     ] = row
+    const id = +idStr
     const courseData = {
       name,
+      number,
       credits: +units,
       year: this.#parsingCurriculum ? 0 : Math.floor((+term - 1) / 3),
       quarter: this.#parsingCurriculum ? 'FA' : quarters[(+term - 1) % 3]
@@ -85,18 +95,20 @@ export class DegreePlanParser {
         continue
       }
       for (const req of reqs.split(';')) {
-        this.#coursesById[req] ??= {
-          id: +req,
+        const reqId = +req
+        this.#coursesById[reqId] ??= {
+          id: reqId,
           name: '',
+          number: '',
           credits: 0,
           year: 0,
           quarter: 'FA',
           backwards: [],
           forwards: []
         }
-        this.#coursesById[req].forwards.push(this.#coursesById[id])
-        this.#coursesById[id].backwards.push(this.#coursesById[req])
-        this.#reqTypes[`${req}->${id}`] = type
+        this.#coursesById[reqId].forwards.push(this.#coursesById[id])
+        this.#coursesById[id].backwards.push(this.#coursesById[reqId])
+        this.#reqTypes[`${reqId}->${id}`] = type
       }
     }
   }
@@ -113,29 +125,10 @@ export class DegreePlanParser {
     }
     if (this.#parsingCurriculum) {
       // TODO: use https://github.com/CurricularAnalytics/CurricularVisualization.jl/blob/master/src/CurricularVisualization.jl#L162
-      const courses = new Set(this.#degreePlan[0])
-      // Put all solo courses at end
-      this.#degreePlan[0] = this.#degreePlan[0].filter(
-        course => course.forwards.length === 0 && course.backwards.length === 0
+      this.#degreePlan = curriculumToDegreePlan(
+        this.#degreePlan[0],
+        this.#reqTypes
       )
-      for (const prereqLessCourse of this.#degreePlan[0]) {
-        courses.delete(prereqLessCourse)
-      }
-      // Go term by term, adding courses that are satisfied
-      const satisfied = new Set<LinkedCourse>()
-      while (courses.size > 0) {
-        const newTerm: LinkedCourse[] = []
-        for (const course of courses) {
-          if (course.backwards.every(prereq => satisfied.has(prereq))) {
-            newTerm.push(course)
-            courses.delete(course)
-          }
-        }
-        this.#degreePlan.splice(-1, 0, newTerm)
-        for (const course of newTerm) {
-          satisfied.add(course)
-        }
-      }
     }
     for (const term of this.#degreePlan) {
       // Sort by outgoing nodes, then incoming
@@ -152,6 +145,95 @@ export class DegreePlanParser {
       planType: this.#parsingCurriculum ? 'curriculum' : 'degree-plan'
     }
   }
+}
+
+function curriculumToDegreePlan (
+  courses: CsvCourse[],
+  reqTypes: RequisiteTypeMap
+): CsvCourse[][] {
+  // https://github.com/CurricularAnalytics/CurricularVisualization.jl/blob/master/src/CurricularVisualization.jl#L162
+  // https://www.desmos.com/calculator/sms3k0yh3y
+  // NOTE: These units are intended for semester systems
+  const maxUnitsPerTerm = Math.min(
+    15 + Math.ceil((courses.length + 8) / 40) * 3,
+    6 + Math.ceil(courses.length / 8) * 3
+  )
+  // https://github.com/CurricularAnalytics/CurricularAnalytics.jl/blob/88bfa3cb7a09b9707862bae185003dfd6ecb6b83/src/DegreePlanCreation.jl#L14
+  courses.sort((a, b) =>
+    a.number && b.number
+      ? a.number.localeCompare(b.number, [], { numeric: true })
+      : // Put `number`-less courses at the end
+      b.number.length - a.number.length
+  )
+  let termCourses: CsvCourse[] = []
+  let termUnits = 0
+  const terms = [termCourses]
+  while (courses.length > 0) {
+    let course: CsvCourse | null = null
+    courses: for (const target of courses) {
+      // Ensure none of the other courses in `termCourses` are its prereq
+      for (const course of termCourses) {
+        if (
+          target.backwards.some(
+            req => reqTypes[`${req.id}->${course.id}`] === 'prereq'
+          )
+        ) {
+          continue courses
+        }
+      }
+      // Ensure none of the remaining `courses` are a prereq
+      for (const source of courses) {
+        if (source !== target && isReachable(source, target)) {
+          continue courses
+        }
+      }
+      course = target
+      break
+    }
+    if (!course) {
+      // Can't find a course to add, so create new term
+      if (termCourses.length > 0) {
+        termCourses = []
+        terms.push(termCourses)
+        termUnits = 0
+      }
+      continue
+    }
+    if (termUnits + course.credits <= maxUnitsPerTerm) {
+      termCourses.push(course)
+    } else {
+      termCourses = [course]
+      terms.push(termCourses)
+      termUnits = 0
+    }
+    termUnits += course.credits
+    // Add strict coreqs
+    for (const coreq of courses) {
+      if (
+        coreq !== course &&
+        coreq.backwards.some(
+          req => reqTypes[`${req.id}->${course.id}`] === 'strict-coreq'
+        )
+      ) {
+        termCourses.push(coreq)
+        termUnits += coreq.credits
+      }
+    }
+    courses = courses.filter(course => !termCourses.includes(course))
+  }
+  return terms
+}
+
+function isReachable (source: LinkedCourse, target: LinkedCourse): boolean {
+  if (source === target) {
+    return true
+  }
+  for (const neighbor of source.forwards) {
+    if (isReachable(neighbor, target)) {
+      return true
+    }
+  }
+  return false
 }
 
 export function csvStringToDegreePlan (csv: string): ParsedDegreePlan {
@@ -190,7 +272,7 @@ export function jsonToDegreePlan (
   for (const node of courses) {
     coursesById[node.id] ??= node
   }
-  const reqTypes: Record<string, RequisiteType> = {}
+  const reqTypes: RequisiteTypeMap = {}
   for (const course of courses) {
     for (const { source_id, type } of course.curriculum_requisites) {
       coursesById[source_id].forwards.push(course)

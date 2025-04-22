@@ -1,5 +1,4 @@
-import { LinkedCourse, PrereqCache } from '../App'
-import { RequisiteType } from '../types'
+import { LinkedCourse, PrereqCache, RequisiteTypeMap } from '../App'
 import { ParsedDegreePlan } from './parse-degree-plan'
 import { getTermClamped, PrereqTermBounds } from './terms'
 
@@ -16,7 +15,7 @@ export function updatePrereqs (
       (course): LinkedCourse => ({ ...course, backwards: [], forwards: [] })
     )
   )
-  const reqTypes: Record<string, RequisiteType> = {}
+  const reqTypes: RequisiteTypeMap = {}
   const courseCodes = new Map<LinkedCourse, string>()
 
   const courseMap: Record<string, LinkedCourse> = {}
@@ -57,5 +56,5 @@ export function updatePrereqs (
     }
   }
 
-  return { degreePlan: plan, reqTypes }
+  return { degreePlan: plan, reqTypes, planType: 'degree-plan' }
 }

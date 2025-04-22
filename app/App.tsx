@@ -130,10 +130,11 @@ const DATA_SOURCE_URL =
   'https://raw.githubusercontent.com/SheepTester-forks/ucsd-degree-plans/main'
 
 export type LinkId = `${number}->${number}`
+export type RequisiteTypeMap = Record<LinkId, RequisiteType>
 
 export type AppProps = {
   initDegreePlan: LinkedCourse[][]
-  initReqTypes: Record<LinkId, RequisiteType>
+  initReqTypes: RequisiteTypeMap
   getStats(courseName: string): CourseStats
   defaults?: 'ca' | 'ucsd' | (string & {})
   panelMode?: {
