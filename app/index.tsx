@@ -16,7 +16,7 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats } from './App'
 import { csvStringToDegreePlan } from './util/parse-degree-plan'
 
-/*
+//*
 import dfwRatesByMajor from './data/fake-dfw-by-major.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
@@ -39,7 +39,7 @@ import example from './data/SY-Degree Plan-Eighth-EC27.csv'
 
 const params = new URL(window.location.href).searchParams
 const sourceUrl = params.get('from')
-const { degreePlan, reqTypes, planType } = csvStringToDegreePlan(
+const { name, degreePlan, reqTypes, planType } = csvStringToDegreePlan(
   window.location.hash.length > 1
     ? decodeURIComponent(window.location.hash.slice(1))
     : sourceUrl
@@ -109,7 +109,7 @@ createRoot(document.getElementById('root')!).render(
         params.has('hide-panel')
           ? {}
           : {
-            title: params.get('title') ?? undefined,
+            title: params.get('title') ?? name ?? undefined,
             key: true,
             options: true,
             majorDfwNote: majorSubject !== ''

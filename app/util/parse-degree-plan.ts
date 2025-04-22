@@ -10,6 +10,7 @@ import { CsvParser } from './csv'
 const quarters = ['FA', 'WI', 'SP'] as const
 
 export type ParsedDegreePlan = {
+  name?: string
   degreePlan: LinkedCourse[][]
   reqTypes: Record<string, RequisiteType>
   planType: 'degree-plan' | 'curriculum'
@@ -22,6 +23,7 @@ export class DegreePlanParser {
   #reqTypes: Record<string, RequisiteType> = {}
   #skipping: 'metadata' | 'courses-header' | null = 'metadata'
   #parsingCurriculum = true
+  #name: string | undefined = undefined
 
   #handleRow (row: string[]): void {
     if (this.#skipping) {
@@ -31,6 +33,9 @@ export class DegreePlanParser {
         this.#skipping = 'courses-header'
       } else if (row[0] === 'Degree Plan') {
         this.#parsingCurriculum = false
+      }
+      if (row[0] === (this.#parsingCurriculum ? 'Curriculum' : 'Degree Plan')) {
+        this.#name = row[1]
       }
       return
     }
@@ -141,6 +146,7 @@ export class DegreePlanParser {
       )
     }
     return {
+      name: this.#name,
       degreePlan: this.#degreePlan,
       reqTypes: this.#reqTypes,
       planType: this.#parsingCurriculum ? 'curriculum' : 'degree-plan'
