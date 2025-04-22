@@ -160,10 +160,9 @@ function curriculumToDegreePlan (
   )
   // https://github.com/CurricularAnalytics/CurricularAnalytics.jl/blob/88bfa3cb7a09b9707862bae185003dfd6ecb6b83/src/DegreePlanCreation.jl#L14
   courses.sort((a, b) =>
-    a.number && b.number
-      ? a.number.localeCompare(b.number, [], { numeric: true })
-      : // Put `number`-less courses at the end
-      b.number.length - a.number.length
+    (a.number || a.name).localeCompare(b.number || b.name, [], {
+      numeric: true
+    })
   )
   let termCourses: CsvCourse[] = []
   let termUnits = 0
@@ -173,11 +172,7 @@ function curriculumToDegreePlan (
     courses: for (const target of courses) {
       // Ensure none of the other courses in `termCourses` are its prereq
       for (const course of termCourses) {
-        if (
-          target.backwards.some(
-            req => reqTypes[`${req.id}->${course.id}`] === 'prereq'
-          )
-        ) {
+        if (reqTypes[`${course.id}->${target.id}`] === 'prereq') {
           continue courses
         }
       }
