@@ -197,7 +197,7 @@ export function App ({
   )
   const [showEquityGaps, setShowEquityGaps] = useState(defaults !== 'ca')
   const [showNotOfferedWarning, setShowNotOfferedWarning] = useState(
-    defaults !== 'ca'
+    !isCurriculum && defaults !== 'ca'
   )
 
   const [prereqCache, setPrereqCache] = useState<PrereqCache>({})
@@ -641,15 +641,17 @@ export function App ({
                 <span className={`${styles.keyCourse} ${styles.blocking}`} />
                 All blocked
               </p>
-              {defaults === 'ucsd' && (
+              {showNotOfferedWarning ? (
+                <p className={styles.keyEntry}>
+                  <span
+                    className={styles.keyCourse}
+                    style={{ backgroundColor: '#ffdf20' }}
+                  />
+                  Course not offered in quarter
+                </p>
+              ) : null}
+              {shapes === 'frequency' ? (
                 <>
-                  <p className={styles.keyEntry}>
-                    <span
-                      className={styles.keyCourse}
-                      style={{ backgroundColor: '#ffdf20' }}
-                    />
-                    Course not offered in quarter
-                  </p>
                   <p>Ignoring summer offerings,</p>
                   <p className={styles.keyEntry}>
                     <span className={styles.keyCourse} />
@@ -679,24 +681,30 @@ export function App ({
                     </svg>
                     Offered once a year
                   </p>
-                  <p className={styles.keyEntry}>
-                    <span
-                      className={styles.line}
-                      style={{
-                        background:
-                          'linear-gradient(to right, #64748b 0%, #64748b 50%, transparent 50%, transparent 100%)',
-                        backgroundSize: '10px'
-                      }}
-                    />
-                    Redundant prerequisite
-                  </p>
-                  <p className={styles.keyEntry}>
-                    <span
-                      className={styles.line}
-                      style={{ backgroundColor: '#3b82f6', height: '5px' }}
-                    />
-                    Longest path
-                  </p>
+                </>
+              ) : null}
+              {redundantVisibility === 'dashed' ? (
+                <p className={styles.keyEntry}>
+                  <span
+                    className={styles.line}
+                    style={{
+                      background:
+                        'linear-gradient(to right, #64748b 0%, #64748b 50%, transparent 50%, transparent 100%)',
+                      backgroundSize: '10px'
+                    }}
+                  />
+                  Redundant prerequisite
+                </p>
+              ) : null}
+              <p className={styles.keyEntry}>
+                <span
+                  className={styles.line}
+                  style={{ backgroundColor: '#3b82f6', height: '5px' }}
+                />
+                Longest path
+              </p>
+              {defaults === 'ucsd' && (
+                <>
                   <p className={styles.keyEntry}>
                     <span
                       className={styles.line}
@@ -704,10 +712,10 @@ export function App ({
                     />
                     Prerequisite has high DFW
                   </p>
-                  <p>⏳ Long waitlist</p>
-                  <p>⚠️ Equity gap</p>
                 </>
               )}
+              {showWaitlistWarning ? <p>⏳ Long waitlist</p> : null}
+              {showEquityGaps ? <p>⚠️ Equity gap</p> : null}
             </>
           ) : null}
           <h2>Disclaimer</h2>
@@ -859,19 +867,21 @@ export function App ({
                 >
                   Show redundant requisites as
                 </Dropdown>
-                <p>
-                  <label>
-                    <input
-                      type='checkbox'
-                      checked={showNotOfferedWarning}
-                      onChange={e =>
-                        setShowNotOfferedWarning(e.currentTarget.checked)
-                      }
-                    />{' '}
-                    Highlight the courses in quarters that they are not offered
-                    in
-                  </label>
-                </p>
+                {isCurriculum ? null : (
+                  <p>
+                    <label>
+                      <input
+                        type='checkbox'
+                        checked={showNotOfferedWarning}
+                        onChange={e =>
+                          setShowNotOfferedWarning(e.currentTarget.checked)
+                        }
+                      />{' '}
+                      Highlight the courses in quarters that they are not
+                      offered in
+                    </label>
+                  </p>
+                )}
               </div>
             </details>
           )}
