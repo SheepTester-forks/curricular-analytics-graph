@@ -11,7 +11,11 @@ await writeFile(
       () => `<style>${css}</style>`
     )
     .replace(
-      '<script src="./index.js"></script>',
-      () => `<script>${js.replaceAll('</script>', '</\\u{73}cript>')}</script>`
+      '<script src="./index.js" type="module"></script>',
+      () =>
+        `<script type="module">${js.replaceAll(
+          '</script>',
+          '</\\u{73}cript>'
+        )}</script>`
     )
 )
