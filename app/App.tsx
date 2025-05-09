@@ -98,7 +98,8 @@ const equityGapNames: Record<string, string> = {
   firstGen: 'First-gen',
   gender: 'Gender',
   major: 'Major',
-  urm: 'URM'
+  urm: 'URM',
+  transfer: 'Transfer'
 }
 
 function interpretFrequency (terms: string[]): string {

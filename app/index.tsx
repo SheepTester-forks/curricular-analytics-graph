@@ -16,7 +16,7 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats } from './App'
 import { csvStringToDegreePlan } from './util/parse-degree-plan'
 
-//*
+/*
 import dfwRatesByMajor from './data/fake-dfw-by-major.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
@@ -27,6 +27,9 @@ import dfwRatesByMajor from '../../curricular-analytics-exploration/files/protec
 import frequencies from '../../curricular-analytics-exploration/files/protected/summarize_frequency.json'
 import waitlists from '../../curricular-analytics-exploration/files/protected/summarize_waitlist.json'
 import equityGapsByMajor from '../../curricular-analytics-exploration/files/protected/summarize_equity_by_major.json'
+import transferEquityGap from '../../curricular-analytics-exploration/files/protected/summarize_transfer_gap.json'
+import majorToDept from '../../curricular-analytics-exploration/files/protected/summarize_major_to_dept.json'
+// TODO: department code map, removed allMajor from equiy gaps
 const realData = true
 //*/
 
@@ -66,6 +69,7 @@ const { name, degreePlan, reqTypes, planType } = csvStringToDegreePlan(
       : example
 )
 const majorSubject = params.get('major')?.slice(0, 2) ?? ''
+const department = (majorToDept as Record<string, string>)[majorSubject]
 
 type CourseDfwRates = {
   [majorSubject: string]: number | undefined
@@ -78,21 +82,33 @@ function getStats (courseName: string): CourseStats {
   const dfwRates = (dfwRatesByMajor as Record<string, CourseDfwRates>)[
     courseCode
   ]
-  const equityGaps = (
-    equityGapsByMajor as Record<string, Record<string, string>>
-  )[courseCode]
+  const transferGaps =
+    (transferEquityGap as Record<string, Record<string, boolean>>)[
+      courseCode
+    ] ?? {}
+  const equityGaps =
+    (equityGapsByMajor as Record<string, Record<string, string>>)[courseCode] ??
+    {}
   return {
-    dfw: dfwRates?.[majorSubject] ?? dfwRates?.allMajors ?? null,
-    dfwForDepartment: dfwRates?.[majorSubject] !== undefined,
-    equityGaps:
-      equityGaps?.[majorSubject] !== undefined
-        ? equityGaps[majorSubject]
-          ? equityGaps[majorSubject].split(' ')
+    dfw: dfwRates?.[department] ?? dfwRates?.allMajors ?? null,
+    dfwForDepartment: dfwRates?.[department] !== undefined,
+    equityGaps: [
+      ...(equityGaps[department] !== undefined
+        ? equityGaps[department]
+          ? equityGaps[department].split(' ')
           : []
-        : equityGaps?.allMajors
+        : equityGaps.allMajors
           ? equityGaps.allMajors.split(' ')
-          : [],
-    equityGapsForDepartment: equityGaps?.[majorSubject] !== undefined,
+          : []),
+      ...((
+        transferGaps[department] !== undefined
+          ? transferGaps[department]
+          : transferGaps.allMajors
+      )
+        ? ['transfer']
+        : [])
+    ],
+    equityGapsForDepartment: equityGaps?.[department] !== undefined,
     frequency: (frequencies as Record<string, string[]>)[courseCode] ?? null,
     waitlist: (waitlists as Record<string, number>)[courseCode] ?? null
   }
