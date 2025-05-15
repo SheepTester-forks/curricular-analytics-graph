@@ -16,13 +16,13 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats } from './App'
 import { csvStringToDegreePlan } from './util/parse-degree-plan'
 
-//*
+/*
 import dfwRatesByMajor from './data/fake-dfw-by-major.json'
 import frequencies from './data/fake-frequency.json'
 import waitlists from './data/fake-waitlist.json'
 const equityGapsByMajor = { PHYS2CL: { allMajors: 'firstGen urm' } }
 const realData = false
-/*/
+*/
 import dfwRatesByMajor from '../../curricular-analytics-exploration/files/protected/summarize_dfw_by_major.json'
 import frequencies from '../../curricular-analytics-exploration/files/protected/summarize_frequency.json'
 import waitlists from '../../curricular-analytics-exploration/files/protected/summarize_waitlist.json'
