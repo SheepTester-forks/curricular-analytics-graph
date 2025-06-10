@@ -134,8 +134,10 @@ export class Graph<T extends GraphNode<T>> extends Join<
           element.textContent = content
           element.style.display = content ? '' : 'none'
         } else if (item.type === 'term-footer') {
-          element.textContent =
+          const content =
             this.options.termSummary?.(item.term, item.index) ?? ''
+          element.textContent = content
+          element.style.display = content ? '' : 'none'
         }
       },
       measure: {

@@ -296,6 +296,9 @@ export function App ({
             (year + Math.floor((i + 2) / 3)) % 100
           ).padStart(2, '0')}`,
       termSummary: term => {
+        if (isCurriculum) {
+          return ''
+        }
         const termComplexity = term.reduce((acc, { course }) => {
           const { dfw } = getStats(course.name)
           const complexity = complexities.get(course)

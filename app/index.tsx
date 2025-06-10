@@ -97,7 +97,7 @@ function getStats (courseName: string): CourseStats {
         ? equityGaps[department]
           ? equityGaps[department].split(' ')
           : []
-        : equityGaps.allMajors
+        : equityGaps.allMajors // TODO: I believe i got rid of this
           ? equityGaps.allMajors.split(' ')
           : []),
       ...((
@@ -106,7 +106,7 @@ function getStats (courseName: string): CourseStats {
           : transferGaps.allMajors
       )
         ? ['transfer']
-        : [])
+        : []) // TODO: indicate whether transfer gap comes from dept or not
     ],
     equityGapsForDepartment: equityGaps?.[department] !== undefined,
     frequency: (frequencies as Record<string, string[]>)[courseCode] ?? null,
