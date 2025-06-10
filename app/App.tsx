@@ -9,6 +9,7 @@ import { csvBlobToDegreePlan } from './util/parse-degree-plan'
 import { getTermClamped, PrereqTermBounds, Term } from './util/terms'
 import { CourseDatalist } from './components/CourseDatalist'
 import { updatePrereqs } from './util/updatePrereqs'
+import { displayList } from './util/english'
 
 export type LinkedCourse = {
   /** 0-indexed */
@@ -95,11 +96,11 @@ const classes: Record<RequisiteType, string> = {
 }
 
 const equityGapNames: Record<string, string> = {
-  firstGen: 'First-gen',
-  gender: 'Gender',
-  major: 'Major',
+  firstGen: 'first-gen',
+  gender: 'gender',
+  major: 'major',
   urm: 'URM',
-  transfer: 'Transfer'
+  transfer: 'transfer'
 }
 
 function interpretFrequency (terms: string[]): string {
@@ -197,7 +198,12 @@ export function App ({
   const [showWaitlistWarning, setShowWaitlistWarning] = useState(
     defaults !== 'ca'
   )
-  const [showEquityGaps, setShowEquityGaps] = useState(defaults !== 'ca')
+  const [showEquityGaps, setShowEquityGaps] = useState(() =>
+    defaults !== 'ca'
+      ? // don't show warning icon for transfer equity gap since a lot of courses have it
+      Object.keys(equityGapNames).filter(id => id !== 'transfer')
+      : []
+  )
   const [showNotOfferedWarning, setShowNotOfferedWarning] = useState(
     !isCurriculum && defaults !== 'ca'
   )
@@ -325,7 +331,7 @@ export function App ({
       courseName: ({ course: { name } }) => {
         const { equityGaps, waitlist } = getStats(name)
         return (
-          (showEquityGaps && equityGaps.length > 0 ? '⚠️' : '') +
+          (equityGaps.some(gap => showEquityGaps.includes(gap)) ? '⚠️' : '') +
           (showWaitlistWarning &&
           waitlist !== null &&
           waitlist > +waitlistThreshold
@@ -720,7 +726,16 @@ export function App ({
                 </>
               )}
               {showWaitlistWarning ? <p>⏳ Long waitlist</p> : null}
-              {showEquityGaps ? <p>⚠️ Equity gap</p> : null}
+              {showEquityGaps.length ? (
+                <p>
+                  ⚠️ Equity gap (
+                  {displayList(
+                    showEquityGaps.map(id => equityGapNames[id]),
+                    'or'
+                  )}
+                  )
+                </p>
+              ) : null}
             </>
           ) : null}
           <h2>Disclaimer</h2>
@@ -848,16 +863,25 @@ export function App ({
                     Show an icon on courses with a long waitlist.
                   </label>
                 </p>
-                <p>
-                  <label>
-                    <input
-                      type='checkbox'
-                      checked={showEquityGaps}
-                      onChange={e => setShowEquityGaps(e.currentTarget.checked)}
-                    />{' '}
-                    Show a warning icon on courses with equity gaps.
-                  </label>
-                </p>
+                {Object.entries(equityGapNames).map(([id, name]) => (
+                  <p key={id}>
+                    <label>
+                      <input
+                        type='checkbox'
+                        checked={showEquityGaps.includes(id)}
+                        onChange={e =>
+                          setShowEquityGaps(
+                            e.currentTarget.checked
+                              ? [...showEquityGaps, id]
+                              : showEquityGaps.filter(gapId => gapId !== id)
+                          )
+                        }
+                      />{' '}
+                      Show a warning icon on courses with{' '}
+                      <strong>{name}</strong> equity gap.
+                    </label>
+                  </p>
+                ))}
                 <TextField
                   value={waitlistThreshold}
                   onChange={setWaitlistThreshold}
