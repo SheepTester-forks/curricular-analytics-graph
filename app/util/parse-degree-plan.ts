@@ -156,7 +156,8 @@ function curriculumToDegreePlan (
   // NOTE: These units are intended for semester systems
   const maxUnitsPerTerm = Math.min(
     15 + Math.ceil((courses.length + 8) / 40) * 3,
-    6 + Math.ceil(courses.length / 8) * 3
+    6 + Math.ceil(courses.length / 8) * 3,
+    20 // carlos requested this change: cap to 20 units per term
   )
   // https://github.com/CurricularAnalytics/CurricularAnalytics.jl/blob/88bfa3cb7a09b9707862bae185003dfd6ecb6b83/src/DegreePlanCreation.jl#L14
   courses.sort((a, b) =>
