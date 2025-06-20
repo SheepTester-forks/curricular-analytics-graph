@@ -6,5 +6,4 @@ dist/*.js
 dist/*.css
 dist/*.map
 dist/plan-graph.html
-# old file name
 dist/graph-demo.html

@@ -11,6 +11,8 @@
  * The URL fragment is used to store the degree plan to render.
  */
 
+declare const VERSION: string
+
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { App, CourseStats } from './App'
@@ -20,20 +22,45 @@ import { csvStringToDegreePlan } from './util/parse-degree-plan'
 import waitlists from '../../curricular-analytics-exploration/files/protected/summarize_waitlist.json'
 import frequencies from '../../curricular-analytics-exploration/files/protected/summarize_frequency.json'
 
-/*
-import dfwRatesByMajor from '../../curricular-analytics-exploration/files/summarize_dfw_public.json'
-const equityGapsByMajor = {}
-const transferEquityGap = {}
-const majorToDept = {}
-const protectedData = false
-/*/
-import dfwRatesByMajor from '../../curricular-analytics-exploration/files/protected/summarize_dfw_by_major.json'
-import equityGapsByMajor from '../../curricular-analytics-exploration/files/protected/summarize_equity_by_major.json'
-import transferEquityGap from '../../curricular-analytics-exploration/files/protected/summarize_transfer_gap.json'
-import majorToDept from '../../curricular-analytics-exploration/files/protected/summarize_major_to_dept.json'
-// TODO: department code map, removed allMajor from equiy gaps
-const protectedData = true
-//*/
+type CourseDfwRates = {
+  [majorSubject: string]: number | undefined
+  allMajors: number
+}
+
+const protectedData = VERSION !== 'public'
+let dfwRatesByMajor: Record<string, CourseDfwRates>
+let equityGapsByMajor: Record<string, Record<string, string>> = {}
+let transferEquityGap: Record<string, Record<string, boolean>> = {}
+let majorToDept: Record<string, string> = {}
+if (protectedData) {
+  dfwRatesByMajor = (
+    await import(
+      '../../curricular-analytics-exploration/files/protected/summarize_dfw_by_major.json'
+    )
+  ).default
+  equityGapsByMajor = (
+    await import(
+      '../../curricular-analytics-exploration/files/protected/summarize_equity_by_major.json'
+    )
+  ).default
+  transferEquityGap = (
+    await import(
+      '../../curricular-analytics-exploration/files/protected/summarize_transfer_gap.json'
+    )
+  ).default
+  majorToDept = (
+    await import(
+      '../../curricular-analytics-exploration/files/protected/summarize_major_to_dept.json'
+    )
+  ).default
+  // TODO: removed allMajor from equity gaps
+} else {
+  dfwRatesByMajor = (
+    await import(
+      '../../curricular-analytics-exploration/files/summarize_dfw_public.json'
+    )
+  ).default
+}
 
 // https://curricularanalytics.org/degree_plans/11085
 // import example from './data/example.json'
@@ -71,26 +98,14 @@ const { name, degreePlan, reqTypes, planType } = csvStringToDegreePlan(
       : example
 )
 const majorSubject = params.get('major')?.slice(0, 2) ?? ''
-const department = (majorToDept as Record<string, string>)[majorSubject] ?? ''
-
-type CourseDfwRates = {
-  [majorSubject: string]: number | undefined
-  allMajors: number
-}
+const department = majorToDept[majorSubject] ?? ''
 
 function getStats (courseName: string): CourseStats {
   const match = courseName.toUpperCase().match(/([A-Z]+) *(\d+[A-Z]*)/)
   const courseCode = match ? match[1] + match[2] : ''
-  const dfwRates = (dfwRatesByMajor as Record<string, CourseDfwRates>)[
-    courseCode
-  ]
-  const transferGaps =
-    (transferEquityGap as Record<string, Record<string, boolean>>)[
-      courseCode
-    ] ?? {}
-  const equityGaps =
-    (equityGapsByMajor as Record<string, Record<string, string>>)[courseCode] ??
-    {}
+  const dfwRates = dfwRatesByMajor[courseCode]
+  const transferGaps = transferEquityGap[courseCode] ?? {}
+  const equityGaps = equityGapsByMajor[courseCode] ?? {}
   return {
     dfw: dfwRates?.[department] ?? dfwRates?.allMajors ?? null,
     dfwForDepartment: dfwRates?.[department] !== undefined,

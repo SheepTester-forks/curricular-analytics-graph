@@ -5,9 +5,9 @@
   "main": "dist/index.js",
   "type": "module",
   "scripts": {
-    "build": "esbuild --bundle --loader:.svg=file --loader:.csv=text app/index.tsx --format=esm --outdir=dist --supported:nesting=false --minify && node scripts/pack-html.js",
+    "build": "esbuild --bundle --loader:.svg=file --loader:.csv=text --define:VERSION=\\\"$GRAPH_VERSION\\\" app/index.tsx --format=esm --outdir=dist --supported:nesting=false --minify && node scripts/pack-html.js",
     "clean": "rm -f dist/*.js dist/*.css dist/*.map dist/graph-demo.html",
-    "dev": "esbuild --bundle --loader:.svg=file --loader:.csv=text app/index.tsx --format=esm --outdir=dist --servedir=dist --sourcemap",
+    "dev": "esbuild --bundle --loader:.svg=file --loader:.csv=text --define:VERSION=\\\"$GRAPH_VERSION\\\" app/index.tsx --format=esm --outdir=dist --servedir=dist --sourcemap",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

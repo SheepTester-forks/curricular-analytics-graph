@@ -81,8 +81,7 @@ For more examples about customizing the graph renderer, you can refer to these e
 
 Requires [Node 22+](https://nodejs.org/) (on Mac/Linux, I recommend nvm: `curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | bash` then `nvm install node`) and Yarn (`npm install -g yarn`).
 
-The app relies on DFW, waitlist, and course offering frequency data. You can see the fake, randomized data in [app/data/](./app/data/) to see what the expected format is. To opt in to the fake data (used for public-facing demos), uncomment the first batch of `import` statements in [app/index.tsx](./app/index.tsx). If you have access to real UCSD data, continue on to the next section.
-
+The app relies on DFW, waitlist, and course offering frequency data (see the [next section](#getting-protected-data-ucsd-only)).
 After setting up the required datasets, you can run `yarn dev` to start a development server.
 
 ```shell
@@ -91,6 +90,13 @@ $ yarn build
 
 # Start a local HTTP server that recompiles on the fly
 $ yarn dev
+```
+
+You can also start/build a public-facing version that uses publicly available data by setting the `GRAPH_VERSION` environment variable to `public`:
+
+```shell
+$ GRAPH_VERSION=public yarn build
+$ GRAPH_VERSION=public yarn dev
 ```
 
 The app also relies on UCSD-specific prerequisite data. This isn't protected data, but it's good to keep in mind when adapting this for other universities. Prereqs are only used when editing course names to determine how to update the prereqs in the plan. The prereqs are automatically fetched from the URL defined in the constant `DATA_SOURCE_URL` in [app/App.tsx](./app/App.tsx).

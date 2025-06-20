@@ -1,10 +1,15 @@
 import { readFile, writeFile } from 'fs/promises'
 
+const outFile =
+  process.env.GRAPH_VERSION === 'public'
+    ? './dist/graph-demo.html'
+    : './dist/plan-graph.html'
+
 const html = await readFile('./dist/index.html', 'utf-8')
 const css = await readFile('./dist/index.css', 'utf-8')
 const js = await readFile('./dist/index.js', 'utf-8')
 await writeFile(
-  './dist/plan-graph.html',
+  outFile,
   html
     .replace(
       '<link rel="stylesheet" href="./index.css" />',

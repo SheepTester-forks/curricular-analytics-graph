@@ -752,10 +752,10 @@ export function App ({
               <a href='https://asmain.ucsd.edu/home/InstructorGradeArchive'>
                 A.S. Instructor Grade Archive
               </a>
-              , calculated by averaging the DFW rates of the latest offering
-              among all professors who have taught the class since 2023.
-              Major-specific DFW rates and equity gap data are unavailable in
-              this public version. Academic plans were pulled from{' '}
+              , calculated by averaging the DFW rates of the latest offering by
+              each professor who has taught the class since 2023. Major-specific
+              DFW rates and equity gap data are unavailable in this public
+              version. Academic plans were pulled from{' '}
               <a href='https://plans.ucsd.edu/'>plans.ucsd.edu</a>.
             </p>
           )}
