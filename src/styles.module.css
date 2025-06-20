@@ -203,12 +203,15 @@
   font-size: 1.2em;
 }
 .tooltipTitleInput {
+  border: none;
+  background: none;
+  color: inherit;
+  font: inherit;
   margin-top: 5px;
   padding: 5px 10px 5px;
   font-size: 1.2em;
   width: 100%;
   box-sizing: border-box;
-  border: none;
 }
 .tooltipTable {
   width: 100%;
