@@ -16,21 +16,23 @@ import { createRoot } from 'react-dom/client'
 import { App, CourseStats } from './App'
 import { csvStringToDegreePlan } from './util/parse-degree-plan'
 
+// these are probably not protected data
+import waitlists from '../../curricular-analytics-exploration/files/protected/summarize_waitlist.json'
+import frequencies from '../../curricular-analytics-exploration/files/protected/summarize_frequency.json'
+
 /*
-import dfwRatesByMajor from './data/fake-dfw-by-major.json'
-import frequencies from './data/fake-frequency.json'
-import waitlists from './data/fake-waitlist.json'
-const equityGapsByMajor = { PHYS2CL: { allMajors: 'firstGen urm' } }
-const realData = false
+import dfwRatesByMajor from '../../curricular-analytics-exploration/files/summarize_dfw_public.json'
+const equityGapsByMajor = {}
+const transferEquityGap = {}
+const majorToDept = {}
+const protectedData = false
 /*/
 import dfwRatesByMajor from '../../curricular-analytics-exploration/files/protected/summarize_dfw_by_major.json'
-import frequencies from '../../curricular-analytics-exploration/files/protected/summarize_frequency.json'
-import waitlists from '../../curricular-analytics-exploration/files/protected/summarize_waitlist.json'
 import equityGapsByMajor from '../../curricular-analytics-exploration/files/protected/summarize_equity_by_major.json'
 import transferEquityGap from '../../curricular-analytics-exploration/files/protected/summarize_transfer_gap.json'
 import majorToDept from '../../curricular-analytics-exploration/files/protected/summarize_major_to_dept.json'
 // TODO: department code map, removed allMajor from equiy gaps
-const realData = true
+const protectedData = true
 //*/
 
 // https://curricularanalytics.org/degree_plans/11085
@@ -69,7 +71,7 @@ const { name, degreePlan, reqTypes, planType } = csvStringToDegreePlan(
       : example
 )
 const majorSubject = params.get('major')?.slice(0, 2) ?? ''
-const department = (majorToDept as Record<string, string>)[majorSubject]
+const department = (majorToDept as Record<string, string>)[majorSubject] ?? ''
 
 type CourseDfwRates = {
   [majorSubject: string]: number | undefined
@@ -131,7 +133,7 @@ createRoot(document.getElementById('root')!).render(
             majorDfwNote: majorSubject !== ''
           }
       }
-      realData={realData}
+      protectedData={protectedData}
       year={+(params.get('year') ?? new Date().getFullYear())}
       isCurriculum={planType === 'curriculum'}
     />

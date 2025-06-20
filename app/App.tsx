@@ -145,7 +145,7 @@ export type AppProps = {
     options?: boolean
     majorDfwNote?: boolean
   }
-  realData?: boolean
+  protectedData?: boolean
   year: number
   isCurriculum?: boolean
 }
@@ -155,7 +155,7 @@ export function App ({
   getStats,
   defaults,
   panelMode = { key: true },
-  realData,
+  protectedData,
   year,
   isCurriculum = false
 }: AppProps) {
@@ -739,21 +739,26 @@ export function App ({
             </>
           ) : null}
           <h2>Disclaimer</h2>
-          {realData ? (
+          {protectedData ? (
             <p>
-              This demo is currently showing <em>real</em> protected data.
+              This view contains <strong>protected</strong> data. DFW rates and
+              waitlists were sampled between fall 2021 and summer 2022. Academic
+              plans were pulled from{' '}
+              <a href='https://plans.ucsd.edu/'>plans.ucsd.edu</a>.
             </p>
           ) : (
             <p>
-              For this demo, protected data have been replaced with{' '}
-              <strong>randomized</strong> values.
+              DFW rates are from the{' '}
+              <a href='https://asmain.ucsd.edu/home/InstructorGradeArchive'>
+                A.S. Instructor Grade Archive
+              </a>
+              , calculated by averaging the DFW rates of the latest offering
+              among all professors who have taught the class since 2023.
+              Major-specific DFW rates and equity gap data are unavailable in
+              this public version. Academic plans were pulled from{' '}
+              <a href='https://plans.ucsd.edu/'>plans.ucsd.edu</a>.
             </p>
           )}
-          <p>
-            Data were sampled between fall 2021 and spring 2024. Academic plans
-            were pulled from{' '}
-            <a href='https://plans.ucsd.edu/'>plans.ucsd.edu</a>.
-          </p>
           {panelMode.majorDfwNote ? (
             <p>*DFW rate is specific to majors in this department.</p>
           ) : null}
