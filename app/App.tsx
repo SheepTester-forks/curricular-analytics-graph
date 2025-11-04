@@ -310,15 +310,8 @@ export function App ({
           const complexity = complexities.get(course)
           return (
             acc +
-            (complexityMode === 'default' ||
-            dfw === null ||
-            complexity === undefined
-              ? complexity ?? 0
-              : complexityMode === 'dfw'
-                ? complexity * dfw
-                : complexity * (dfw + 1))
-          )
-        }, 0)
+            (complexities.get(course) ?? 0)
+        )}, 0)
         return `Units: ${term.reduce(
           (acc, { course }) => acc + (course.credits ?? 0),
           0
