@@ -734,8 +734,8 @@ export function App ({
           <h2>Disclaimer</h2>
           {protectedData ? (
             <p>
-              This view contains <strong>protected</strong> data. DFW rates and
-              waitlists were sampled between fall 2021 and summer 2022. Academic
+              This view contains <strong>protected</strong> data. DFW rates class frequencies were sampled between FA24 and SP25. Waitlists were sampled between FA21 and SU22.
+              Academic
               plans were pulled from{' '}
               <a href='https://plans.ucsd.edu/'>plans.ucsd.edu</a>.
             </p>
