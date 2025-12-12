@@ -112,7 +112,7 @@ function interpretFrequency (terms: string[]): string {
     quarters.includes('SP') ? 'Spring' : ''
   ].filter(quarter => quarter)
   if (regular.length === 3) {
-    return summer ? 'Year-round (incl. summer)' : 'Regular year (no summer)'
+    return summer ? 'Year-round (incl. summer)' : 'Year-round'
   } else {
     if (summer) {
       regular.push('Summer')
